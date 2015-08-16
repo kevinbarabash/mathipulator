@@ -4,8 +4,7 @@ let _prev = Symbol();
 let _parent = Symbol();
 
 class LinkedList {
-    constructor(parent) {
-        this[_parent] = parent;
+    constructor() {
         this.first = null;
         this.last = null;   
     }
@@ -13,7 +12,7 @@ class LinkedList {
     append(...nodes) {
         for (let node of nodes) {
             node[_next] = null;
-            node[_parent] = this[_parent];
+            node[_parent] = this;
             if (this.first === null && this.last === null) {
                 this.first = node;
                 this.last = node;
@@ -29,7 +28,7 @@ class LinkedList {
     prepend(...nodes) {
         for (let node of nodes) {
             node[_prev] = null;
-            node[_parent] = this[_parent];
+            node[_parent] = this;
             if (this.first === null && this.last === null) {
                 this.first = node;
                 this.last = node;
@@ -136,6 +135,10 @@ class Literal {
         this.value = value;
     }
     
+    multiply(node) {
+        return new Term(this, new Operator('*'), node);
+    }
+    
     toString() {
         return `Literal:${this.value}`;
     }
@@ -149,11 +152,11 @@ class Literal {
     }
 }
 
-class Term {
+class Term extends LinkedList {
     constructor(...nodes) {
+        super();
         this.type = 'Term';
-        this.children = new LinkedList(this);
-        this.children.append(...nodes);
+        this.append(...nodes);
     }
     
     add(node) {
@@ -165,28 +168,28 @@ class Term {
     }
     
     multiply(node) {
-        this.children.append(new Operator('*'), node);
+        this.append(new Operator('*'), node);
     }
 
     toString() {
-        return `Term:${this.children.toString()}`;
+        return `Term:${super.toString()}`;
     }
 }
 
-class Expression {
+class Expression extends LinkedList {
     constructor(...nodes) {
+        super();
         this.type = 'Expression';
-        this.children = new LinkedList(this);
-        this.children.append(...nodes)
+        this.append(...nodes);
     }
     
     add(node) {
-        this.children.append(new Operator('+'), node);
+        this.append(new Operator('+'), node);
         return this;
     }
     
     subtract(node) {
-        this.children.append(new Operator('-'), node);
+        this.append(new Operator('-'), node);
         return this;
     }
     
@@ -195,7 +198,7 @@ class Expression {
     }
     
     toString() {
-        return `Expression:${this.children.toString()}`;
+        return `Expression:${super.toString()}`;
     }
 }
 
@@ -203,10 +206,7 @@ let expr = new Expression(new Literal(1));
 expr.subtract(new Literal(2));
 expr.add(new Literal(3));
 console.log(expr.toString());
-
-let four = new Literal(4);
-expr = expr.multiply(four);
-console.log(expr.toString());
+console.log("");
 
 let distributeBackwards = function(node) {
     if (node[_prev] && node[_prev].operator === '*') {
@@ -217,25 +217,54 @@ let distributeBackwards = function(node) {
             let parent = node[_parent];
             
             let left = operator[_prev];
-            for (let child of left.children) {
+            for (let child of left) {
                 if (child.type !== 'Operator') {
                     let term = new Term();
-                    left.children.replace(child, term);
-                    term.children.append(child, new Operator('*'), node.clone());   
+                    left.replace(child, term);
+                    term.append(child, new Operator('*'), node.clone());   
                 }
             }
 
-            parent.children.remove(operator);
-            parent.children.remove(node);
+            parent.remove(operator);
+            parent.remove(node);
             
-            if (parent.children.first === parent.children.last) {
-                return parent.children.first;
+            if (parent.first === parent.last) {
+                return parent.first;
             }
         }
     }  
 };
 
-console.log("");
+let distributeForwards = function(node) {
+    if (node[_next] && node[_next].operator === '*') {
+        let operator = node[_next];
+        if (operator[_next] && operator[_next].type === 'Expression') {
+            console.log("can distribute forwards");
+
+            let parent = node[_parent];
+
+            let right = operator[_next];
+            for (let child of right) {
+                if (child.type !== 'Operator') {
+                    let term = new Term();
+                    right.replace(child, term);
+                    term.append(node.clone(), new Operator('*'), child);
+                }
+            }
+
+            parent.remove(operator);
+            parent.remove(node);
+
+            if (parent.first === parent.last) {
+                return parent.first;
+            }
+        }
+    }
+};
+
+let four = new Literal(4);
+expr = expr.multiply(four);
+console.log(expr.toString());
 expr = distributeBackwards(four);
 console.log(expr.toString());
 console.log("");
@@ -247,6 +276,19 @@ let term = new Term(new Literal(4));
 term.multiply(new Literal(5));
 term.multiply(new Literal(-6));
 console.log(term.toString());
+
+console.log("");
+
+expr = new Expression(new Literal(1));
+expr.subtract(new Literal(2));
+expr.add(new Literal(3));
+
+four = new Literal(4);
+expr = four.multiply(expr);
+console.log(expr.toString());
+
+expr = distributeForwards(four);
+console.log(expr.toString());
 
 console.log("");
 
