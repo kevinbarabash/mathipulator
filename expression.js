@@ -61,6 +61,25 @@ class LinkedList {
         }
     }
     
+    remove(node) {
+        if (this.first === node) {
+            this.first = node[_next];
+            if (this.first) {
+                this.first[_prev] = null;
+            }
+        } else {
+            node[_prev][_next] = node[_next];
+        }
+        if (this.last === node) {
+            this.last = node[_prev];
+            if (this.last) {
+                this.last[_next] = null;
+            }
+        } else {
+            node[_next][_prev] = node[_prev];
+        }
+    }
+    
     *[Symbol.iterator]() {
         let node = this.first;
         while (node !== null) {
@@ -70,6 +89,14 @@ class LinkedList {
             node = node[_next];
             yield current;
         }
+    }
+    
+    get length() {
+        let count = 0;
+        for (let node of this) {
+            count++;
+        }
+        return count;
     }
     
     toString() {
@@ -115,6 +142,10 @@ class Literal {
     
     clone() {
         return new Literal(this.value);
+    }
+    
+    evaluate() {
+        // TODO check if we have a _prev and _next property
     }
 }
 
@@ -173,8 +204,41 @@ expr.subtract(new Literal(2));
 expr.add(new Literal(3));
 console.log(expr.toString());
 
-expr = expr.multiply(new Literal(4));
+let four = new Literal(4);
+expr = expr.multiply(four);
 console.log(expr.toString());
+
+let distributeBackwards = function(node) {
+    if (node[_prev] && node[_prev].operator === '*') {
+        let operator = node[_prev];
+        if (operator[_prev] && operator[_prev].type === 'Expression') {
+            console.log("can distribute backwards");
+            
+            let parent = node[_parent];
+            
+            let left = operator[_prev];
+            for (let child of left.children) {
+                if (child.type !== 'Operator') {
+                    let term = new Term();
+                    left.children.replace(child, term);
+                    term.children.append(child, new Operator('*'), node.clone());   
+                }
+            }
+
+            parent.children.remove(operator);
+            parent.children.remove(node);
+            
+            if (parent.children.first === parent.children.last) {
+                return parent.children.first;
+            }
+        }
+    }  
+};
+
+console.log("");
+expr = distributeBackwards(four);
+console.log(expr.toString());
+console.log("");
 
 expr = expr.add(new Literal(25));
 console.log(expr.toString());
@@ -183,6 +247,8 @@ let term = new Term(new Literal(4));
 term.multiply(new Literal(5));
 term.multiply(new Literal(-6));
 console.log(term.toString());
+
+console.log("");
 
 module.exports = {
     LinkedList
