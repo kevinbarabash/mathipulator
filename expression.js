@@ -116,12 +116,11 @@ class LinkedList {
 
 class Operator {
     constructor(operator) {
-        this.type = 'Operator';
-        this.operator = operator;
+        Object.assign(this, { type: 'Operator', operator });
     }
     
     toString() {
-        return `Operator:${this.operator}`;
+        return `${this.type}:${this.operator}`;
     }
     
     clone() {
@@ -131,16 +130,27 @@ class Operator {
 
 class Literal {
     constructor(value) {
-        this.type = 'Literal';
-        this.value = value;
+        Object.assign(this, { type: 'Literal', value });
+    }
+    
+    add(node) {
+        return new Expression(this, new Operator('+'), node);
+    }
+    
+    subtract(node) {
+        return new Expression(this, new Operator('-'), node);
     }
     
     multiply(node) {
-        return new Term(this, new Operator('*'), node);
+        return new Product(this, new Operator('*'), node);
+    }
+
+    divide(node) {
+        return new Fraction(this, new Operator('/'), node);
     }
     
     toString() {
-        return `Literal:${this.value}`;
+        return `${this.type}:${this.value}`;
     }
     
     clone() {
@@ -152,10 +162,43 @@ class Literal {
     }
 }
 
-class Term extends LinkedList {
+class Identifier {
+    constructor(name, options = {}) {
+        this.type = 'Identifier';
+        this.name = name;
+        this.subscript = options.subscript || null;
+        this.accent = options.accent || null;
+    }
+
+    add(node) {
+        return new Expression(this, new Operator('+'), node);
+    }
+
+    subtract(node) {
+        return new Expression(this, new Operator('-'), node);
+    }
+
+    multiply(node) {
+        return new Product(this, new Operator('*'), node);
+    }
+
+    divide(node) {
+        return new Fraction(this, new Operator('/'), node);
+    }
+
+    toString() {
+        return `${this.type}:${this.name}`;
+    }
+
+    clone() {
+        return new Identifier(this.value);
+    }
+}
+
+class Product extends LinkedList {
     constructor(...nodes) {
         super();
-        this.type = 'Term';
+        this.type = 'Product';
         this.append(...nodes);
     }
     
@@ -171,8 +214,38 @@ class Term extends LinkedList {
         this.append(new Operator('*'), node);
     }
 
+    divide(node) {
+        return new Fraction(this, new Operator('/'), node);
+    }
+
     toString() {
-        return `Term:${super.toString()}`;
+        return `${this.type}:${super.toString()}`;
+    }
+}
+
+class Fraction {
+    constructor(numerator, denominator) {
+        Object.assign(this, { type: 'Fraction', numerator, denominator });
+    }
+
+    add(node) {
+        return new Expression(this, new Operator('+'), node);
+    }
+
+    subtract(node) {
+        return new Expression(this, new Operator('-'), node);
+    }
+
+    multiply(node) {
+        this.append(new Operator('*'), node);
+    }
+
+    divide(node) {
+        return new Fraction(this, new Operator('/'), node);
+    }
+    
+    toString() {
+        return `[${this.type}:${this.numerator}/${this.denominator}]`;
     }
 }
 
@@ -182,23 +255,27 @@ class Expression extends LinkedList {
         this.type = 'Expression';
         this.append(...nodes);
     }
-    
+
     add(node) {
         this.append(new Operator('+'), node);
         return this;
     }
-    
+
     subtract(node) {
         this.append(new Operator('-'), node);
         return this;
     }
-    
+
     multiply(node) {
-        return new Term(this, new Operator('*'), node);
+        return new Product(this, new Operator('*'), node);
     }
     
+    divide(node) {
+        return new Fraction(this, new Operator('/'), node);
+    }
+
     toString() {
-        return `Expression:${super.toString()}`;
+        return `${this.type}:${super.toString()}`;
     }
 }
 
@@ -219,9 +296,9 @@ let distributeBackwards = function(node) {
             let left = operator[_prev];
             for (let child of left) {
                 if (child.type !== 'Operator') {
-                    let term = new Term();
-                    left.replace(child, term);
-                    term.append(child, new Operator('*'), node.clone());   
+                    let product = new Product();
+                    left.replace(child, product);
+                    product.append(child, new Operator('*'), node.clone());   
                 }
             }
 
@@ -246,9 +323,9 @@ let distributeForwards = function(node) {
             let right = operator[_next];
             for (let child of right) {
                 if (child.type !== 'Operator') {
-                    let term = new Term();
-                    right.replace(child, term);
-                    term.append(node.clone(), new Operator('*'), child);
+                    let product = new Product();
+                    right.replace(child, product);
+                    product.append(node.clone(), new Operator('*'), child);
                 }
             }
 
@@ -272,10 +349,10 @@ console.log("");
 expr = expr.add(new Literal(25));
 console.log(expr.toString());
 
-let term = new Term(new Literal(4));
-term.multiply(new Literal(5));
-term.multiply(new Literal(-6));
-console.log(term.toString());
+let product = new Product(new Literal(4));
+product.multiply(new Literal(5));
+product.multiply(new Literal(-6));
+console.log(product.toString());
 
 console.log("");
 
@@ -290,6 +367,10 @@ console.log(expr.toString());
 expr = distributeForwards(four);
 console.log(expr.toString());
 
+console.log("");
+
+let frac = new Fraction(new Literal(1), new Identifier('a'));
+console.log(frac.toString());
 console.log("");
 
 module.exports = {

@@ -1,4 +1,5 @@
 require('babel-core/register');
+require('babel-core/polyfill');
 
 //var Parser = require('./parser.js');
 //
