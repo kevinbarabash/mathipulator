@@ -1,5 +1,14 @@
+let f = require('functify');
+
 let LinkedList = require('./linked-list.js');
 let { _prev, _next, _parent } = LinkedList;
+
+let operations = {
+    '+'(a, b) { return a + b; },
+    '-'(a, b) { return a - b; },
+    '*'(a, b) { return a * b; },
+    '/'(a, b) { return a / b; }     // TODO when/how to keep things as fractions
+};
 
 class Operator {
     constructor(operator) {
@@ -12,6 +21,22 @@ class Operator {
     
     clone() {
         return new Operator(this.operator);
+    }
+    
+    evaluate() {
+        let prev = this[_prev];
+        let next = this[_next];
+
+        if (prev !== null && next !== null) {
+            if (prev.type === 'Literal' && next.next === 'Literal') {
+                let result = new Literal(operations[this.operator](prev, next));
+                
+                let parent = this[_parent];
+                parent.remove(prev);
+                parent.remove(next);
+                parent.replace(this, result);
+            }
+        }
     }
 }
 
@@ -33,7 +58,7 @@ class Literal {
     }
 
     divide(node) {
-        return new Fraction(this, new Operator('/'), node);
+        return new Fraction(this, node);
     }
     
     toString() {
@@ -42,10 +67,6 @@ class Literal {
     
     clone() {
         return new Literal(this.value);
-    }
-    
-    evaluate() {
-        // TODO check if we have a _prev and _next property
     }
 }
 
@@ -70,7 +91,7 @@ class Identifier {
     }
 
     divide(node) {
-        return new Fraction(this, new Operator('/'), node);
+        return new Fraction(this, node);
     }
 
     toString() {
@@ -102,11 +123,15 @@ class Product extends LinkedList {
     }
 
     divide(node) {
-        return new Fraction(this, new Operator('/'), node);
+        return new Fraction(this, node);
     }
 
     toString() {
         return `${this.type}:${super.toString()}`;
+    }
+    
+    clone() {
+        return new Product(...f(this).map(x => x.clone()));
     }
 }
 
@@ -128,11 +153,15 @@ class Fraction {
     }
 
     divide(node) {
-        return new Fraction(this, new Operator('/'), node);
+        return new Fraction(this, node);
     }
     
     toString() {
         return `[${this.type}:${this.numerator}/${this.denominator}]`;
+    }
+    
+    clone() {
+        return new Fraction(this.numerator.clone(), this.denominator.clone());
     }
 }
 
@@ -158,11 +187,52 @@ class Expression extends LinkedList {
     }
     
     divide(node) {
-        return new Fraction(this, new Operator('/'), node);
+        return new Fraction(this, node);
     }
 
     toString() {
         return `${this.type}:${super.toString()}`;
+    }
+    
+    clone() {
+        return new Expression(...f(this).map(x => x.clone()));
+    }
+    
+    // TODO have a validate method
+}
+
+// TODO support inequalities and not-equal
+class Equation {
+    constructor(left, right) {
+        console.log("new equation");
+        console.log(left);
+        console.log(right);
+        Object.assign(this, { type: 'Equation', left, right });
+    }
+    
+    add(node) {
+        this.left = this.left.add(node);
+        this.right = this.right.add(node);
+    }
+    
+    subtract(node) {
+        this.left = this.left.subtract(node);
+        this.right = this.right.subtract(node);
+    }
+
+    multiply(node) {
+        this.left = this.left.multiply(node);
+        this.right = this.right.multiply(node);
+    }
+    
+    divide(node) {
+        this.left = this.left.divide(node);
+        this.right = this.right.divide(node);
+    }
+    
+    toString() {
+        return `${this.type}:[${this.left} = ${this.right}]`;
+
     }
 }
 
@@ -172,5 +242,6 @@ module.exports = {
     Fraction,
     Operator,
     Identifier,
-    Literal
+    Literal,
+    Equation
 };
