@@ -1,14 +1,14 @@
-require('babel-core/register');
-require('babel-core/polyfill');
-
 var Math = require('./src/expression.js');
-var Expression = Math.Expression;
-var Literal = Math.Literal;
-var Product = Math.Product;
-var Fraction = Math.Fraction;
-var Identifier = Math.Identifier;
-var Operator = Math.Operator;
-var Equation = Math.Equation;
+
+let {
+    Expression,
+    Literal,
+    Product,
+    Fraction,
+    Identifier,
+    Operator,
+    Equation
+} = Math;
 
 var Transforms = require('./src/transforms.js');
 var distributeBackwards = Transforms.distributeBackwards;
@@ -19,49 +19,128 @@ var expr = new Expression(new Literal(1));
 expr.subtract(new Literal(2));
 expr.add(new Literal(3));
 console.log(expr.toString());
+for (let i of expr) {
+    console.log(i);
+}
 console.log("");
 
-var four = new Literal(4);
-expr = expr.multiply(four);
-console.log(expr.toString());
-expr = distributeBackwards(four);
-console.log(expr.toString());
-console.log("");
+//var four = new Literal(4);
+//expr = expr.multiply(four);
+//console.log(expr.toString());
+//expr = distributeBackwards(four);
+//console.log(expr.toString());
+//console.log("");
+//
+//expr = expr.add(new Literal(25));
+//console.log(expr.toString());
+//
+//var product = new Product(new Literal(4));
+//product.multiply(new Literal(5));
+//product.multiply(new Literal(-6));
+//console.log(product.toString());
+//console.log("");
+//
+//expr = new Expression(new Literal(1));
+//expr.subtract(new Literal(2));
+//expr.add(new Literal(3));
+//
+//four = new Literal(4);
+//expr = four.multiply(expr);
+//console.log(expr.toString());
+//
+//expr = distributeForwards(four);
+//console.log(expr.toString());
+//console.log("");
+//
+//var frac = new Fraction(new Literal(1), new Identifier('a'));
+//console.log(frac.toString());
+//console.log("");
+//
+//var prod1 = new Product(new Literal(1), new Operator('*'), new Literal(2));
+//console.log(prod1.toString());
+//var prod2 = prod1.clone();
+//console.log(prod2.toString());
+//prod1.first.value = 4;
+//console.log(prod1.toString());
+//console.log(prod2.toString());
+//console.log("");
+//
+//console.log("before new equation");
+//var eqn = new Equation(prod1, prod2);
+//console.log(eqn.toString());
 
-expr = expr.add(new Literal(25));
-console.log(expr.toString());
+let canvas = document.createElement('canvas');
+let ctx = canvas.getContext('2d');
 
-var product = new Product(new Literal(4));
-product.multiply(new Literal(5));
-product.multiply(new Literal(-6));
-console.log(product.toString());
-console.log("");
+let pixelRatio = window.devicePixelRatio;
 
-expr = new Expression(new Literal(1));
-expr.subtract(new Literal(2));
-expr.add(new Literal(3));
+canvas.width = 1200 * pixelRatio;
+canvas.height = 700 * pixelRatio;
+canvas.style.width = 1200 + "px";
+canvas.style.height = 700 + "px";
+ctx.scale(pixelRatio, pixelRatio);
 
-four = new Literal(4);
-expr = four.multiply(expr);
-console.log(expr.toString());
+document.body.appendChild(canvas);
 
-expr = distributeForwards(four);
-console.log(expr.toString());
-console.log("");
+ctx.fillStyle = 'green';
+ctx.fillRect(100, 100, 100, 100);
 
-var frac = new Fraction(new Literal(1), new Identifier('a'));
-console.log(frac.toString());
-console.log("");
+ctx.font = '32px sans serif';
 
-var prod1 = new Product(new Literal(1), new Operator('*'), new Literal(2));
-console.log(prod1.toString());
-var prod2 = prod1.clone();
-console.log(prod2.toString());
-prod1.first.value = 4;
-console.log(prod1.toString());
-console.log(prod2.toString());
-console.log("");
+let space = ctx.measureText(" ").width;
 
-console.log("before new equation");
-var eqn = new Equation(prod1, prod2);
-console.log(eqn.toString());
+function layout(node) {
+    let x = 0, y = 0, height = 32;
+    
+    if (node.type === 'Literal') {
+        let width = ctx.measureText(node.value).width;
+        return {x, y, width, height, text: node.value};
+    } else if (node.type === 'Operator') {
+        let text = String(node.operator).replace(/\-/g, "\u2212");
+        let width = ctx.measureText(text).width;
+        return {x, y, width, height, text};
+    } else if (node.type === 'Expression') {
+        let width = 0;
+        let children = [];
+        for (let child of node) {
+            let child_layout = layout(child);
+            if (child.type === 'Operator') {
+                x += space;
+                width += space;
+            }
+            child_layout.x = x;
+            child_layout.y = y;
+            width += child_layout.width;
+            x += child_layout.width;
+            if (child.type === 'Operator') {
+                x += space;
+                width += space;
+            }
+            children.push(child_layout);
+        }
+        return {x, y, width, height, children};
+    }
+}
+
+function render(layout) {
+    if (layout.text) {
+        let text = String(layout.text).replace(/\-/g, "\u2212");
+        ctx.fillText(text, 0, 0);
+    } else if (layout.children) {
+        for (let child of layout.children) {
+            ctx.save();
+            console.log(child.x);
+            ctx.translate(child.x, child.y);
+            render(child);
+            ctx.restore();
+        }
+    } else {
+        throw "layout doesn't have text or children";
+    }
+}
+
+ctx.fillStyle = 'black';
+ctx.translate(100,100);
+
+let l1 = layout(expr);
+render(l1);
