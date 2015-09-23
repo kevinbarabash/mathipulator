@@ -15,11 +15,11 @@ var distributeBackwards = Transforms.distributeBackwards;
 var distributeForwards = Transforms.distributeForwards;
 
 
-var expr = new Expression(new Literal(1));
-expr.subtract(new Literal(2));
-expr.add(new Literal(3));
-console.log(expr.toString());
-for (let i of expr) {
+var expr1 = new Expression(new Literal(1));
+expr1.subtract(new Literal(2));
+expr1.add(new Literal(3));
+console.log(expr1.toString());
+for (let i of expr1) {
     console.log(i);
 }
 console.log("");
@@ -82,19 +82,19 @@ ctx.scale(pixelRatio, pixelRatio);
 
 document.body.appendChild(canvas);
 
-ctx.fillStyle = 'green';
-ctx.fillRect(100, 100, 100, 100);
-
-ctx.font = '32px sans serif';
+let fontSize = 64;
+ctx.font = `100 ${fontSize}px sans-serif`;
 
 let space = ctx.measureText(" ").width;
+let paren = ctx.measureText("(").width;
 
 function layout(node) {
     let x = 0, y = 0, height = 32;
     
     if (node.type === 'Literal') {
-        let width = ctx.measureText(node.value).width;
-        return {x, y, width, height, text: node.value};
+        let text = String(node.value).replace(/\-/g, "\u2212");
+        let width = ctx.measureText(text).width;
+        return {x, y, width, height, text};
     } else if (node.type === 'Operator') {
         let text = String(node.operator).replace(/\-/g, "\u2212");
         let width = ctx.measureText(text).width;
@@ -118,7 +118,50 @@ function layout(node) {
             }
             children.push(child_layout);
         }
-        return {x, y, width, height, children};
+        return {x:0, y:0, width, height, children};
+    } else if (node.type === 'Product') {
+        let width = 0;
+        let children = [];
+        for (let child of node) {
+            if (child.type === 'Operator') {
+                continue;
+            }
+            children.push({x, y, paren, height, text: '('});
+            width += paren;
+            x += paren;
+            
+            let child_layout = layout(child);
+            child_layout.x = x;
+            child_layout.y = y;
+            width += child_layout.width;
+            x += child_layout.width;
+            children.push(child_layout);
+
+            children.push({x, y, paren, height, text: ')'});
+            width += paren;
+            x += paren;
+        }
+        return {x:0, y:0, width, height, children};
+    } else if (node.type === 'Equation') {
+        let width = 0;
+        let left = layout(node.left);
+        console.log(`left.width = ${left.width}`);
+        width += left.width + space;
+        x += left.width + space;
+        
+        let equalsWidth = ctx.measureText("=").width;
+        let equals = {x, y, width:equalsWidth, height, text: '='};
+        
+        width += equalsWidth + space;
+        x += equalsWidth + space;
+        
+        let right = layout(node.right);
+        
+        width += right.width;
+        right.x = x;
+
+        let children = [left, equals, right];
+        return {x:0, y:0, width, height, children};
     }
 }
 
@@ -142,5 +185,12 @@ function render(layout) {
 ctx.fillStyle = 'black';
 ctx.translate(100,100);
 
-let l1 = layout(expr);
+var expr2 = new Expression(new Literal(5));
+expr2.add(new Literal(10));
+expr2.subtract(new Literal(-2));
+
+var prod = new Equation(expr1, expr2);
+
+let l1 = layout(prod);
 render(l1);
+

@@ -60,16 +60,16 @@
 	var distributeBackwards = Transforms.distributeBackwards;
 	var distributeForwards = Transforms.distributeForwards;
 
-	var expr = new Expression(new Literal(1));
-	expr.subtract(new Literal(2));
-	expr.add(new Literal(3));
-	console.log(expr.toString());
+	var expr1 = new Expression(new Literal(1));
+	expr1.subtract(new Literal(2));
+	expr1.add(new Literal(3));
+	console.log(expr1.toString());
 	var _iteratorNormalCompletion = true;
 	var _didIteratorError = false;
 	var _iteratorError = undefined;
 
 	try {
-	    for (var _iterator = expr[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	    for (var _iterator = expr1[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	        var i = _step.value;
 
 	        console.log(i);
@@ -149,12 +149,11 @@
 
 	document.body.appendChild(canvas);
 
-	ctx.fillStyle = 'green';
-	ctx.fillRect(100, 100, 100, 100);
-
-	ctx.font = '32px sans serif';
+	var fontSize = 64;
+	ctx.font = '100 ' + fontSize + 'px sans-serif';
 
 	var space = ctx.measureText(" ").width;
+	var paren = ctx.measureText("(").width;
 
 	function layout(node) {
 	    var x = 0,
@@ -162,8 +161,9 @@
 	        height = 32;
 
 	    if (node.type === 'Literal') {
-	        var width = ctx.measureText(node.value).width;
-	        return { x: x, y: y, width: width, height: height, text: node.value };
+	        var text = String(node.value).replace(/\-/g, '−');
+	        var width = ctx.measureText(text).width;
+	        return { x: x, y: y, width: width, height: height, text: text };
 	    } else if (node.type === 'Operator') {
 	        var text = String(node.operator).replace(/\-/g, '−');
 	        var width = ctx.measureText(text).width;
@@ -209,28 +209,35 @@
 	            }
 	        }
 
-	        return { x: x, y: y, width: width, height: height, children: children };
-	    }
-	}
-
-	function render(layout) {
-	    if (layout.text) {
-	        var text = String(layout.text).replace(/\-/g, '−');
-	        ctx.fillText(text, 0, 0);
-	    } else if (layout.children) {
+	        return { x: 0, y: 0, width: width, height: height, children: children };
+	    } else if (node.type === 'Product') {
+	        var width = 0;
+	        var children = [];
 	        var _iteratorNormalCompletion3 = true;
 	        var _didIteratorError3 = false;
 	        var _iteratorError3 = undefined;
 
 	        try {
-	            for (var _iterator3 = layout.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	            for (var _iterator3 = node[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
 	                var child = _step3.value;
 
-	                ctx.save();
-	                console.log(child.x);
-	                ctx.translate(child.x, child.y);
-	                render(child);
-	                ctx.restore();
+	                if (child.type === 'Operator') {
+	                    continue;
+	                }
+	                children.push({ x: x, y: y, paren: paren, height: height, text: '(' });
+	                width += paren;
+	                x += paren;
+
+	                var child_layout = layout(child);
+	                child_layout.x = x;
+	                child_layout.y = y;
+	                width += child_layout.width;
+	                x += child_layout.width;
+	                children.push(child_layout);
+
+	                children.push({ x: x, y: y, paren: paren, height: height, text: ')' });
+	                width += paren;
+	                x += paren;
 	            }
 	        } catch (err) {
 	            _didIteratorError3 = true;
@@ -246,6 +253,64 @@
 	                }
 	            }
 	        }
+
+	        return { x: 0, y: 0, width: width, height: height, children: children };
+	    } else if (node.type === 'Equation') {
+	        var width = 0;
+	        var left = layout(node.left);
+	        console.log('left.width = ' + left.width);
+	        width += left.width + space;
+	        x += left.width + space;
+
+	        var equalsWidth = ctx.measureText("=").width;
+	        var equals = { x: x, y: y, width: equalsWidth, height: height, text: '=' };
+
+	        width += equalsWidth + space;
+	        x += equalsWidth + space;
+
+	        var right = layout(node.right);
+
+	        width += right.width;
+	        right.x = x;
+
+	        var children = [left, equals, right];
+	        return { x: 0, y: 0, width: width, height: height, children: children };
+	    }
+	}
+
+	function render(layout) {
+	    if (layout.text) {
+	        var text = String(layout.text).replace(/\-/g, '−');
+	        ctx.fillText(text, 0, 0);
+	    } else if (layout.children) {
+	        var _iteratorNormalCompletion4 = true;
+	        var _didIteratorError4 = false;
+	        var _iteratorError4 = undefined;
+
+	        try {
+	            for (var _iterator4 = layout.children[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	                var child = _step4.value;
+
+	                ctx.save();
+	                console.log(child.x);
+	                ctx.translate(child.x, child.y);
+	                render(child);
+	                ctx.restore();
+	            }
+	        } catch (err) {
+	            _didIteratorError4 = true;
+	            _iteratorError4 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+	                    _iterator4['return']();
+	                }
+	            } finally {
+	                if (_didIteratorError4) {
+	                    throw _iteratorError4;
+	                }
+	            }
+	        }
 	    } else {
 	        throw "layout doesn't have text or children";
 	    }
@@ -254,7 +319,13 @@
 	ctx.fillStyle = 'black';
 	ctx.translate(100, 100);
 
-	var l1 = layout(expr);
+	var expr2 = new Expression(new Literal(5));
+	expr2.add(new Literal(10));
+	expr2.subtract(new Literal(-2));
+
+	var prod = new Equation(expr1, expr2);
+
+	var l1 = layout(prod);
 	render(l1);
 
 /***/ },
