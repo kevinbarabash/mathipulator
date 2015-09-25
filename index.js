@@ -15,14 +15,7 @@ var distributeBackwards = Transforms.distributeBackwards;
 var distributeForwards = Transforms.distributeForwards;
 
 
-var expr1 = new Expression(new Literal(1));
-expr1.subtract(new Literal(2));
-expr1.add(new Literal(3));
-console.log(expr1.toString());
-for (let i of expr1) {
-    console.log(i);
-}
-console.log("");
+
 
 //var four = new Literal(4);
 //expr = expr.multiply(four);
@@ -89,7 +82,7 @@ let space = ctx.measureText(" ").width;
 let paren = ctx.measureText("(").width;
 
 function layout(node) {
-    let x = 0, y = 0, height = 32;
+    let x = 0, y = 0, height = fontSize;
     
     if (node.type === 'Literal') {
         let text = String(node.value).replace(/\-/g, "\u2212");
@@ -165,16 +158,24 @@ function layout(node) {
     }
 }
 
-function render(layout) {
+function render(layout, outline) {
     if (layout.text) {
         let text = String(layout.text).replace(/\-/g, "\u2212");
         ctx.fillText(text, 0, 0);
+        if (outline) {
+            ctx.strokeStyle = 'blue';
+            ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
+        }
     } else if (layout.children) {
+        if (outline) {
+            ctx.strokeStyle = 'red';
+            ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
+        }
         for (let child of layout.children) {
             ctx.save();
             console.log(child.x);
             ctx.translate(child.x, child.y);
-            render(child);
+            render(child, outline);
             ctx.restore();
         }
     } else {
@@ -183,14 +184,22 @@ function render(layout) {
 }
 
 ctx.fillStyle = 'black';
-ctx.translate(100,100);
+ctx.strokeStyle = 'red';
+
+var expr1 = new Expression(new Literal(1));
+expr1.add(new Literal(3));
 
 var expr2 = new Expression(new Literal(5));
-expr2.add(new Literal(10));
 expr2.subtract(new Literal(-2));
 
-var prod = new Equation(expr1, expr2);
+var eqn1 = new Equation(expr1, expr2);
+let l1 = layout(eqn1);
+eqn1.add(new Literal(1));
+let l2 = layout(eqn1);
 
-let l1 = layout(prod);
+ctx.translate(100,100);
 render(l1);
+
+ctx.translate(0,100);
+render(l2);
 

@@ -60,37 +60,6 @@
 	var distributeBackwards = Transforms.distributeBackwards;
 	var distributeForwards = Transforms.distributeForwards;
 
-	var expr1 = new Expression(new Literal(1));
-	expr1.subtract(new Literal(2));
-	expr1.add(new Literal(3));
-	console.log(expr1.toString());
-	var _iteratorNormalCompletion = true;
-	var _didIteratorError = false;
-	var _iteratorError = undefined;
-
-	try {
-	    for (var _iterator = expr1[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	        var i = _step.value;
-
-	        console.log(i);
-	    }
-	} catch (err) {
-	    _didIteratorError = true;
-	    _iteratorError = err;
-	} finally {
-	    try {
-	        if (!_iteratorNormalCompletion && _iterator['return']) {
-	            _iterator['return']();
-	        }
-	    } finally {
-	        if (_didIteratorError) {
-	            throw _iteratorError;
-	        }
-	    }
-	}
-
-	console.log("");
-
 	//var four = new Literal(4);
 	//expr = expr.multiply(four);
 	//console.log(expr.toString());
@@ -158,7 +127,7 @@
 	function layout(node) {
 	    var x = 0,
 	        y = 0,
-	        height = 32;
+	        height = fontSize;
 
 	    if (node.type === 'Literal') {
 	        var text = String(node.value).replace(/\-/g, '−');
@@ -171,13 +140,13 @@
 	    } else if (node.type === 'Expression') {
 	        var width = 0;
 	        var children = [];
-	        var _iteratorNormalCompletion2 = true;
-	        var _didIteratorError2 = false;
-	        var _iteratorError2 = undefined;
+	        var _iteratorNormalCompletion = true;
+	        var _didIteratorError = false;
+	        var _iteratorError = undefined;
 
 	        try {
-	            for (var _iterator2 = node[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                var child = _step2.value;
+	            for (var _iterator = node[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                var child = _step.value;
 
 	                var child_layout = layout(child);
 	                if (child.type === 'Operator') {
@@ -195,16 +164,16 @@
 	                children.push(child_layout);
 	            }
 	        } catch (err) {
-	            _didIteratorError2 = true;
-	            _iteratorError2 = err;
+	            _didIteratorError = true;
+	            _iteratorError = err;
 	        } finally {
 	            try {
-	                if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-	                    _iterator2['return']();
+	                if (!_iteratorNormalCompletion && _iterator['return']) {
+	                    _iterator['return']();
 	                }
 	            } finally {
-	                if (_didIteratorError2) {
-	                    throw _iteratorError2;
+	                if (_didIteratorError) {
+	                    throw _iteratorError;
 	                }
 	            }
 	        }
@@ -213,13 +182,13 @@
 	    } else if (node.type === 'Product') {
 	        var width = 0;
 	        var children = [];
-	        var _iteratorNormalCompletion3 = true;
-	        var _didIteratorError3 = false;
-	        var _iteratorError3 = undefined;
+	        var _iteratorNormalCompletion2 = true;
+	        var _didIteratorError2 = false;
+	        var _iteratorError2 = undefined;
 
 	        try {
-	            for (var _iterator3 = node[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	                var child = _step3.value;
+	            for (var _iterator2 = node[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                var child = _step2.value;
 
 	                if (child.type === 'Operator') {
 	                    continue;
@@ -240,16 +209,16 @@
 	                x += paren;
 	            }
 	        } catch (err) {
-	            _didIteratorError3 = true;
-	            _iteratorError3 = err;
+	            _didIteratorError2 = true;
+	            _iteratorError2 = err;
 	        } finally {
 	            try {
-	                if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-	                    _iterator3['return']();
+	                if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+	                    _iterator2['return']();
 	                }
 	            } finally {
-	                if (_didIteratorError3) {
-	                    throw _iteratorError3;
+	                if (_didIteratorError2) {
+	                    throw _iteratorError2;
 	                }
 	            }
 	        }
@@ -278,36 +247,44 @@
 	    }
 	}
 
-	function render(layout) {
+	function render(layout, outline) {
 	    if (layout.text) {
 	        var text = String(layout.text).replace(/\-/g, '−');
 	        ctx.fillText(text, 0, 0);
+	        if (outline) {
+	            ctx.strokeStyle = 'blue';
+	            ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
+	        }
 	    } else if (layout.children) {
-	        var _iteratorNormalCompletion4 = true;
-	        var _didIteratorError4 = false;
-	        var _iteratorError4 = undefined;
+	        if (outline) {
+	            ctx.strokeStyle = 'red';
+	            ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
+	        }
+	        var _iteratorNormalCompletion3 = true;
+	        var _didIteratorError3 = false;
+	        var _iteratorError3 = undefined;
 
 	        try {
-	            for (var _iterator4 = layout.children[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-	                var child = _step4.value;
+	            for (var _iterator3 = layout.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	                var child = _step3.value;
 
 	                ctx.save();
 	                console.log(child.x);
 	                ctx.translate(child.x, child.y);
-	                render(child);
+	                render(child, outline);
 	                ctx.restore();
 	            }
 	        } catch (err) {
-	            _didIteratorError4 = true;
-	            _iteratorError4 = err;
+	            _didIteratorError3 = true;
+	            _iteratorError3 = err;
 	        } finally {
 	            try {
-	                if (!_iteratorNormalCompletion4 && _iterator4['return']) {
-	                    _iterator4['return']();
+	                if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+	                    _iterator3['return']();
 	                }
 	            } finally {
-	                if (_didIteratorError4) {
-	                    throw _iteratorError4;
+	                if (_didIteratorError3) {
+	                    throw _iteratorError3;
 	                }
 	            }
 	        }
@@ -317,16 +294,24 @@
 	}
 
 	ctx.fillStyle = 'black';
-	ctx.translate(100, 100);
+	ctx.strokeStyle = 'red';
+
+	var expr1 = new Expression(new Literal(1));
+	expr1.add(new Literal(3));
 
 	var expr2 = new Expression(new Literal(5));
-	expr2.add(new Literal(10));
 	expr2.subtract(new Literal(-2));
 
-	var prod = new Equation(expr1, expr2);
+	var eqn1 = new Equation(expr1, expr2);
+	var l1 = layout(eqn1);
+	eqn1.add(new Literal(1));
+	var l2 = layout(eqn1);
 
-	var l1 = layout(prod);
+	ctx.translate(100, 100);
 	render(l1);
+
+	ctx.translate(0, 100);
+	render(l2);
 
 /***/ },
 /* 1 */
