@@ -81,17 +81,19 @@ ctx.font = `100 ${fontSize}px sans-serif`;
 let space = ctx.measureText(" ").width;
 let paren = ctx.measureText("(").width;
 
+// TODO: layout objects should know about their parent as well
+
 function layout(node) {
-    let x = 0, y = 0, height = fontSize;
+    let x = 0, y = 0, height = fontSize, id = node.id;
     
     if (node.type === 'Literal') {
         let text = String(node.value).replace(/\-/g, "\u2212");
         let width = ctx.measureText(text).width;
-        return {x, y, width, height, text};
+        return {id, x, y, width, height, text};
     } else if (node.type === 'Operator') {
         let text = String(node.operator).replace(/\-/g, "\u2212");
         let width = ctx.measureText(text).width;
-        return {x, y, width, height, text};
+        return {id, x, y, width, height, text};
     } else if (node.type === 'Expression') {
         let width = 0;
         let children = [];
@@ -111,7 +113,7 @@ function layout(node) {
             }
             children.push(child_layout);
         }
-        return {x:0, y:0, width, height, children};
+        return {id, x:0, y:0, width, height, children};
     } else if (node.type === 'Product') {
         let width = 0;
         let children = [];
@@ -134,11 +136,10 @@ function layout(node) {
             width += paren;
             x += paren;
         }
-        return {x:0, y:0, width, height, children};
+        return {id, x:0, y:0, width, height, children};
     } else if (node.type === 'Equation') {
         let width = 0;
         let left = layout(node.left);
-        console.log(`left.width = ${left.width}`);
         width += left.width + space;
         x += left.width + space;
         
@@ -154,17 +155,19 @@ function layout(node) {
         right.x = x;
 
         let children = [left, equals, right];
-        return {x:0, y:0, width, height, children};
+        return {id, x:0, y:0, width, height, children};
     }
 }
 
-function render(layout, outline) {
+function render(layout, ids, outline) {
     if (layout.text) {
         let text = String(layout.text).replace(/\-/g, "\u2212");
-        ctx.fillText(text, 0, 0);
-        if (outline) {
-            ctx.strokeStyle = 'blue';
-            ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
+        if (layout.id in ids) {
+            ctx.fillText(text, 0, 0);
+            if (outline) {
+                ctx.strokeStyle = 'blue';
+                ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
+            }
         }
     } else if (layout.children) {
         if (outline) {
@@ -173,15 +176,31 @@ function render(layout, outline) {
         }
         for (let child of layout.children) {
             ctx.save();
-            console.log(child.x);
             ctx.translate(child.x, child.y);
-            render(child, outline);
+            render(child, ids, outline);
             ctx.restore();
         }
     } else {
         throw "layout doesn't have text or children";
     }
 }
+
+function getAllIds(layout, ids = []) {
+    if (layout.id !== undefined) {
+        ids.push(layout.id);
+    }
+    if (layout.children) {
+        for (let child of layout.children) {
+            getAllIds(child, ids);
+        }
+    }
+    return ids;
+}
+
+// hypothesis: if everything had an absolute position, it would be easier to
+// tween and do compound movements like fade and move
+// 
+// question: how do we handle growing the selection in this case?
 
 ctx.fillStyle = 'black';
 ctx.strokeStyle = 'red';
@@ -197,9 +216,12 @@ let l1 = layout(eqn1);
 eqn1.add(new Literal(1));
 let l2 = layout(eqn1);
 
+var ids = getAllIds(l1);
+console.log(ids);
+
 ctx.translate(100,100);
-render(l1);
+render(l1, ids);
 
 ctx.translate(0,100);
-render(l2);
+render(l2, ids);
 

@@ -124,19 +124,22 @@
 	var space = ctx.measureText(" ").width;
 	var paren = ctx.measureText("(").width;
 
+	// TODO: layout objects should know about their parent as well
+
 	function layout(node) {
 	    var x = 0,
 	        y = 0,
-	        height = fontSize;
+	        height = fontSize,
+	        id = node.id;
 
 	    if (node.type === 'Literal') {
 	        var text = String(node.value).replace(/\-/g, '−');
 	        var width = ctx.measureText(text).width;
-	        return { x: x, y: y, width: width, height: height, text: text };
+	        return { id: id, x: x, y: y, width: width, height: height, text: text };
 	    } else if (node.type === 'Operator') {
 	        var text = String(node.operator).replace(/\-/g, '−');
 	        var width = ctx.measureText(text).width;
-	        return { x: x, y: y, width: width, height: height, text: text };
+	        return { id: id, x: x, y: y, width: width, height: height, text: text };
 	    } else if (node.type === 'Expression') {
 	        var width = 0;
 	        var children = [];
@@ -178,7 +181,7 @@
 	            }
 	        }
 
-	        return { x: 0, y: 0, width: width, height: height, children: children };
+	        return { id: id, x: 0, y: 0, width: width, height: height, children: children };
 	    } else if (node.type === 'Product') {
 	        var width = 0;
 	        var children = [];
@@ -223,11 +226,10 @@
 	            }
 	        }
 
-	        return { x: 0, y: 0, width: width, height: height, children: children };
+	        return { id: id, x: 0, y: 0, width: width, height: height, children: children };
 	    } else if (node.type === 'Equation') {
 	        var width = 0;
 	        var left = layout(node.left);
-	        console.log('left.width = ' + left.width);
 	        width += left.width + space;
 	        x += left.width + space;
 
@@ -243,17 +245,19 @@
 	        right.x = x;
 
 	        var children = [left, equals, right];
-	        return { x: 0, y: 0, width: width, height: height, children: children };
+	        return { id: id, x: 0, y: 0, width: width, height: height, children: children };
 	    }
 	}
 
-	function render(layout, outline) {
+	function render(layout, ids, outline) {
 	    if (layout.text) {
 	        var text = String(layout.text).replace(/\-/g, '−');
-	        ctx.fillText(text, 0, 0);
-	        if (outline) {
-	            ctx.strokeStyle = 'blue';
-	            ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
+	        if (layout.id in ids) {
+	            ctx.fillText(text, 0, 0);
+	            if (outline) {
+	                ctx.strokeStyle = 'blue';
+	                ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
+	            }
 	        }
 	    } else if (layout.children) {
 	        if (outline) {
@@ -269,9 +273,8 @@
 	                var child = _step3.value;
 
 	                ctx.save();
-	                console.log(child.x);
 	                ctx.translate(child.x, child.y);
-	                render(child, outline);
+	                render(child, ids, outline);
 	                ctx.restore();
 	            }
 	        } catch (err) {
@@ -293,6 +296,46 @@
 	    }
 	}
 
+	function getAllIds(layout) {
+	    var ids = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+	    if (layout.id !== undefined) {
+	        ids.push(layout.id);
+	    }
+	    if (layout.children) {
+	        var _iteratorNormalCompletion4 = true;
+	        var _didIteratorError4 = false;
+	        var _iteratorError4 = undefined;
+
+	        try {
+	            for (var _iterator4 = layout.children[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	                var child = _step4.value;
+
+	                getAllIds(child, ids);
+	            }
+	        } catch (err) {
+	            _didIteratorError4 = true;
+	            _iteratorError4 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+	                    _iterator4['return']();
+	                }
+	            } finally {
+	                if (_didIteratorError4) {
+	                    throw _iteratorError4;
+	                }
+	            }
+	        }
+	    }
+	    return ids;
+	}
+
+	// hypothesis: if everything had an absolute position, it would be easier to
+	// tween and do compound movements like fade and move
+	//
+	// question: how do we handle growing the selection in this case?
+
 	ctx.fillStyle = 'black';
 	ctx.strokeStyle = 'red';
 
@@ -307,11 +350,14 @@
 	eqn1.add(new Literal(1));
 	var l2 = layout(eqn1);
 
+	var ids = getAllIds(l1);
+	console.log(ids);
+
 	ctx.translate(100, 100);
-	render(l1);
+	render(l1, ids);
 
 	ctx.translate(0, 100);
-	render(l2);
+	render(l2, ids);
 
 /***/ },
 /* 1 */
@@ -353,11 +399,13 @@
 	    } // TODO when/how to keep things as fractions
 	};
 
+	var _id = 0;
+
 	var Operator = (function () {
 	    function Operator(operator) {
 	        _classCallCheck(this, Operator);
 
-	        Object.assign(this, { type: 'Operator', operator: operator });
+	        Object.assign(this, { type: 'Operator', id: _id++, operator: operator });
 	    }
 
 	    _createClass(Operator, [{
@@ -396,7 +444,7 @@
 	    function Literal(value) {
 	        _classCallCheck(this, Literal);
 
-	        Object.assign(this, { type: 'Literal', value: value });
+	        Object.assign(this, { type: 'Literal', id: _id++, value: value });
 	    }
 
 	    _createClass(Literal, [{
@@ -489,6 +537,7 @@
 
 	        _get(Object.getPrototypeOf(Product.prototype), 'constructor', this).call(this);
 	        this.type = 'Product';
+	        this.id = _id++;
 	        this.append.apply(this, arguments);
 	    }
 
@@ -533,7 +582,7 @@
 	    function Fraction(numerator, denominator) {
 	        _classCallCheck(this, Fraction);
 
-	        Object.assign(this, { type: 'Fraction', numerator: numerator, denominator: denominator });
+	        Object.assign(this, { type: 'Fraction', id: _id++, numerator: numerator, denominator: denominator });
 	    }
 
 	    _createClass(Fraction, [{
@@ -579,6 +628,7 @@
 
 	        _get(Object.getPrototypeOf(Expression.prototype), 'constructor', this).call(this);
 	        this.type = 'Expression';
+	        this.id = _id++;
 	        this.append.apply(this, arguments);
 	    }
 
@@ -629,10 +679,7 @@
 	    function Equation(left, right) {
 	        _classCallCheck(this, Equation);
 
-	        console.log("new equation");
-	        console.log(left);
-	        console.log(right);
-	        Object.assign(this, { type: 'Equation', left: left, right: right });
+	        Object.assign(this, { type: 'Equation', id: _id++, left: left, right: right });
 	    }
 
 	    _createClass(Equation, [{

@@ -10,9 +10,11 @@ let operations = {
     '/'(a, b) { return a / b; }     // TODO when/how to keep things as fractions
 };
 
+let _id = 0;
+
 class Operator {
     constructor(operator) {
-        Object.assign(this, { type: 'Operator', operator });
+        Object.assign(this, { type: 'Operator', id: _id++, operator });
     }
     
     toString() {
@@ -42,7 +44,7 @@ class Operator {
 
 class Literal {
     constructor(value) {
-        Object.assign(this, { type: 'Literal', value });
+        Object.assign(this, { type: 'Literal', id: _id++, value });
     }
     
     add(node) {
@@ -107,6 +109,7 @@ class Product extends LinkedList {
     constructor(...nodes) {
         super();
         this.type = 'Product';
+        this.id = _id++;
         this.append(...nodes);
     }
     
@@ -137,7 +140,7 @@ class Product extends LinkedList {
 
 class Fraction {
     constructor(numerator, denominator) {
-        Object.assign(this, { type: 'Fraction', numerator, denominator });
+        Object.assign(this, { type: 'Fraction', id: _id++, numerator, denominator });
     }
 
     add(node) {
@@ -169,6 +172,7 @@ class Expression extends LinkedList {
     constructor(...nodes) {
         super();
         this.type = 'Expression';
+        this.id = _id++;
         this.append(...nodes);
     }
 
@@ -204,10 +208,7 @@ class Expression extends LinkedList {
 // TODO support inequalities and not-equal
 class Equation {
     constructor(left, right) {
-        console.log("new equation");
-        console.log(left);
-        console.log(right);
-        Object.assign(this, { type: 'Equation', left, right });
+        Object.assign(this, { type: 'Equation', id: _id++, left, right });
     }
     
     add(node) {
