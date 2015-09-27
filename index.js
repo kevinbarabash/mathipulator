@@ -83,22 +83,23 @@ let paren = ctx.measureText("(").width;
 
 // TODO: layout objects should know about their parent as well
 
-function layout(node) {
-    let x = 0, y = 0, height = fontSize, id = node.id;
+function layout(node, x, y) {
+    console.log(`x = ${x}, y = ${y}`);
+    let height = fontSize, owner = node.id;
     
     if (node.type === 'Literal') {
         let text = String(node.value).replace(/\-/g, "\u2212");
         let width = ctx.measureText(text).width;
-        return {id, x, y, width, height, text};
+        return {owner, x, y, width, height, text};
     } else if (node.type === 'Operator') {
         let text = String(node.operator).replace(/\-/g, "\u2212");
         let width = ctx.measureText(text).width;
-        return {id, x, y, width, height, text};
+        return {owner, x, y, width, height, text};
     } else if (node.type === 'Expression') {
         let width = 0;
         let children = [];
         for (let child of node) {
-            let child_layout = layout(child);
+            let child_layout = layout(child, x, y);
             if (child.type === 'Operator') {
                 x += space;
                 width += space;
@@ -113,7 +114,7 @@ function layout(node) {
             }
             children.push(child_layout);
         }
-        return {id, x:0, y:0, width, height, children};
+        return {owner, x:0, y:0, width, height, children};
     } else if (node.type === 'Product') {
         let width = 0;
         let children = [];
@@ -125,7 +126,7 @@ function layout(node) {
             width += paren;
             x += paren;
             
-            let child_layout = layout(child);
+            let child_layout = layout(child, x, y);
             child_layout.x = x;
             child_layout.y = y;
             width += child_layout.width;
@@ -136,34 +137,34 @@ function layout(node) {
             width += paren;
             x += paren;
         }
-        return {id, x:0, y:0, width, height, children};
+        return {owner, x:0, y:0, width, height, children};
     } else if (node.type === 'Equation') {
         let width = 0;
-        let left = layout(node.left);
+        let left = layout(node.left, x, y);
         width += left.width + space;
         x += left.width + space;
         
         let equalsWidth = ctx.measureText("=").width;
-        let equals = {x, y, width:equalsWidth, height, text: '='};
+        let equals = {owner, x, y, width:equalsWidth, height, text: '='};
         
         width += equalsWidth + space;
         x += equalsWidth + space;
         
-        let right = layout(node.right);
+        let right = layout(node.right, x, y);
         
         width += right.width;
         right.x = x;
 
         let children = [left, equals, right];
-        return {id, x:0, y:0, width, height, children};
+        return {owner, x:0, y:0, width, height, children};
     }
 }
 
-function render(layout, ids, outline) {
+function render(layout, owners, outline) {
     if (layout.text) {
         let text = String(layout.text).replace(/\-/g, "\u2212");
-        if (layout.id in ids) {
-            ctx.fillText(text, 0, 0);
+        if (layout.owner in owners) {
+            ctx.fillText(text, layout.x, layout.y);
             if (outline) {
                 ctx.strokeStyle = 'blue';
                 ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
@@ -175,26 +176,23 @@ function render(layout, ids, outline) {
             ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
         }
         for (let child of layout.children) {
-            ctx.save();
-            ctx.translate(child.x, child.y);
             render(child, ids, outline);
-            ctx.restore();
         }
     } else {
         throw "layout doesn't have text or children";
     }
 }
 
-function getAllIds(layout, ids = []) {
-    if (layout.id !== undefined) {
-        ids.push(layout.id);
+function getAllOwners(layout, owners = []) {
+    if (layout.owner !== undefined) {
+        owners.push(layout.owner);
     }
     if (layout.children) {
         for (let child of layout.children) {
-            getAllIds(child, ids);
+            getAllOwners(child, owners);
         }
     }
-    return ids;
+    return owners;
 }
 
 // hypothesis: if everything had an absolute position, it would be easier to
@@ -212,11 +210,11 @@ var expr2 = new Expression(new Literal(5));
 expr2.subtract(new Literal(-2));
 
 var eqn1 = new Equation(expr1, expr2);
-let l1 = layout(eqn1);
+let l1 = layout(eqn1, 0, 0);
 eqn1.add(new Literal(1));
-let l2 = layout(eqn1);
+let l2 = layout(eqn1, 0, 0);
 
-var ids = getAllIds(l1);
+var ids = getAllOwners(l1);
 console.log(ids);
 
 ctx.translate(100,100);

@@ -126,20 +126,19 @@
 
 	// TODO: layout objects should know about their parent as well
 
-	function layout(node) {
-	    var x = 0,
-	        y = 0,
-	        height = fontSize,
-	        id = node.id;
+	function layout(node, x, y) {
+	    console.log('x = ' + x + ', y = ' + y);
+	    var height = fontSize,
+	        owner = node.id;
 
 	    if (node.type === 'Literal') {
 	        var text = String(node.value).replace(/\-/g, '−');
 	        var width = ctx.measureText(text).width;
-	        return { id: id, x: x, y: y, width: width, height: height, text: text };
+	        return { owner: owner, x: x, y: y, width: width, height: height, text: text };
 	    } else if (node.type === 'Operator') {
 	        var text = String(node.operator).replace(/\-/g, '−');
 	        var width = ctx.measureText(text).width;
-	        return { id: id, x: x, y: y, width: width, height: height, text: text };
+	        return { owner: owner, x: x, y: y, width: width, height: height, text: text };
 	    } else if (node.type === 'Expression') {
 	        var width = 0;
 	        var children = [];
@@ -151,7 +150,7 @@
 	            for (var _iterator = node[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	                var child = _step.value;
 
-	                var child_layout = layout(child);
+	                var child_layout = layout(child, x, y);
 	                if (child.type === 'Operator') {
 	                    x += space;
 	                    width += space;
@@ -181,7 +180,7 @@
 	            }
 	        }
 
-	        return { id: id, x: 0, y: 0, width: width, height: height, children: children };
+	        return { owner: owner, x: 0, y: 0, width: width, height: height, children: children };
 	    } else if (node.type === 'Product') {
 	        var width = 0;
 	        var children = [];
@@ -200,7 +199,7 @@
 	                width += paren;
 	                x += paren;
 
-	                var child_layout = layout(child);
+	                var child_layout = layout(child, x, y);
 	                child_layout.x = x;
 	                child_layout.y = y;
 	                width += child_layout.width;
@@ -226,34 +225,34 @@
 	            }
 	        }
 
-	        return { id: id, x: 0, y: 0, width: width, height: height, children: children };
+	        return { owner: owner, x: 0, y: 0, width: width, height: height, children: children };
 	    } else if (node.type === 'Equation') {
 	        var width = 0;
-	        var left = layout(node.left);
+	        var left = layout(node.left, x, y);
 	        width += left.width + space;
 	        x += left.width + space;
 
 	        var equalsWidth = ctx.measureText("=").width;
-	        var equals = { x: x, y: y, width: equalsWidth, height: height, text: '=' };
+	        var equals = { owner: owner, x: x, y: y, width: equalsWidth, height: height, text: '=' };
 
 	        width += equalsWidth + space;
 	        x += equalsWidth + space;
 
-	        var right = layout(node.right);
+	        var right = layout(node.right, x, y);
 
 	        width += right.width;
 	        right.x = x;
 
 	        var children = [left, equals, right];
-	        return { id: id, x: 0, y: 0, width: width, height: height, children: children };
+	        return { owner: owner, x: 0, y: 0, width: width, height: height, children: children };
 	    }
 	}
 
-	function render(layout, ids, outline) {
+	function render(layout, owners, outline) {
 	    if (layout.text) {
 	        var text = String(layout.text).replace(/\-/g, '−');
-	        if (layout.id in ids) {
-	            ctx.fillText(text, 0, 0);
+	        if (layout.owner in owners) {
+	            ctx.fillText(text, layout.x, layout.y);
 	            if (outline) {
 	                ctx.strokeStyle = 'blue';
 	                ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
@@ -272,10 +271,7 @@
 	            for (var _iterator3 = layout.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
 	                var child = _step3.value;
 
-	                ctx.save();
-	                ctx.translate(child.x, child.y);
 	                render(child, ids, outline);
-	                ctx.restore();
 	            }
 	        } catch (err) {
 	            _didIteratorError3 = true;
@@ -296,11 +292,11 @@
 	    }
 	}
 
-	function getAllIds(layout) {
-	    var ids = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+	function getAllOwners(layout) {
+	    var owners = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
-	    if (layout.id !== undefined) {
-	        ids.push(layout.id);
+	    if (layout.owner !== undefined) {
+	        owners.push(layout.owner);
 	    }
 	    if (layout.children) {
 	        var _iteratorNormalCompletion4 = true;
@@ -311,7 +307,7 @@
 	            for (var _iterator4 = layout.children[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
 	                var child = _step4.value;
 
-	                getAllIds(child, ids);
+	                getAllOwners(child, owners);
 	            }
 	        } catch (err) {
 	            _didIteratorError4 = true;
@@ -328,7 +324,7 @@
 	            }
 	        }
 	    }
-	    return ids;
+	    return owners;
 	}
 
 	// hypothesis: if everything had an absolute position, it would be easier to
@@ -346,11 +342,11 @@
 	expr2.subtract(new Literal(-2));
 
 	var eqn1 = new Equation(expr1, expr2);
-	var l1 = layout(eqn1);
+	var l1 = layout(eqn1, 0, 0);
 	eqn1.add(new Literal(1));
-	var l2 = layout(eqn1);
+	var l2 = layout(eqn1, 0, 0);
 
-	var ids = getAllIds(l1);
+	var ids = getAllOwners(l1);
 	console.log(ids);
 
 	ctx.translate(100, 100);
