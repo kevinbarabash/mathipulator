@@ -212,8 +212,8 @@ class Equation {
     }
     
     add(node) {
-        this.left = this.left.add(node);
-        this.right = this.right.add(node);
+        this.left = this.left.add(node.clone());
+        this.right = this.right.add(node.clone());
     }
     
     subtract(node) {

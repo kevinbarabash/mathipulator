@@ -114,16 +114,17 @@ function layout(node, x, y) {
     }
 }
 
-function render(layout, owners, outline) {
+function render(layout, owners, t) {
     Object.keys(layout).forEach(owner => {
         let leaf = layout[owner];
         let text = String(leaf.text).replace(/\-/g, "\u2212");
         if (owners.indexOf(leaf.owner.toString()) !== -1) {
+            ctx.fillStyle = 'rgb(0,0,0)';
             ctx.fillText(text, leaf.x, leaf.y);
-            if (outline) {
-                ctx.strokeStyle = 'blue';
-                ctx.strokeRect(0, 0 - leaf.height, leaf.width, leaf.height);
-            }
+        } else {
+            var gray = (1 - t) * 255 | 0;
+            ctx.fillStyle = `rgb(${gray},${gray},255)`;
+            ctx.fillText(text, leaf.x, leaf.y);
         }
     });
 }
@@ -188,11 +189,13 @@ var owners = getOwners(l1);
 console.log(owners);
 
 eqn1.add(new Literal(1));
-let l2 = flattenLayout(layout(eqn1, 0, 0));
+let l2 = layout(eqn1, 0, 0);
+console.log(l2);
+l2 = flattenLayout(l2);
 
 var t = 0;
 
-function draw() {
+function draw1() {
     ctx.clearRect(0, 0, 1200, 700);
     ctx.save();
 
@@ -203,12 +206,29 @@ function draw() {
     
     if (t < 1) {
         t += 0.03;
-        requestAnimationFrame(draw);
+        requestAnimationFrame(draw1);
     } else {
-        t = 1.0;
+        t = 0;
+        requestAnimationFrame(draw2);
     }
 }
 
-draw();
+function draw2() {
+    ctx.clearRect(0, 0, 1200, 700);
+    ctx.save();
+
+    ctx.translate(100, 100);
+    render(l2, owners, t);
+    ctx.restore();
+
+    if (t < 1) {
+        t += 0.03;
+        requestAnimationFrame(draw2);
+    } else {
+        
+    }
+}
+
+draw1();
 
 
