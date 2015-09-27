@@ -60,51 +60,6 @@
 	var distributeBackwards = Transforms.distributeBackwards;
 	var distributeForwards = Transforms.distributeForwards;
 
-	//var four = new Literal(4);
-	//expr = expr.multiply(four);
-	//console.log(expr.toString());
-	//expr = distributeBackwards(four);
-	//console.log(expr.toString());
-	//console.log("");
-	//
-	//expr = expr.add(new Literal(25));
-	//console.log(expr.toString());
-	//
-	//var product = new Product(new Literal(4));
-	//product.multiply(new Literal(5));
-	//product.multiply(new Literal(-6));
-	//console.log(product.toString());
-	//console.log("");
-	//
-	//expr = new Expression(new Literal(1));
-	//expr.subtract(new Literal(2));
-	//expr.add(new Literal(3));
-	//
-	//four = new Literal(4);
-	//expr = four.multiply(expr);
-	//console.log(expr.toString());
-	//
-	//expr = distributeForwards(four);
-	//console.log(expr.toString());
-	//console.log("");
-	//
-	//var frac = new Fraction(new Literal(1), new Identifier('a'));
-	//console.log(frac.toString());
-	//console.log("");
-	//
-	//var prod1 = new Product(new Literal(1), new Operator('*'), new Literal(2));
-	//console.log(prod1.toString());
-	//var prod2 = prod1.clone();
-	//console.log(prod2.toString());
-	//prod1.first.value = 4;
-	//console.log(prod1.toString());
-	//console.log(prod2.toString());
-	//console.log("");
-	//
-	//console.log("before new equation");
-	//var eqn = new Equation(prod1, prod2);
-	//console.log(eqn.toString());
-
 	var canvas = document.createElement('canvas');
 	var ctx = canvas.getContext('2d');
 
@@ -127,7 +82,6 @@
 	// TODO: layout objects should know about their parent as well
 
 	function layout(node, x, y) {
-	    console.log('x = ' + x + ', y = ' + y);
 	    var height = fontSize,
 	        owner = node.id;
 
@@ -180,7 +134,7 @@
 	            }
 	        }
 
-	        return { owner: owner, x: 0, y: 0, width: width, height: height, children: children };
+	        return { x: 0, y: 0, width: width, height: height, children: children };
 	    } else if (node.type === 'Product') {
 	        var width = 0;
 	        var children = [];
@@ -225,7 +179,7 @@
 	            }
 	        }
 
-	        return { owner: owner, x: 0, y: 0, width: width, height: height, children: children };
+	        return { x: 0, y: 0, width: width, height: height, children: children };
 	    } else if (node.type === 'Equation') {
 	        var width = 0;
 	        var left = layout(node.left, x, y);
@@ -244,25 +198,32 @@
 	        right.x = x;
 
 	        var children = [left, equals, right];
-	        return { owner: owner, x: 0, y: 0, width: width, height: height, children: children };
+	        return { x: 0, y: 0, width: width, height: height, children: children };
 	    }
 	}
 
 	function render(layout, owners, outline) {
-	    if (layout.text) {
-	        var text = String(layout.text).replace(/\-/g, '−');
-	        if (layout.owner in owners) {
-	            ctx.fillText(text, layout.x, layout.y);
+	    Object.keys(layout).forEach(function (owner) {
+	        var leaf = layout[owner];
+	        var text = String(leaf.text).replace(/\-/g, '−');
+	        if (owners.indexOf(leaf.owner.toString()) !== -1) {
+	            ctx.fillText(text, leaf.x, leaf.y);
 	            if (outline) {
 	                ctx.strokeStyle = 'blue';
-	                ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
+	                ctx.strokeRect(0, 0 - leaf.height, leaf.width, leaf.height);
 	            }
 	        }
-	    } else if (layout.children) {
-	        if (outline) {
-	            ctx.strokeStyle = 'red';
-	            ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
-	        }
+	    });
+	}
+
+	function getOwners(layout) {
+	    return Object.keys(layout);
+	}
+
+	function flattenLayout(layout) {
+	    var leaves = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	    if (layout.children) {
 	        var _iteratorNormalCompletion3 = true;
 	        var _didIteratorError3 = false;
 	        var _iteratorError3 = undefined;
@@ -271,7 +232,7 @@
 	            for (var _iterator3 = layout.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
 	                var child = _step3.value;
 
-	                render(child, ids, outline);
+	                flattenLayout(child, leaves);
 	            }
 	        } catch (err) {
 	            _didIteratorError3 = true;
@@ -288,49 +249,39 @@
 	            }
 	        }
 	    } else {
-	        throw "layout doesn't have text or children";
+	        leaves[layout.owner] = layout;
 	    }
+	    return leaves;
 	}
 
-	function getAllOwners(layout) {
-	    var owners = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-
-	    if (layout.owner !== undefined) {
-	        owners.push(layout.owner);
-	    }
-	    if (layout.children) {
-	        var _iteratorNormalCompletion4 = true;
-	        var _didIteratorError4 = false;
-	        var _iteratorError4 = undefined;
-
-	        try {
-	            for (var _iterator4 = layout.children[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-	                var child = _step4.value;
-
-	                getAllOwners(child, owners);
-	            }
-	        } catch (err) {
-	            _didIteratorError4 = true;
-	            _iteratorError4 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion4 && _iterator4['return']) {
-	                    _iterator4['return']();
-	                }
-	            } finally {
-	                if (_didIteratorError4) {
-	                    throw _iteratorError4;
-	                }
-	            }
-	        }
-	    }
-	    return owners;
+	function lerp(val1, val2, t) {
+	    return (1 - t) * val1 + t * val2;
 	}
 
-	// hypothesis: if everything had an absolute position, it would be easier to
-	// tween and do compound movements like fade and move
-	//
-	// question: how do we handle growing the selection in this case?
+	/**
+	 * 
+	 * @param {Object} layout1
+	 * @param {Object} layout2
+	 * @param {Array} owners
+	 * @param {Number} t A number between 0 and 1
+	 */
+	function lerpLayout(layout1, layout2, owners, t) {
+	    var layout = {};
+	    owners.forEach(function (owner) {
+	        var l1 = layout1[owner];
+	        var l2 = layout2[owner];
+
+	        layout[owner] = {
+	            owner: owner,
+	            x: lerp(l1.x, l2.x, t),
+	            y: 0,
+	            width: l1.owner,
+	            height: l1.owner,
+	            text: l1.text
+	        };
+	    });
+	    return layout;
+	}
 
 	ctx.fillStyle = 'black';
 	ctx.strokeStyle = 'red';
@@ -342,18 +293,34 @@
 	expr2.subtract(new Literal(-2));
 
 	var eqn1 = new Equation(expr1, expr2);
-	var l1 = layout(eqn1, 0, 0);
+	var l1 = flattenLayout(layout(eqn1, 0, 0));
+
+	var owners = getOwners(l1);
+	console.log(owners);
+
 	eqn1.add(new Literal(1));
-	var l2 = layout(eqn1, 0, 0);
+	var l2 = flattenLayout(layout(eqn1, 0, 0));
 
-	var ids = getAllOwners(l1);
-	console.log(ids);
+	var t = 0;
 
-	ctx.translate(100, 100);
-	render(l1, ids);
+	function draw() {
+	    ctx.clearRect(0, 0, 1200, 700);
+	    ctx.save();
 
-	ctx.translate(0, 100);
-	render(l2, ids);
+	    var l3 = lerpLayout(l1, l2, owners, t);
+	    ctx.translate(100, 100);
+	    render(l3, owners);
+	    ctx.restore();
+
+	    if (t < 1) {
+	        t += 0.03;
+	        requestAnimationFrame(draw);
+	    } else {
+	        t = 1.0;
+	    }
+	}
+
+	draw();
 
 /***/ },
 /* 1 */

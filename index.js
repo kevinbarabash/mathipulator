@@ -17,51 +17,6 @@ var distributeForwards = Transforms.distributeForwards;
 
 
 
-//var four = new Literal(4);
-//expr = expr.multiply(four);
-//console.log(expr.toString());
-//expr = distributeBackwards(four);
-//console.log(expr.toString());
-//console.log("");
-//
-//expr = expr.add(new Literal(25));
-//console.log(expr.toString());
-//
-//var product = new Product(new Literal(4));
-//product.multiply(new Literal(5));
-//product.multiply(new Literal(-6));
-//console.log(product.toString());
-//console.log("");
-//
-//expr = new Expression(new Literal(1));
-//expr.subtract(new Literal(2));
-//expr.add(new Literal(3));
-//
-//four = new Literal(4);
-//expr = four.multiply(expr);
-//console.log(expr.toString());
-//
-//expr = distributeForwards(four);
-//console.log(expr.toString());
-//console.log("");
-//
-//var frac = new Fraction(new Literal(1), new Identifier('a'));
-//console.log(frac.toString());
-//console.log("");
-//
-//var prod1 = new Product(new Literal(1), new Operator('*'), new Literal(2));
-//console.log(prod1.toString());
-//var prod2 = prod1.clone();
-//console.log(prod2.toString());
-//prod1.first.value = 4;
-//console.log(prod1.toString());
-//console.log(prod2.toString());
-//console.log("");
-//
-//console.log("before new equation");
-//var eqn = new Equation(prod1, prod2);
-//console.log(eqn.toString());
-
 let canvas = document.createElement('canvas');
 let ctx = canvas.getContext('2d');
 
@@ -84,7 +39,6 @@ let paren = ctx.measureText("(").width;
 // TODO: layout objects should know about their parent as well
 
 function layout(node, x, y) {
-    console.log(`x = ${x}, y = ${y}`);
     let height = fontSize, owner = node.id;
     
     if (node.type === 'Literal') {
@@ -114,7 +68,7 @@ function layout(node, x, y) {
             }
             children.push(child_layout);
         }
-        return {owner, x:0, y:0, width, height, children};
+        return {x:0, y:0, width, height, children};
     } else if (node.type === 'Product') {
         let width = 0;
         let children = [];
@@ -137,7 +91,7 @@ function layout(node, x, y) {
             width += paren;
             x += paren;
         }
-        return {owner, x:0, y:0, width, height, children};
+        return {x:0, y:0, width, height, children};
     } else if (node.type === 'Equation') {
         let width = 0;
         let left = layout(node.left, x, y);
@@ -156,49 +110,67 @@ function layout(node, x, y) {
         right.x = x;
 
         let children = [left, equals, right];
-        return {owner, x:0, y:0, width, height, children};
+        return {x:0, y:0, width, height, children};
     }
 }
 
 function render(layout, owners, outline) {
-    if (layout.text) {
-        let text = String(layout.text).replace(/\-/g, "\u2212");
-        if (layout.owner in owners) {
-            ctx.fillText(text, layout.x, layout.y);
+    Object.keys(layout).forEach(owner => {
+        let leaf = layout[owner];
+        let text = String(leaf.text).replace(/\-/g, "\u2212");
+        if (owners.indexOf(leaf.owner.toString()) !== -1) {
+            ctx.fillText(text, leaf.x, leaf.y);
             if (outline) {
                 ctx.strokeStyle = 'blue';
-                ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
+                ctx.strokeRect(0, 0 - leaf.height, leaf.width, leaf.height);
             }
         }
-    } else if (layout.children) {
-        if (outline) {
-            ctx.strokeStyle = 'red';
-            ctx.strokeRect(0, 0 - layout.height, layout.width, layout.height);
-        }
-        for (let child of layout.children) {
-            render(child, ids, outline);
-        }
-    } else {
-        throw "layout doesn't have text or children";
-    }
+    });
 }
 
-function getAllOwners(layout, owners = []) {
-    if (layout.owner !== undefined) {
-        owners.push(layout.owner);
-    }
+function getOwners(layout) {
+    return Object.keys(layout);
+}
+
+function flattenLayout(layout, leaves = {}) {
     if (layout.children) {
         for (let child of layout.children) {
-            getAllOwners(child, owners);
+            flattenLayout(child, leaves);
         }
+    } else {
+        leaves[layout.owner] = layout;
     }
-    return owners;
+    return leaves;
 }
 
-// hypothesis: if everything had an absolute position, it would be easier to
-// tween and do compound movements like fade and move
-// 
-// question: how do we handle growing the selection in this case?
+function lerp(val1, val2, t) {
+    return (1 - t) * val1 + t * val2;
+}
+
+/**
+ * 
+ * @param {Object} layout1
+ * @param {Object} layout2
+ * @param {Array} owners
+ * @param {Number} t A number between 0 and 1
+ */
+function lerpLayout(layout1, layout2, owners, t) {
+    let layout = {};
+    owners.forEach(owner => {
+        let l1 = layout1[owner];
+        let l2 = layout2[owner];
+        
+        layout[owner] = {
+            owner:owner,
+            x: lerp(l1.x, l2.x, t),
+            y: 0,
+            width: l1.owner,
+            height: l1.owner,
+            text: l1.text
+        };
+    });
+    return layout;
+}
 
 ctx.fillStyle = 'black';
 ctx.strokeStyle = 'red';
@@ -210,16 +182,33 @@ var expr2 = new Expression(new Literal(5));
 expr2.subtract(new Literal(-2));
 
 var eqn1 = new Equation(expr1, expr2);
-let l1 = layout(eqn1, 0, 0);
+let l1 = flattenLayout(layout(eqn1, 0, 0));
+
+var owners = getOwners(l1);
+console.log(owners);
+
 eqn1.add(new Literal(1));
-let l2 = layout(eqn1, 0, 0);
+let l2 = flattenLayout(layout(eqn1, 0, 0));
 
-var ids = getAllOwners(l1);
-console.log(ids);
+var t = 0;
 
-ctx.translate(100,100);
-render(l1, ids);
+function draw() {
+    ctx.clearRect(0, 0, 1200, 700);
+    ctx.save();
 
-ctx.translate(0,100);
-render(l2, ids);
+    let l3 = lerpLayout(l1, l2, owners, t);
+    ctx.translate(100, 100);
+    render(l3, owners);
+    ctx.restore();
+    
+    if (t < 1) {
+        t += 0.03;
+        requestAnimationFrame(draw);
+    } else {
+        t = 1.0;
+    }
+}
+
+draw();
+
 
