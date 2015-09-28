@@ -59,7 +59,6 @@
 	var _require2 = __webpack_require__(91);
 
 	var layout = _require2.layout;
-	var getIds = _require2.getIds;
 	var render = _require2.render;
 	var lerpLayout = _require2.lerpLayout;
 	var ctx = _require2.ctx;
@@ -73,13 +72,15 @@
 	var eqn1 = new Equation(expr1, expr2);
 	var l1 = layout(eqn1);
 
-	var ids = getIds(l1);
+	var ids = Object.keys(l1);
 
-	eqn1.add(new Literal(1));
+	eqn1.add(new Literal(25));
 	var l2 = layout(eqn1);
 
 	console.log(l1);
 	console.log(l2);
+
+	var equalsWidth = ctx.measureText("=").width;
 
 	var t = 0;
 
@@ -101,12 +102,38 @@
 	    return --t * t * t + 1;
 	}
 
+	function findEquals(layout) {
+	    var result = null;
+	    Object.keys(layout).forEach(function (id) {
+	        var leaf = layout[id];
+	        if (leaf.text === '=') {
+	            result = leaf;
+	        }
+	    });
+	    return result;
+	}
+
+	function drawAxes(ctx) {
+	    var width = 1200;
+	    var height = 700;
+	    ctx.strokeStyle = 'red';
+	    ctx.beginPath();
+	    ctx.moveTo(width / 2, 0);
+	    ctx.lineTo(width / 2, height);
+	    ctx.moveTo(0, height / 2);
+	    ctx.lineTo(width, height / 2);
+	    ctx.stroke();
+	}
+
 	function draw1() {
 	    ctx.clearRect(0, 0, 1200, 700);
-	    ctx.save();
+	    drawAxes(ctx);
 
 	    var l3 = lerpLayout(l1, l2, ids, easeCubic(t));
-	    ctx.translate(100, 100);
+	    var equals = findEquals(l3);
+
+	    ctx.save();
+	    ctx.translate(600 - equals.x - equalsWidth / 2, 366);
 	    render(l3, ids);
 	    ctx.restore();
 
@@ -121,9 +148,12 @@
 
 	function draw2() {
 	    ctx.clearRect(0, 0, 1200, 700);
-	    ctx.save();
+	    drawAxes(ctx);
 
-	    ctx.translate(100, 100);
+	    var equals = findEquals(l2);
+
+	    ctx.save();
+	    ctx.translate(600 - equals.x - equalsWidth / 2, 366);
 	    render(l2, ids, easeOutCubic(t));
 	    ctx.restore();
 
@@ -5039,6 +5069,14 @@
 
 	// TODO: layout objects should know about their parent as well
 
+	/**
+	 * Creates a layout
+	 * 
+	 * @param {Object} node A Math AST node.
+	 * @param {Object} result The object to store the layout in.
+	 * @param {Object?} p A point specifying where to render the layout. 
+	 * @returns {Object} The layout object.
+	 */
 	function layout(node) {
 	    var result = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 	    var p = arguments.length <= 2 || arguments[2] === undefined ? { x: 0, y: 0 } : arguments[2];
@@ -5051,12 +5089,14 @@
 	        if (parseFloat(node.value) < 0) {
 	            text = '(' + text + ')';
 	        }
-	        result[id] = _extends({ id: id, height: height, text: text }, p);
-	        p.x += ctx.measureText(text).width;
+	        var width = ctx.measureText(text).width;
+	        result[id] = _extends({ id: id, height: height, width: width, text: text }, p);
+	        p.x += width;
 	    } else if (node.type === 'Operator') {
 	        var text = String(node.operator).replace(/\-/g, '−');
-	        result[id] = _extends({ id: id, height: height, text: text }, p);
-	        p.x += ctx.measureText(text).width;
+	        var width = ctx.measureText(text).width;
+	        result[id] = _extends({ id: id, width: width, height: height, text: text }, p);
+	        p.x += width;
 	    } else if (node.type === 'Expression') {
 	        var _iteratorNormalCompletion = true;
 	        var _didIteratorError = false;
@@ -5097,15 +5137,14 @@
 	            for (var _iterator2 = node[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
 	                var child = _step2.value;
 
+	                // TODO: option to use cdot for multiplication instead
 	                if (child.type === 'Operator') {
 	                    continue;
 	                }
-	                result[id] = _extends({ id: id, height: height, text: '(' }, p);
+	                result[id] = _extends({ id: id + ':leftParen', width: paren, height: height, text: '(' }, p);
 	                p.x += paren;
-
 	                layout(child, result, p);
-
-	                result[id] = _extends({ id: id, height: height, text: ')' }, p);
+	                result[id] = _extends({ id: id + ':rightParen', width: paren, height: height, text: ')' }, p);
 	                p.x += paren;
 	            }
 	        } catch (err) {
@@ -5126,21 +5165,30 @@
 	        layout(node.left, result, p);
 	        p.x += space;
 
-	        var equalsWidth = ctx.measureText("=").width;
-	        result[id] = _extends({ id: id, text: '=' }, p);
+	        var width = ctx.measureText("=").width;
+	        result[id] = _extends({ id: id, width: width, height: height, text: '=' }, p);
 
-	        p.x += equalsWidth + space;
+	        p.x += width + space;
 
 	        layout(node.right, result, p);
 	    }
 	    return result;
 	}
 
-	function render(layout, owners, t) {
+	/**
+	 * Render a layout.
+	 * 
+	 * @param {Object} layout The layout to render.
+	 * @param {Array} ids An array of ids specifying which parts of the expression
+	 *        to render.
+	 * @param {Number} t A number between 0 and 1, used for fading in new parts 
+	 *        of the expression.
+	 */
+	function render(layout, ids, t) {
 	    Object.keys(layout).forEach(function (id) {
 	        var leaf = layout[id];
 	        var text = String(leaf.text).replace(/\-/g, '−');
-	        if (owners.indexOf(leaf.id.toString()) !== -1) {
+	        if (ids.indexOf(leaf.id.toString()) !== -1) {
 	            ctx.fillStyle = 'rgb(0,0,0)';
 	            ctx.fillText(text, leaf.x, leaf.y);
 	        } else {
@@ -5149,10 +5197,6 @@
 	            ctx.fillText(text, leaf.x, leaf.y);
 	        }
 	    });
-	}
-
-	function getIds(layout) {
-	    return Object.keys(layout);
 	}
 
 	/**
@@ -5194,7 +5238,6 @@
 
 	module.exports = {
 	    layout: layout,
-	    getIds: getIds,
 	    render: render,
 	    lerpLayout: lerpLayout,
 	    ctx: ctx

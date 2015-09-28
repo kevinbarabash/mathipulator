@@ -26,6 +26,14 @@ let paren = ctx.measureText("(").width;
 
 // TODO: layout objects should know about their parent as well
 
+/**
+ * Creates a layout
+ * 
+ * @param {Object} node A Math AST node.
+ * @param {Object} result The object to store the layout in.
+ * @param {Object?} p A point specifying where to render the layout. 
+ * @returns {Object} The layout object.
+ */
 function layout(node, result = {}, p = { x: 0, y: 0 }) {
     let height = fontSize, id = node.id;
 
@@ -34,12 +42,14 @@ function layout(node, result = {}, p = { x: 0, y: 0 }) {
         if (parseFloat(node.value) < 0) {
             text = `(${text})`;
         }
-        result[id] = {id, height, text, ...p};
-        p.x += ctx.measureText(text).width;
+        let width = ctx.measureText(text).width;
+        result[id] = {id, height, width, text, ...p};
+        p.x += width;
     } else if (node.type === 'Operator') {
         let text = String(node.operator).replace(/\-/g, "\u2212");
-        result[id] = {id, height, text, ...p};
-        p.x += ctx.measureText(text).width;
+        let width = ctx.measureText(text).width;
+        result[id] = {id, width, height, text, ...p};
+        p.x += width;
     } else if (node.type === 'Expression') {
         for (let child of node) {
             if (child.type === 'Operator') {
@@ -52,37 +62,44 @@ function layout(node, result = {}, p = { x: 0, y: 0 }) {
         }
     } else if (node.type === 'Product') {
         for (let child of node) {
+            // TODO: option to use cdot for multiplication instead
             if (child.type === 'Operator') {
                 continue;
             }
-            result[id] = {id, height, text: '(', ...p};
+            result[id] = {id: `${id}:leftParen`, width: paren, height, text: '(', ...p};
             p.x += paren;
-
             layout(child, result, p);
-
-            result[id] = {id, height, text: ')', ...p};
+            result[id] = {id: `${id}:rightParen`, width: paren, height, text: ')', ...p};
             p.x += paren;
         }
     } else if (node.type === 'Equation') {
         layout(node.left, result, p);
         p.x += space;
 
-        let equalsWidth = ctx.measureText("=").width;
-        result[id] = {id, text: '=', ...p};
+        let width = ctx.measureText("=").width;
+        result[id] = {id, width, height, text: '=', ...p};
 
-        p.x += equalsWidth + space;
+        p.x += width + space;
 
         layout(node.right, result, p);
     }
     return result;
 }
 
-
-function render(layout, owners, t) {
+/**
+ * Render a layout.
+ * 
+ * @param {Object} layout The layout to render.
+ * @param {Array} ids An array of ids specifying which parts of the expression
+ *        to render.
+ * @param {Number} t A number between 0 and 1, used for fading in new parts 
+ *        of the expression.
+ */
+function render(layout, ids, t) {
     Object.keys(layout).forEach(id => {
         let leaf = layout[id];
         let text = String(leaf.text).replace(/\-/g, "\u2212");
-        if (owners.indexOf(leaf.id.toString()) !== -1) {
+        if (ids.indexOf(leaf.id.toString()) !== -1) {
             ctx.fillStyle = 'rgb(0,0,0)';
             ctx.fillText(text, leaf.x, leaf.y);
         } else {
@@ -91,10 +108,6 @@ function render(layout, owners, t) {
             ctx.fillText(text, leaf.x, leaf.y);
         }
     });
-}
-
-function getIds(layout) {
-    return Object.keys(layout);
 }
 
 /**
@@ -136,7 +149,6 @@ function lerpLayout(layout1, layout2, ids, t) {
 
 module.exports = {
     layout,
-    getIds,
     render,
     lerpLayout,
     ctx
