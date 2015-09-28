@@ -46,249 +46,23 @@
 
 	'use strict';
 
-	var Math = __webpack_require__(1);
+	var _require = __webpack_require__(1);
 
-	var Expression = Math.Expression;
-	var Literal = Math.Literal;
-	var Product = Math.Product;
-	var Fraction = Math.Fraction;
-	var Identifier = Math.Identifier;
-	var Operator = Math.Operator;
-	var Equation = Math.Equation;
+	var Expression = _require.Expression;
+	var Literal = _require.Literal;
+	var Product = _require.Product;
+	var Fraction = _require.Fraction;
+	var Identifier = _require.Identifier;
+	var Operator = _require.Operator;
+	var Equation = _require.Equation;
 
-	var Transforms = __webpack_require__(90);
-	var distributeBackwards = Transforms.distributeBackwards;
-	var distributeForwards = Transforms.distributeForwards;
+	var _require2 = __webpack_require__(91);
 
-	var canvas = document.createElement('canvas');
-	var ctx = canvas.getContext('2d');
-
-	var pixelRatio = window.devicePixelRatio;
-
-	canvas.width = 1200 * pixelRatio;
-	canvas.height = 700 * pixelRatio;
-	canvas.style.width = 1200 + "px";
-	canvas.style.height = 700 + "px";
-	ctx.scale(pixelRatio, pixelRatio);
-
-	document.body.appendChild(canvas);
-
-	var fontSize = 64;
-	ctx.font = '100 ' + fontSize + 'px sans-serif';
-
-	var space = ctx.measureText(" ").width;
-	var paren = ctx.measureText("(").width;
-
-	// TODO: layout objects should know about their parent as well
-
-	function layout(node, x, y) {
-	    var height = fontSize,
-	        owner = node.id;
-
-	    if (node.type === 'Literal') {
-	        var text = String(node.value).replace(/\-/g, '−');
-	        if (parseFloat(node.value) < 0) {
-	            text = '(' + text + ')';
-	        }
-	        var width = ctx.measureText(text).width;
-	        return { owner: owner, x: x, y: y, width: width, height: height, text: text };
-	    } else if (node.type === 'Operator') {
-	        var text = String(node.operator).replace(/\-/g, '−');
-	        var width = ctx.measureText(text).width;
-	        return { owner: owner, x: x, y: y, width: width, height: height, text: text };
-	    } else if (node.type === 'Expression') {
-	        var width = 0;
-	        var children = [];
-	        var _iteratorNormalCompletion = true;
-	        var _didIteratorError = false;
-	        var _iteratorError = undefined;
-
-	        try {
-	            for (var _iterator = node[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                var child = _step.value;
-
-	                var child_layout = layout(child, x, y);
-	                if (child.type === 'Operator') {
-	                    x += space;
-	                    width += space;
-	                }
-	                child_layout.x = x;
-	                child_layout.y = y;
-	                width += child_layout.width;
-	                x += child_layout.width;
-	                if (child.type === 'Operator') {
-	                    x += space;
-	                    width += space;
-	                }
-	                children.push(child_layout);
-	            }
-	        } catch (err) {
-	            _didIteratorError = true;
-	            _iteratorError = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion && _iterator['return']) {
-	                    _iterator['return']();
-	                }
-	            } finally {
-	                if (_didIteratorError) {
-	                    throw _iteratorError;
-	                }
-	            }
-	        }
-
-	        return { x: 0, y: 0, width: width, height: height, children: children };
-	    } else if (node.type === 'Product') {
-	        var width = 0;
-	        var children = [];
-	        var _iteratorNormalCompletion2 = true;
-	        var _didIteratorError2 = false;
-	        var _iteratorError2 = undefined;
-
-	        try {
-	            for (var _iterator2 = node[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                var child = _step2.value;
-
-	                if (child.type === 'Operator') {
-	                    continue;
-	                }
-	                children.push({ x: x, y: y, paren: paren, height: height, text: '(' });
-	                width += paren;
-	                x += paren;
-
-	                var child_layout = layout(child, x, y);
-	                child_layout.x = x;
-	                child_layout.y = y;
-	                width += child_layout.width;
-	                x += child_layout.width;
-	                children.push(child_layout);
-
-	                children.push({ x: x, y: y, paren: paren, height: height, text: ')' });
-	                width += paren;
-	                x += paren;
-	            }
-	        } catch (err) {
-	            _didIteratorError2 = true;
-	            _iteratorError2 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-	                    _iterator2['return']();
-	                }
-	            } finally {
-	                if (_didIteratorError2) {
-	                    throw _iteratorError2;
-	                }
-	            }
-	        }
-
-	        return { x: 0, y: 0, width: width, height: height, children: children };
-	    } else if (node.type === 'Equation') {
-	        var width = 0;
-	        var left = layout(node.left, x, y);
-	        width += left.width + space;
-	        x += left.width + space;
-
-	        var equalsWidth = ctx.measureText("=").width;
-	        var equals = { owner: owner, x: x, y: y, width: equalsWidth, height: height, text: '=' };
-
-	        width += equalsWidth + space;
-	        x += equalsWidth + space;
-
-	        var right = layout(node.right, x, y);
-
-	        width += right.width;
-	        right.x = x;
-
-	        var children = [left, equals, right];
-	        return { x: 0, y: 0, width: width, height: height, children: children };
-	    }
-	}
-
-	function render(layout, owners, t) {
-	    Object.keys(layout).forEach(function (owner) {
-	        var leaf = layout[owner];
-	        var text = String(leaf.text).replace(/\-/g, '−');
-	        if (owners.indexOf(leaf.owner.toString()) !== -1) {
-	            ctx.fillStyle = 'rgb(0,0,0)';
-	            ctx.fillText(text, leaf.x, leaf.y);
-	        } else {
-	            var gray = (1 - t) * 255 | 0;
-	            ctx.fillStyle = 'rgb(' + gray + ',' + gray + ',255)';
-	            ctx.fillText(text, leaf.x, leaf.y);
-	        }
-	    });
-	}
-
-	function getOwners(layout) {
-	    return Object.keys(layout);
-	}
-
-	function flattenLayout(layout) {
-	    var leaves = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-	    if (layout.children) {
-	        var _iteratorNormalCompletion3 = true;
-	        var _didIteratorError3 = false;
-	        var _iteratorError3 = undefined;
-
-	        try {
-	            for (var _iterator3 = layout.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	                var child = _step3.value;
-
-	                flattenLayout(child, leaves);
-	            }
-	        } catch (err) {
-	            _didIteratorError3 = true;
-	            _iteratorError3 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-	                    _iterator3['return']();
-	                }
-	            } finally {
-	                if (_didIteratorError3) {
-	                    throw _iteratorError3;
-	                }
-	            }
-	        }
-	    } else {
-	        leaves[layout.owner] = layout;
-	    }
-	    return leaves;
-	}
-
-	function lerp(val1, val2, t) {
-	    return (1 - t) * val1 + t * val2;
-	}
-
-	/**
-	 * 
-	 * @param {Object} layout1
-	 * @param {Object} layout2
-	 * @param {Array} owners
-	 * @param {Number} t A number between 0 and 1
-	 */
-	function lerpLayout(layout1, layout2, owners, t) {
-	    var layout = {};
-	    owners.forEach(function (owner) {
-	        var l1 = layout1[owner];
-	        var l2 = layout2[owner];
-
-	        layout[owner] = {
-	            owner: owner,
-	            x: lerp(l1.x, l2.x, t),
-	            y: 0,
-	            width: l1.owner,
-	            height: l1.owner,
-	            text: l1.text
-	        };
-	    });
-	    return layout;
-	}
-
-	ctx.fillStyle = 'black';
-	ctx.strokeStyle = 'red';
+	var layout = _require2.layout;
+	var getIds = _require2.getIds;
+	var render = _require2.render;
+	var lerpLayout = _require2.lerpLayout;
+	var ctx = _require2.ctx;
 
 	var expr1 = new Expression(new Literal(1));
 	expr1.add(new Literal(3));
@@ -297,15 +71,15 @@
 	expr2.subtract(new Literal(-2));
 
 	var eqn1 = new Equation(expr1, expr2);
-	var l1 = flattenLayout(layout(eqn1, 0, 0));
+	var l1 = layout(eqn1);
 
-	var owners = getOwners(l1);
-	console.log(owners);
+	var ids = getIds(l1);
 
 	eqn1.add(new Literal(1));
-	var l2 = layout(eqn1, 0, 0);
+	var l2 = layout(eqn1);
+
+	console.log(l1);
 	console.log(l2);
-	l2 = flattenLayout(l2);
 
 	var t = 0;
 
@@ -331,9 +105,9 @@
 	    ctx.clearRect(0, 0, 1200, 700);
 	    ctx.save();
 
-	    var l3 = lerpLayout(l1, l2, owners, easeCubic(t));
+	    var l3 = lerpLayout(l1, l2, ids, easeCubic(t));
 	    ctx.translate(100, 100);
-	    render(l3, owners);
+	    render(l3, ids);
 	    ctx.restore();
 
 	    if (t < 1) {
@@ -350,7 +124,7 @@
 	    ctx.save();
 
 	    ctx.translate(100, 100);
-	    render(l2, owners, easeOutCubic(t));
+	    render(l2, ids, easeOutCubic(t));
 	    ctx.restore();
 
 	    if (t < 1) {
@@ -5229,124 +5003,201 @@
 	// iterating
 
 /***/ },
-/* 90 */
-/***/ function(module, exports, __webpack_require__) {
+/* 90 */,
+/* 91 */
+/***/ function(module, exports) {
+
+	/**
+	 * Functions for creating and rendering math layouts
+	 */
 
 	'use strict';
 
-	var LinkedList = __webpack_require__(89);
-	var _prev = LinkedList._prev;
-	var _next = LinkedList._next;
-	var _parent = LinkedList._parent;
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-	var _require = __webpack_require__(1);
+	var canvas = document.createElement('canvas');
+	var ctx = canvas.getContext('2d');
 
-	var Expression = _require.Expression;
-	var Product = _require.Product;
-	var Fraction = _require.Fraction;
-	var Operator = _require.Operator;
-	var Identifier = _require.Identifier;
-	var Literal = _require.Literal;
+	ctx.fillStyle = 'black';
+	ctx.strokeStyle = 'red';
 
-	var distributeBackwards = function distributeBackwards(node) {
-	    if (node[_prev] && node[_prev].operator === '*') {
-	        var operator = node[_prev];
-	        if (operator[_prev] && operator[_prev].type === 'Expression') {
-	            console.log("can distribute backwards");
+	var pixelRatio = window.devicePixelRatio;
 
-	            var _parent2 = node[_parent];
+	canvas.width = 1200 * pixelRatio;
+	canvas.height = 700 * pixelRatio;
+	canvas.style.width = 1200 + "px";
+	canvas.style.height = 700 + "px";
+	ctx.scale(pixelRatio, pixelRatio);
 
-	            var left = operator[_prev];
-	            var _iteratorNormalCompletion = true;
-	            var _didIteratorError = false;
-	            var _iteratorError = undefined;
+	document.body.appendChild(canvas);
 
-	            try {
-	                for (var _iterator = left[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                    var child = _step.value;
+	var fontSize = 64;
+	ctx.font = '100 ' + fontSize + 'px sans-serif';
 
-	                    if (child.type !== 'Operator') {
-	                        var product = new Product();
-	                        left.replace(child, product);
-	                        product.append(child, new Operator('*'), node.clone());
-	                    }
+	var space = ctx.measureText(" ").width;
+	var paren = ctx.measureText("(").width;
+
+	// TODO: layout objects should know about their parent as well
+
+	function layout(node) {
+	    var result = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	    var p = arguments.length <= 2 || arguments[2] === undefined ? { x: 0, y: 0 } : arguments[2];
+
+	    var height = fontSize,
+	        id = node.id;
+
+	    if (node.type === 'Literal') {
+	        var text = String(node.value).replace(/\-/g, '−');
+	        if (parseFloat(node.value) < 0) {
+	            text = '(' + text + ')';
+	        }
+	        result[id] = _extends({ id: id, height: height, text: text }, p);
+	        p.x += ctx.measureText(text).width;
+	    } else if (node.type === 'Operator') {
+	        var text = String(node.operator).replace(/\-/g, '−');
+	        result[id] = _extends({ id: id, height: height, text: text }, p);
+	        p.x += ctx.measureText(text).width;
+	    } else if (node.type === 'Expression') {
+	        var _iteratorNormalCompletion = true;
+	        var _didIteratorError = false;
+	        var _iteratorError = undefined;
+
+	        try {
+	            for (var _iterator = node[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                var child = _step.value;
+
+	                if (child.type === 'Operator') {
+	                    p.x += space;
 	                }
-	            } catch (err) {
-	                _didIteratorError = true;
-	                _iteratorError = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion && _iterator['return']) {
-	                        _iterator['return']();
-	                    }
-	                } finally {
-	                    if (_didIteratorError) {
-	                        throw _iteratorError;
-	                    }
+	                layout(child, result, p);
+	                if (child.type === 'Operator') {
+	                    p.x += space;
 	                }
 	            }
-
-	            _parent2.remove(operator);
-	            _parent2.remove(node);
-
-	            if (_parent2.first === _parent2.last) {
-	                return _parent2.first;
+	        } catch (err) {
+	            _didIteratorError = true;
+	            _iteratorError = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion && _iterator['return']) {
+	                    _iterator['return']();
+	                }
+	            } finally {
+	                if (_didIteratorError) {
+	                    throw _iteratorError;
+	                }
 	            }
 	        }
-	    }
-	};
+	    } else if (node.type === 'Product') {
+	        var _iteratorNormalCompletion2 = true;
+	        var _didIteratorError2 = false;
+	        var _iteratorError2 = undefined;
 
-	var distributeForwards = function distributeForwards(node) {
-	    if (node[_next] && node[_next].operator === '*') {
-	        var operator = node[_next];
-	        if (operator[_next] && operator[_next].type === 'Expression') {
-	            console.log("can distribute forwards");
+	        try {
+	            for (var _iterator2 = node[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                var child = _step2.value;
 
-	            var _parent3 = node[_parent];
-
-	            var right = operator[_next];
-	            var _iteratorNormalCompletion2 = true;
-	            var _didIteratorError2 = false;
-	            var _iteratorError2 = undefined;
-
-	            try {
-	                for (var _iterator2 = right[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                    var child = _step2.value;
-
-	                    if (child.type !== 'Operator') {
-	                        var product = new Product();
-	                        right.replace(child, product);
-	                        product.append(node.clone(), new Operator('*'), child);
-	                    }
+	                if (child.type === 'Operator') {
+	                    continue;
 	                }
-	            } catch (err) {
-	                _didIteratorError2 = true;
-	                _iteratorError2 = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-	                        _iterator2['return']();
-	                    }
-	                } finally {
-	                    if (_didIteratorError2) {
-	                        throw _iteratorError2;
-	                    }
-	                }
+	                result[id] = _extends({ id: id, height: height, text: '(' }, p);
+	                p.x += paren;
+
+	                layout(child, result, p);
+
+	                result[id] = _extends({ id: id, height: height, text: ')' }, p);
+	                p.x += paren;
 	            }
-
-	            _parent3.remove(operator);
-	            _parent3.remove(node);
-
-	            if (_parent3.first === _parent3.last) {
-	                return _parent3.first;
+	        } catch (err) {
+	            _didIteratorError2 = true;
+	            _iteratorError2 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+	                    _iterator2['return']();
+	                }
+	            } finally {
+	                if (_didIteratorError2) {
+	                    throw _iteratorError2;
+	                }
 	            }
 	        }
+	    } else if (node.type === 'Equation') {
+	        layout(node.left, result, p);
+	        p.x += space;
+
+	        var equalsWidth = ctx.measureText("=").width;
+	        result[id] = _extends({ id: id, text: '=' }, p);
+
+	        p.x += equalsWidth + space;
+
+	        layout(node.right, result, p);
 	    }
-	};
+	    return result;
+	}
+
+	function render(layout, owners, t) {
+	    Object.keys(layout).forEach(function (id) {
+	        var leaf = layout[id];
+	        var text = String(leaf.text).replace(/\-/g, '−');
+	        if (owners.indexOf(leaf.id.toString()) !== -1) {
+	            ctx.fillStyle = 'rgb(0,0,0)';
+	            ctx.fillText(text, leaf.x, leaf.y);
+	        } else {
+	            var gray = (1 - t) * 255 | 0;
+	            ctx.fillStyle = 'rgb(' + gray + ',' + gray + ',255)';
+	            ctx.fillText(text, leaf.x, leaf.y);
+	        }
+	    });
+	}
+
+	function getIds(layout) {
+	    return Object.keys(layout);
+	}
+
+	/**
+	 * Interpolates between two values.
+	 * 
+	 * @param val1
+	 * @param val2
+	 * @param t
+	 * @returns {number}
+	 */
+	function lerp(val1, val2, t) {
+	    return (1 - t) * val1 + t * val2;
+	}
+
+	/**
+	 * Interpolates between two layouts.
+	 * 
+	 * @param {Object} layout1
+	 * @param {Object} layout2
+	 * @param {Array} ids
+	 * @param {Number} t A number between 0 and 1
+	 */
+	function lerpLayout(layout1, layout2, ids, t) {
+	    var layout = {};
+	    ids.forEach(function (id) {
+	        var l1 = layout1[id];
+	        var l2 = layout2[id];
+
+	        layout[id] = {
+	            id: id,
+	            x: lerp(l1.x, l2.x, t),
+	            y: 0,
+	            text: l1.text
+	        };
+	    });
+
+	    return layout;
+	}
 
 	module.exports = {
-	    distributeBackwards: distributeBackwards,
-	    distributeForwards: distributeForwards
+	    layout: layout,
+	    getIds: getIds,
+	    render: render,
+	    lerpLayout: lerpLayout,
+	    ctx: ctx
 	};
 
 /***/ }
