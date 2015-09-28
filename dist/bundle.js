@@ -87,6 +87,9 @@
 
 	    if (node.type === 'Literal') {
 	        var text = String(node.value).replace(/\-/g, '−');
+	        if (parseFloat(node.value) < 0) {
+	            text = '(' + text + ')';
+	        }
 	        var width = ctx.measureText(text).width;
 	        return { owner: owner, x: x, y: y, width: width, height: height, text: text };
 	    } else if (node.type === 'Operator') {
@@ -306,11 +309,29 @@
 
 	var t = 0;
 
+	// TODO: figure out a better way to handle a series of animations
+
+	function easeQuadratic(t) {
+	    return t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+	}
+
+	function easeCubic(t) {
+	    return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+	}
+
+	function easeInCubic(t) {
+	    return t * t * t;
+	}
+
+	function easeOutCubic(t) {
+	    return --t * t * t + 1;
+	}
+
 	function draw1() {
 	    ctx.clearRect(0, 0, 1200, 700);
 	    ctx.save();
 
-	    var l3 = lerpLayout(l1, l2, owners, t);
+	    var l3 = lerpLayout(l1, l2, owners, easeCubic(t));
 	    ctx.translate(100, 100);
 	    render(l3, owners);
 	    ctx.restore();
@@ -329,7 +350,7 @@
 	    ctx.save();
 
 	    ctx.translate(100, 100);
-	    render(l2, owners, t);
+	    render(l2, owners, easeOutCubic(t));
 	    ctx.restore();
 
 	    if (t < 1) {
