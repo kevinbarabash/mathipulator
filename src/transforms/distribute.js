@@ -1,6 +1,5 @@
-let LinkedList = require('./linked-list.js');
-let { _prev, _next, _parent } = LinkedList;
-let { Expression, Product, Fraction, Operator, Identifier, Literal } = require('./expression.js');
+import LinkedList, { _prev, _next, _parent } from '../util/linked-list'
+import { Expression, Product, Fraction, Operator, Identifier, Literal } from '../ast';
 
 let distributeBackwards = function(node) {
     if (node[_prev] && node[_prev].operator === '*') {

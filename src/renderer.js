@@ -51,7 +51,7 @@ function layout(node, result = {}, p = { x: 0, y: 0 }) {
         result[id] = {id, width, height, text, ...p};
         p.x += width;
     } else if (node.type === 'Expression') {
-        for (let child of node) {
+        for (let child of node.children) {
             if (child.type === 'Operator') {
                 p.x += space;
             }
@@ -61,7 +61,7 @@ function layout(node, result = {}, p = { x: 0, y: 0 }) {
             }
         }
     } else if (node.type === 'Product') {
-        for (let child of node) {
+        for (let child of node.factors) {
             // TODO: option to use cdot for multiplication instead
             if (child.type === 'Operator') {
                 continue;

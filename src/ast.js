@@ -1,3 +1,22 @@
+import Expression from './ast/expression'
+import Product from './ast/expression'
+import Fraction from './ast/fraction'
+import Operator from './ast/operator'
+import Identifier from './ast/identifier'
+import Literal from './ast/literal'
+import Equation from './ast/equation'
+
+module.exports = {
+    Expression,
+    Product,
+    Fraction,
+    Operator,
+    Identifier,
+    Literal,
+    Equation
+};
+
+/*
 // no inheritance
 var expr = {
     type: 'Expression',
@@ -40,7 +59,7 @@ var neg = {
 // product < expression
 var prod = {
     type: 'Product',
-    factors: [ /* expressions */ ]
+    factors: [ expressions ]
 
     // children are multiplied in the order they appear
     // no '*' are necessary
@@ -63,13 +82,13 @@ var pow = {
 var func_app = {
     type: 'FunctionApplication',
     name: 'Sqrt',   // sin, cos, tan, etc.
-    args: [ /* expressions */ ]
+    args: [ expressions ]
 };
 
 // no inheritance
 var func_def = {
     type: 'FunctionDefinition',
-    params: [ /* variables */ ], // the signs of variables are ignored
+    params: [ variables ], // the signs of variables are ignored
     definition: {}  // expression
 };
 
@@ -83,13 +102,13 @@ var eqn = {
 // not an expression
 var list = {
     type: 'List',
-    children: [ /* expressions */ ]
+    children: [ expression ]
 };
 
 // vector < expression
 var vector = {
     type: 'Vector',
-    components: [ /* expressions */ ]
+    components: [ expressions ]
 };
 
 // Parentheses
@@ -99,3 +118,4 @@ var vector = {
 // value of "parens" will be honored when rendering
 
 // TODO: matrices, system of equations
+*/

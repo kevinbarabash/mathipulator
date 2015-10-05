@@ -6,14 +6,14 @@ let {
     Identifier,
     Operator,
     Equation
-    } = require('./src/expression.js');
+} = require('./src/ast.js');
 
 let {
     layout,
     render,
     lerpLayout,
     ctx
-    } = require('./src/renderer.js');
+} = require('./src/renderer.js');
 
 
 var expr1 = new Expression(new Literal(1));

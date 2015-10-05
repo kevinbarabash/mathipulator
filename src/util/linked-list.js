@@ -1,11 +1,12 @@
-let _next = Symbol();
-let _prev = Symbol();
-let _parent = Symbol();
+export let _next = Symbol();
+export let _prev = Symbol();
+export let _parent = Symbol();
 
-class LinkedList {
-    constructor() {
+export default class LinkedList {
+    constructor(...nodes) {
         this.first = null;
         this.last = null;
+        this.append(...nodes);
     }
 
     append(...nodes) {
@@ -112,9 +113,3 @@ class LinkedList {
         return result;
     }
 }
-
-LinkedList._prev = _prev;
-LinkedList._next = _next;
-LinkedList._parent = _parent;
-
-module.exports = LinkedList;
