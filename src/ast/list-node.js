@@ -1,9 +1,8 @@
-export let _next = Symbol();
-export let _prev = Symbol();
-export let _parent = Symbol();
+import Node from './node'
 
-export default class LinkedList {
+export default class ListNode extends Node {
     constructor(...nodes) {
+        super();
         this.first = null;
         this.last = null;
         this.append(...nodes);
@@ -11,47 +10,48 @@ export default class LinkedList {
 
     append(...nodes) {
         for (let node of nodes) {
-            node[_next] = null;
-            node[_parent] = this;
+            node.next = null;
+            node.parent = this;
             if (this.first === null && this.last === null) {
                 this.first = node;
                 this.last = node;
-                node[_prev] = null;
+                node.prev = null;
             } else {
-                this.last[_next] = node;
-                node[_prev] = this.last;
+                this.last.next = node;
+                node.prev = this.last;
                 this.last = node;
             }
         }
     }
 
     prepend(...nodes) {
+        // TODO: determine if nodes should be reversed or not 
         for (let node of nodes) {
-            node[_prev] = null;
-            node[_parent] = this;
+            node.prev = null;
+            node.parent = this;
             if (this.first === null && this.last === null) {
                 this.first = node;
                 this.last = node;
-                node[_next] = null;
+                node.next = null;
             } else {
-                this.first[_prev] = node;
-                node[_next] = this.first;
+                this.first.prev = node;
+                node.next = this.first;
                 this.first = node;
             }
         }
     }
 
     replace(current, replacement) {
-        replacement[_prev] = current[_prev];
-        replacement[_next] = current[_next];
-        if (current[_prev] !== null) {
-            current[_prev][_next] = replacement;
+        replacement.prev = current.prev;
+        replacement.next = current.next;
+        if (current.prev !== null) {
+            current.prev.next = replacement;
         }
-        if (current[_next] !== null) {
-            current[_next][_prev] = replacement;
+        if (current.next !== null) {
+            current.next.prev = replacement;
         }
-        current[_prev] = null;
-        current[_next] = null;
+        current.prev = null;
+        current.next = null;
         if (this.first === current) {
             this.first = replacement;
         }
@@ -62,20 +62,20 @@ export default class LinkedList {
 
     remove(node) {
         if (this.first === node) {
-            this.first = node[_next];
+            this.first = node.next;
             if (this.first) {
-                this.first[_prev] = null;
+                this.first.prev = null;
             }
         } else {
-            node[_prev][_next] = node[_next];
+            node.prev.next = node.next;
         }
         if (this.last === node) {
-            this.last = node[_prev];
+            this.last = node.prev;
             if (this.last) {
-                this.last[_next] = null;
+                this.last.next = null;
             }
         } else {
-            node[_next][_prev] = node[_prev];
+            node.next.prev = node.prev;
         }
     }
 
@@ -85,7 +85,7 @@ export default class LinkedList {
             // grab the current node so that we can do replacements while
             // iterating
             let current = node;
-            node = node[_next];
+            node = node.next;
             yield current;
         }
     }

@@ -38,6 +38,7 @@ function layout(node, result = {}, p = { x: 0, y: 0 }) {
     let height = fontSize, id = node.id;
 
     if (node.type === 'Literal') {
+        console.log(node.toString());
         let text = String(node.value).replace(/\-/g, "\u2212");
         if (parseFloat(node.value) < 0) {
             text = `(${text})`;
@@ -51,7 +52,9 @@ function layout(node, result = {}, p = { x: 0, y: 0 }) {
         result[id] = {id, width, height, text, ...p};
         p.x += width;
     } else if (node.type === 'Expression') {
-        for (let child of node.children) {
+        for (let child of node) {
+            console.log(child.toString());
+            console.log(child);
             if (child.type === 'Operator') {
                 p.x += space;
             }
@@ -61,7 +64,7 @@ function layout(node, result = {}, p = { x: 0, y: 0 }) {
             }
         }
     } else if (node.type === 'Product') {
-        for (let child of node.factors) {
+        for (let child of node) {
             // TODO: option to use cdot for multiplication instead
             if (child.type === 'Operator') {
                 continue;

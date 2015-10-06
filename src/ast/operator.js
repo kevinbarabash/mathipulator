@@ -1,5 +1,4 @@
 import Node from './node'
-import { _next, _prev, _parent } from '../util/linked-list'
 
 let operations = {
     '+'(a, b) { return a + b; },
@@ -23,8 +22,8 @@ export default class Operator extends Node {
     }
 
     evaluate() {
-        let prev = this[_prev];
-        let next = this[_next];
+        let prev = this.prev;
+        let next = this.next;
 
         if (prev !== null && next !== null) {
             if (prev.type === 'Literal' && next.next === 'Literal') {

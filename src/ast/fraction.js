@@ -16,7 +16,7 @@ export default class Fraction extends Node {
     }
 
     multiply(node) {
-        this.append(new Operator('*'), node);
+        return this.append(new Operator('*'), node);
     }
 
     divide(node) {

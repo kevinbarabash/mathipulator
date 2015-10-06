@@ -1,12 +1,11 @@
-import Node from './node'
-import LinkedList from '../util/linked-list'
+import ListNode from './node'
 import * as f from 'functify'
 
-export default class Product extends Node {
+export default class Product extends ListNode {
     constructor(...nodes) {
         super();
         this.type = 'Product';
-        this.factors = new LinkedList(...nodes);
+        this.append(...nodes);
     }
 
     add(node) {
@@ -18,7 +17,7 @@ export default class Product extends Node {
     }
 
     multiply(node) {
-        this.factors.append(new Operator('*'), node);
+        this.append(new Operator('*'), node);
     }
 
     divide(node) {
@@ -26,7 +25,7 @@ export default class Product extends Node {
     }
 
     toString() {
-        return `${this.type}:${this.factors.toString()}`;
+        return `${this.type}:${super.toString()}`;
     }
 
     clone() {

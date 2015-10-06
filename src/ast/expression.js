@@ -1,22 +1,21 @@
 import * as f from 'functify'
-import LinkedList from '../util/linked-list'
-import Node from './node'
+import ListNode from './list-node'
 import Operator from './operator'
 
-export default class Expression extends Node {
+export default class Expression extends ListNode {
     constructor(...nodes) {
         super();
         this.type = 'Expression';
-        this.children = new LinkedList(...nodes);
+        this.append(...nodes);
     }
 
     add(node) {
-        this.children.append(new Operator('+'), node);
+        this.append(new Operator('+'), node);
         return this;
     }
 
     subtract(node) {
-        this.children.append(new Operator('-'), node);
+        this.append(new Operator('-'), node);
         return this;
     }
 
@@ -29,7 +28,7 @@ export default class Expression extends Node {
     }
 
     toString() {
-        return `${this.type}:${this.children.toString()}`;
+        return `${this.type}:${super.toString()}`;
     }
 
     clone() {
