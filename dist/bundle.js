@@ -63,11 +63,36 @@
 	var lerpLayout = _require2.lerpLayout;
 	var ctx = _require2.ctx;
 
-	var expr1 = new Expression(new Literal(1));
-	expr1.add(new Literal(3));
-	console.log(expr1.toString());
+	var _require3 = __webpack_require__(98);
 
-	var expr2 = new Expression(new Literal(5));
+	var add = _require3.add;
+	var sub = _require3.sub;
+	var removeExtraParens = _require3.removeExtraParens;
+
+	var expr1, expr2, expr3, sum, diff;
+
+	expr1 = add(new Literal(1), new Literal(3));
+	expr2 = sub(new Literal(5), new Literal(-2));
+	expr3 = add(new Literal(7), new Literal(8));
+
+	sum = add(add(expr1, expr2), expr3);
+	console.log('sum = ' + sum.toString());
+
+	console.log('----------------------');
+
+	expr1 = add(new Literal(1), new Literal(3));
+	expr2 = sub(new Literal(5), new Literal(-2));
+
+	diff = sub(expr1, expr2);
+	console.log('diff = ' + diff.toString());
+
+	console.log('----------------------');
+
+	// reset everything
+	expr1 = new Expression(new Literal(1));
+	expr1.add(new Literal(3));
+
+	expr2 = new Expression(new Literal(5));
 	expr2.subtract(new Literal(-2));
 
 	var eqn1 = new Equation(expr1, expr2);
@@ -186,7 +211,7 @@
 
 	var _astFraction2 = _interopRequireDefault(_astFraction);
 
-	var _astOperator = __webpack_require__(91);
+	var _astOperator = __webpack_require__(92);
 
 	var _astOperator2 = _interopRequireDefault(_astOperator);
 
@@ -349,7 +374,7 @@
 
 	var _listNode2 = _interopRequireDefault(_listNode);
 
-	var _operator = __webpack_require__(91);
+	var _operator = __webpack_require__(92);
 
 	var _operator2 = _interopRequireDefault(_operator);
 
@@ -4668,7 +4693,7 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var _node = __webpack_require__(92);
+	var _node = __webpack_require__(91);
 
 	var _node2 = _interopRequireDefault(_node);
 
@@ -4922,6 +4947,38 @@
 
 /***/ },
 /* 91 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var _id = 0;
+
+	//export default class Node {
+	//    constructor() {
+	//        this.id = _id++;
+	//    }
+	//}
+
+	var Node = function Node() {
+	    _classCallCheck(this, Node);
+
+	    this.id = _id++;
+	    this.parent = null;
+	    this.next = null;
+	    this.prev = null;
+	};
+
+	exports["default"] = Node;
+	module.exports = exports["default"];
+
+/***/ },
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4940,7 +4997,7 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var _node = __webpack_require__(92);
+	var _node = __webpack_require__(91);
 
 	var _node2 = _interopRequireDefault(_node);
 
@@ -5005,38 +5062,6 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 92 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var _id = 0;
-
-	//export default class Node {
-	//    constructor() {
-	//        this.id = _id++;
-	//    }
-	//}
-
-	var Node = function Node() {
-	    _classCallCheck(this, Node);
-
-	    this.id = _id++;
-	    this.parent = null;
-	    this.next = null;
-	    this.prev = null;
-	};
-
-	exports["default"] = Node;
-	module.exports = exports["default"];
-
-/***/ },
 /* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -5056,7 +5081,7 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var _node = __webpack_require__(92);
+	var _node = __webpack_require__(91);
 
 	var _node2 = _interopRequireDefault(_node);
 
@@ -5132,7 +5157,7 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var _node = __webpack_require__(92);
+	var _node = __webpack_require__(91);
 
 	var _node2 = _interopRequireDefault(_node);
 
@@ -5209,7 +5234,7 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var _node = __webpack_require__(92);
+	var _node = __webpack_require__(91);
 
 	var _node2 = _interopRequireDefault(_node);
 
@@ -5281,7 +5306,7 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var _node = __webpack_require__(92);
+	var _node = __webpack_require__(91);
 
 	var _node2 = _interopRequireDefault(_node);
 
@@ -5544,6 +5569,127 @@
 	    lerpLayout: lerpLayout,
 	    ctx: ctx
 	};
+
+/***/ },
+/* 98 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
+	exports.removeExtraParens = removeExtraParens;
+	exports.add = add;
+	exports.sub = sub;
+
+	var _ast = __webpack_require__(1);
+
+	function removeExtraParens(expr) {
+	    if (expr.type !== 'Expression') {
+	        return expr;
+	    }
+
+	    var removalList = [];
+	    var _iteratorNormalCompletion = true;
+	    var _didIteratorError = false;
+	    var _iteratorError = undefined;
+
+	    try {
+	        for (var _iterator = expr[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	            var child = _step.value;
+
+	            if (child.type === 'Expression') {
+	                if (child.prev == null || child.prev.operator === '+') {
+	                    removalList.push(child);
+	                }
+	            }
+	        }
+	    } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion && _iterator['return']) {
+	                _iterator['return']();
+	            }
+	        } finally {
+	            if (_didIteratorError) {
+	                throw _iteratorError;
+	            }
+	        }
+	    }
+
+	    var _iteratorNormalCompletion2 = true;
+	    var _didIteratorError2 = false;
+	    var _iteratorError2 = undefined;
+
+	    try {
+	        for (var _iterator2 = removalList[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	            var removal = _step2.value;
+	            var _iteratorNormalCompletion3 = true;
+	            var _didIteratorError3 = false;
+	            var _iteratorError3 = undefined;
+
+	            try {
+	                for (var _iterator3 = removal[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	                    var child = _step3.value;
+
+	                    child.parent = expr;
+	                }
+	            } catch (err) {
+	                _didIteratorError3 = true;
+	                _iteratorError3 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+	                        _iterator3['return']();
+	                    }
+	                } finally {
+	                    if (_didIteratorError3) {
+	                        throw _iteratorError3;
+	                    }
+	                }
+	            }
+
+	            removal.first.prev = removal.prev;
+	            removal.last.next = removal.next;
+	            if (removal.prev === null) {
+	                expr.first = removal.first;
+	            } else {
+	                removal.prev.next = removal.first;
+	            }
+	            if (removal.next === null) {
+	                expr.last = removal.last;
+	            } else {
+	                removal.next.prev = removal.last;
+	            }
+	        }
+	    } catch (err) {
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+	                _iterator2['return']();
+	            }
+	        } finally {
+	            if (_didIteratorError2) {
+	                throw _iteratorError2;
+	            }
+	        }
+	    }
+
+	    return expr;
+	}
+
+	function add(a, b) {
+	    return removeExtraParens(new _ast.Expression(a, new _ast.Operator('+'), b));
+	}
+
+	function sub(a, b) {
+	    return removeExtraParens(new _ast.Expression(a, new _ast.Operator('-'), b));
+	}
 
 /***/ }
 /******/ ]);

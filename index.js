@@ -15,12 +15,33 @@ let {
     ctx
 } = require('./src/renderer.js');
 
+let { add, sub, removeExtraParens } = require('./src/operations.js');
 
-var expr1 = new Expression(new Literal(1));
+var expr1, expr2, expr3, sum, diff;
+
+expr1 = add(new Literal(1), new Literal(3));
+expr2 = sub(new Literal(5), new Literal(-2));
+expr3 = add(new Literal(7), new Literal(8));
+
+sum = add(add(expr1, expr2), expr3);
+console.log(`sum = ${sum.toString()}`);
+
+console.log('----------------------');
+
+expr1 = add(new Literal(1), new Literal(3));
+expr2 = sub(new Literal(5), new Literal(-2));
+
+diff = sub(expr1, expr2);
+console.log(`diff = ${diff.toString()}`);
+
+console.log('----------------------');
+
+
+// reset everything
+expr1 = new Expression(new Literal(1));
 expr1.add(new Literal(3));
-console.log(expr1.toString());
 
-var expr2 = new Expression(new Literal(5));
+expr2 = new Expression(new Literal(5));
 expr2.subtract(new Literal(-2));
 
 var eqn1 = new Equation(expr1, expr2);
