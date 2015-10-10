@@ -50,3 +50,7 @@ export function add(a, b) {
 export function sub(a, b) {
     return removeExtraParens(new Expression(a, new Operator('-'), b));
 }
+
+export function mul(a, b) {
+    
+}

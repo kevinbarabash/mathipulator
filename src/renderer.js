@@ -58,7 +58,17 @@ function layout(node, result = {}, p = { x: 0, y: 0 }) {
             if (child.type === 'Operator') {
                 p.x += space;
             }
+            if (child.type === 'Expression') {
+                let key = `${id}:leftParen`;
+                result[key] = {id: key, width: paren, height, text: '(', ...p};
+                p.x += paren;
+            }
             layout(child, result, p);
+            if (child.type === 'Expression') {
+                let key = `${id}:rightParen`;
+                result[key] = {id: key, width: paren, height, text: ')', ...p};
+                p.x += paren;
+            }
             if (child.type === 'Operator') {
                 p.x += space;
             }
@@ -69,10 +79,12 @@ function layout(node, result = {}, p = { x: 0, y: 0 }) {
             if (child.type === 'Operator') {
                 continue;
             }
-            result[id] = {id: `${id}:leftParen`, width: paren, height, text: '(', ...p};
+            let key = `${id}:leftParen`;
+            result[key] = {id: key, width: paren, height, text: '(', ...p};
             p.x += paren;
             layout(child, result, p);
-            result[id] = {id: `${id}:rightParen`, width: paren, height, text: ')', ...p};
+            key = `${id}:rightParen`;
+            result[key] = {id: key, width: paren, height, text: ')', ...p};
             p.x += paren;
         }
     } else if (node.type === 'Equation') {
@@ -102,7 +114,10 @@ function render(layout, ids, t) {
     Object.keys(layout).forEach(id => {
         let leaf = layout[id];
         let text = String(leaf.text).replace(/\-/g, "\u2212");
-        if (ids.indexOf(leaf.id.toString()) !== -1) {
+        if (!ids) {
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.fillText(text, leaf.x, leaf.y);
+        } else if (ids.indexOf(leaf.id.toString()) !== -1) {
             ctx.fillStyle = 'rgb(0,0,0)';
             ctx.fillText(text, leaf.x, leaf.y);
         } else {

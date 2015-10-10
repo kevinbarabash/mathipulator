@@ -23,7 +23,7 @@ export default class Literal extends Node {
     }
 
     toString() {
-        return `${this.type}:${this.value}`;
+        return `${this.type}:${this.value}(${this.id})`;
     }
 
     clone() {

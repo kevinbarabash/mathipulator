@@ -57,6 +57,8 @@ console.log(eqn1.toString());
 console.log(l1);
 console.log(l2);
 
+let diffLayout = layout(diff);
+
 let equalsWidth = ctx.measureText("=").width;
 
 var t = 0;
@@ -113,6 +115,11 @@ function draw1() {
     ctx.translate(600 - equals.x - equalsWidth / 2, 366);
     render(l3, ids);
     ctx.restore();
+    
+    ctx.save();
+    ctx.translate(0, 200);
+    render(diffLayout);
+    ctx.restore();
 
     if (t < 1) {
         t += 0.03;
@@ -134,6 +141,11 @@ function draw2() {
     render(l2, ids, easeOutCubic(t));
     ctx.restore();
 
+    ctx.save();
+    ctx.translate(0, 200);
+    render(diffLayout);
+    ctx.restore();
+    
     if (t < 1) {
         t += 0.03;
         requestAnimationFrame(draw2);
@@ -143,5 +155,4 @@ function draw2() {
 }
 
 draw1();
-
 

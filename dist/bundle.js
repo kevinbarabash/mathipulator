@@ -108,6 +108,8 @@
 	console.log(l1);
 	console.log(l2);
 
+	var diffLayout = layout(diff);
+
 	var equalsWidth = ctx.measureText("=").width;
 
 	var t = 0;
@@ -165,6 +167,11 @@
 	    render(l3, ids);
 	    ctx.restore();
 
+	    ctx.save();
+	    ctx.translate(0, 200);
+	    render(diffLayout);
+	    ctx.restore();
+
 	    if (t < 1) {
 	        t += 0.03;
 	        requestAnimationFrame(draw1);
@@ -183,6 +190,11 @@
 	    ctx.save();
 	    ctx.translate(600 - equals.x - equalsWidth / 2, 366);
 	    render(l2, ids, easeOutCubic(t));
+	    ctx.restore();
+
+	    ctx.save();
+	    ctx.translate(0, 200);
+	    render(diffLayout);
 	    ctx.restore();
 
 	    if (t < 1) {
@@ -358,8 +370,6 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
@@ -368,7 +378,7 @@
 
 	var _functify = __webpack_require__(3);
 
-	var f = _interopRequireWildcard(_functify);
+	var _functify2 = _interopRequireDefault(_functify);
 
 	var _listNode = __webpack_require__(90);
 
@@ -419,7 +429,7 @@
 	    }, {
 	        key: 'clone',
 	        value: function clone() {
-	            return new (_bind.apply(Expression, [null].concat(_toConsumableArray(f(this).map(function (x) {
+	            return new (_bind.apply(Expression, [null].concat(_toConsumableArray((0, _functify2['default'])(this).map(function (x) {
 	                return x.clone();
 	            })))))();
 	        }
@@ -5271,7 +5281,7 @@
 	    }, {
 	        key: 'toString',
 	        value: function toString() {
-	            return this.type + ':' + this.value;
+	            return this.type + ':' + this.value + '(' + this.id + ')';
 	        }
 	    }, {
 	        key: 'clone',
@@ -5436,7 +5446,17 @@
 	                if (child.type === 'Operator') {
 	                    p.x += space;
 	                }
+	                if (child.type === 'Expression') {
+	                    var key = id + ':leftParen';
+	                    result[key] = _extends({ id: key, width: paren, height: height, text: '(' }, p);
+	                    p.x += paren;
+	                }
 	                layout(child, result, p);
+	                if (child.type === 'Expression') {
+	                    var key = id + ':rightParen';
+	                    result[key] = _extends({ id: key, width: paren, height: height, text: ')' }, p);
+	                    p.x += paren;
+	                }
 	                if (child.type === 'Operator') {
 	                    p.x += space;
 	                }
@@ -5468,10 +5488,12 @@
 	                if (child.type === 'Operator') {
 	                    continue;
 	                }
-	                result[id] = _extends({ id: id + ':leftParen', width: paren, height: height, text: '(' }, p);
+	                var key = id + ':leftParen';
+	                result[key] = _extends({ id: key, width: paren, height: height, text: '(' }, p);
 	                p.x += paren;
 	                layout(child, result, p);
-	                result[id] = _extends({ id: id + ':rightParen', width: paren, height: height, text: ')' }, p);
+	                key = id + ':rightParen';
+	                result[key] = _extends({ id: key, width: paren, height: height, text: ')' }, p);
 	                p.x += paren;
 	            }
 	        } catch (err) {
@@ -5515,7 +5537,10 @@
 	    Object.keys(layout).forEach(function (id) {
 	        var leaf = layout[id];
 	        var text = String(leaf.text).replace(/\-/g, '−');
-	        if (ids.indexOf(leaf.id.toString()) !== -1) {
+	        if (!ids) {
+	            ctx.fillStyle = 'rgb(0,0,0)';
+	            ctx.fillText(text, leaf.x, leaf.y);
+	        } else if (ids.indexOf(leaf.id.toString()) !== -1) {
 	            ctx.fillStyle = 'rgb(0,0,0)';
 	            ctx.fillText(text, leaf.x, leaf.y);
 	        } else {
@@ -5582,6 +5607,7 @@
 	exports.removeExtraParens = removeExtraParens;
 	exports.add = add;
 	exports.sub = sub;
+	exports.mul = mul;
 
 	var _ast = __webpack_require__(1);
 
@@ -5690,6 +5716,8 @@
 	function sub(a, b) {
 	    return removeExtraParens(new _ast.Expression(a, new _ast.Operator('-'), b));
 	}
+
+	function mul(a, b) {}
 
 /***/ }
 /******/ ]);

@@ -1,4 +1,4 @@
-import * as f from 'functify'
+import f from 'functify'
 import ListNode from './list-node'
 import Operator from './operator'
 
