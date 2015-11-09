@@ -38,18 +38,17 @@ console.log('----------------------');
 
 
 // reset everything
-expr1 = new Expression(new Literal(1));
-expr1.add(new Literal(3));
-
-expr2 = new Expression(new Literal(5));
-expr2.subtract(new Literal(-2));
+expr1 = add(new Literal(1), new Literal(3));
+expr2 = sub(new Literal(5), new Literal(-2));
 
 var eqn1 = new Equation(expr1, expr2);
 let l1 = layout(eqn1);
 
 var ids = Object.keys(l1);
-
-eqn1.add(new Literal(25));
+var id = eqn1.id;
+eqn1 = add(eqn1, new Literal(25));
+eqn1.id = id;
+//eqn1.add(new Literal(25));
 let l2 = layout(eqn1);
 
 console.log(eqn1.toString());

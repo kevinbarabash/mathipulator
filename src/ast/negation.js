@@ -5,8 +5,4 @@ export default class Negation extends Node {
         super();
         Object.assign(this, { type: 'Negation', value });
     }
-    
-    add(node) {
-        
-    }
 }

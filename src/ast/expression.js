@@ -9,24 +9,6 @@ export default class Expression extends ListNode {
         this.append(...nodes);
     }
 
-    add(node) {
-        this.append(new Operator('+'), node);
-        return this;
-    }
-
-    subtract(node) {
-        this.append(new Operator('-'), node);
-        return this;
-    }
-
-    multiply(node) {
-        return new Product(this, new Operator('*'), node);
-    }
-
-    divide(node) {
-        return new Fraction(this, node);
-    }
-
     toString() {
         return `${this.type}:${super.toString()}`;
     }

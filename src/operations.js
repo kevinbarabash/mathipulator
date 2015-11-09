@@ -44,13 +44,49 @@ export function removeExtraParens(expr) {
 }
 
 export function add(a, b) {
-    return removeExtraParens(new Expression(a, new Operator('+'), b));
+    if (a.type === 'Equation' && b.type === 'Equation') {
+        return new Equation(add(a.left, b.left), add(a.right, b.right));
+    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+        return new Equation(add(a.left, b.clone()), add(a.right, b.clone()));
+    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+        return new Equation(add(a.clone(), b.left), add(a.clone(), b.right));
+    } else {
+        return removeExtraParens(new Expression(a, new Operator('+'), b));
+    }
 }
 
 export function sub(a, b) {
-    return removeExtraParens(new Expression(a, new Operator('-'), b));
+    if (a.type === 'Equation' && b.type === 'Equation') {
+        return new Equation(sub(a.left, b.left), sub(a.right, b.right));
+    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+        return new Equation(sub(a.left, b), sub(a.right, b));
+    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+        return new Equation(sub(a, b.left), sub(a, b.right));
+    } else {
+        return removeExtraParens(new Expression(a, new Operator('-'), b));
+    }
 }
 
 export function mul(a, b) {
-    
+    if (a.type === 'Equation' && b.type === 'Equation') {
+        throw new Error("can't multiply two equations");
+    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+        return new Equation(mul(a.left, b), mul(a.right, b));
+    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+        return new Equation(mul(a, b.left), mul(a, b.right));
+    } else {
+        return new Product(a, '*', b);
+    }
+}
+
+export function div(a, b) {
+    if (a.type === 'Equation' && b.type === 'Equation') {
+        throw new Error("can't divide two equations");
+    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+        return new Equation(div(a.left, b), div(a.right, b));
+    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+        return new Equation(div(a, b.left), div(a, b.right));
+    } else {
+        return new Fraction(a, b);
+    }
 }

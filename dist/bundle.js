@@ -89,18 +89,17 @@
 	console.log('----------------------');
 
 	// reset everything
-	expr1 = new Expression(new Literal(1));
-	expr1.add(new Literal(3));
-
-	expr2 = new Expression(new Literal(5));
-	expr2.subtract(new Literal(-2));
+	expr1 = add(new Literal(1), new Literal(3));
+	expr2 = sub(new Literal(5), new Literal(-2));
 
 	var eqn1 = new Equation(expr1, expr2);
 	var l1 = layout(eqn1);
 
 	var ids = Object.keys(l1);
-
-	eqn1.add(new Literal(25));
+	var id = eqn1.id;
+	eqn1 = add(eqn1, new Literal(25));
+	eqn1.id = id;
+	//eqn1.add(new Literal(25));
 	var l2 = layout(eqn1);
 
 	console.log(eqn1.toString());
@@ -400,28 +399,6 @@
 	    }
 
 	    _createClass(Expression, [{
-	        key: 'add',
-	        value: function add(node) {
-	            this.append(new _operator2['default']('+'), node);
-	            return this;
-	        }
-	    }, {
-	        key: 'subtract',
-	        value: function subtract(node) {
-	            this.append(new _operator2['default']('-'), node);
-	            return this;
-	        }
-	    }, {
-	        key: 'multiply',
-	        value: function multiply(node) {
-	            return new Product(this, new _operator2['default']('*'), node);
-	        }
-	    }, {
-	        key: 'divide',
-	        value: function divide(node) {
-	            return new Fraction(this, node);
-	        }
-	    }, {
 	        key: 'toString',
 	        value: function toString() {
 	            return this.type + ':' + _get(Object.getPrototypeOf(Expression.prototype), 'toString', this).call(this);
@@ -4969,12 +4946,6 @@
 
 	var _id = 0;
 
-	//export default class Node {
-	//    constructor() {
-	//        this.id = _id++;
-	//    }
-	//}
-
 	var Node = function Node() {
 	    _classCallCheck(this, Node);
 
@@ -5056,10 +5027,10 @@
 	                if (prev.type === 'Literal' && next.next === 'Literal') {
 	                    var result = new Literal(operations[this.operator](prev, next));
 
-	                    var _parent2 = this[_parent];
-	                    _parent2.remove(prev);
-	                    _parent2.remove(next);
-	                    _parent2.replace(this, result);
+	                    var _parent = this.parent;
+	                    _parent.remove(prev);
+	                    _parent.remove(next);
+	                    _parent.replace(this, result);
 	                }
 	            }
 	        }
@@ -5110,26 +5081,6 @@
 	    }
 
 	    _createClass(Fraction, [{
-	        key: 'add',
-	        value: function add(node) {
-	            return new _expression2['default'](this, new Operator('+'), node);
-	        }
-	    }, {
-	        key: 'subtract',
-	        value: function subtract(node) {
-	            return new _expression2['default'](this, new Operator('-'), node);
-	        }
-	    }, {
-	        key: 'multiply',
-	        value: function multiply(node) {
-	            return this.append(new Operator('*'), node);
-	        }
-	    }, {
-	        key: 'divide',
-	        value: function divide(node) {
-	            return new Fraction(this, node);
-	        }
-	    }, {
 	        key: 'toString',
 	        value: function toString() {
 	            return '[' + this.type + ':' + this.numerator + '/' + this.denominator + ']';
@@ -5187,26 +5138,6 @@
 	    }
 
 	    _createClass(Identifier, [{
-	        key: 'add',
-	        value: function add(node) {
-	            return new Expression(this, new Operator('+'), node);
-	        }
-	    }, {
-	        key: 'subtract',
-	        value: function subtract(node) {
-	            return new Expression(this, new Operator('-'), node);
-	        }
-	    }, {
-	        key: 'multiply',
-	        value: function multiply(node) {
-	            return new Product(this, new Operator('*'), node);
-	        }
-	    }, {
-	        key: 'divide',
-	        value: function divide(node) {
-	            return new Fraction(this, node);
-	        }
-	    }, {
 	        key: 'toString',
 	        value: function toString() {
 	            return this.type + ':' + this.name;
@@ -5259,26 +5190,6 @@
 	    }
 
 	    _createClass(Literal, [{
-	        key: 'add',
-	        value: function add(node) {
-	            return new Expression(this, new Operator('+'), node);
-	        }
-	    }, {
-	        key: 'subtract',
-	        value: function subtract(node) {
-	            return new Expression(this, new Operator('-'), node);
-	        }
-	    }, {
-	        key: 'multiply',
-	        value: function multiply(node) {
-	            return new Product(this, new Operator('*'), node);
-	        }
-	    }, {
-	        key: 'divide',
-	        value: function divide(node) {
-	            return new Fraction(this, node);
-	        }
-	    }, {
 	        key: 'toString',
 	        value: function toString() {
 	            return this.type + ':' + this.value + '(' + this.id + ')';
@@ -5331,33 +5242,14 @@
 	    }
 
 	    _createClass(Equation, [{
-	        key: 'add',
-	        value: function add(node) {
-	            this.left = this.left.add(node.clone());
-	            this.right = this.right.add(node.clone());
-	        }
-	    }, {
-	        key: 'subtract',
-	        value: function subtract(node) {
-	            this.left = this.left.subtract(node);
-	            this.right = this.right.subtract(node);
-	        }
-	    }, {
-	        key: 'multiply',
-	        value: function multiply(node) {
-	            this.left = this.left.multiply(node);
-	            this.right = this.right.multiply(node);
-	        }
-	    }, {
-	        key: 'divide',
-	        value: function divide(node) {
-	            this.left = this.left.divide(node);
-	            this.right = this.right.divide(node);
-	        }
-	    }, {
 	        key: 'toString',
 	        value: function toString() {
 	            return this.type + ':[' + this.left + ' = ' + this.right + ']';
+	        }
+	    }, {
+	        key: 'clone',
+	        value: function clone() {
+	            return new Equation(this.left.clone(), this.right.clone());
 	        }
 	    }]);
 
@@ -5608,6 +5500,7 @@
 	exports.add = add;
 	exports.sub = sub;
 	exports.mul = mul;
+	exports.div = div;
 
 	var _ast = __webpack_require__(1);
 
@@ -5710,14 +5603,52 @@
 	}
 
 	function add(a, b) {
-	    return removeExtraParens(new _ast.Expression(a, new _ast.Operator('+'), b));
+	    if (a.type === 'Equation' && b.type === 'Equation') {
+	        return new _ast.Equation(add(a.left, b.left), add(a.right, b.right));
+	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+	        return new _ast.Equation(add(a.left, b.clone()), add(a.right, b.clone()));
+	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+	        return new _ast.Equation(add(a.clone(), b.left), add(a.clone(), b.right));
+	    } else {
+	        return removeExtraParens(new _ast.Expression(a, new _ast.Operator('+'), b));
+	    }
 	}
 
 	function sub(a, b) {
-	    return removeExtraParens(new _ast.Expression(a, new _ast.Operator('-'), b));
+	    if (a.type === 'Equation' && b.type === 'Equation') {
+	        return new _ast.Equation(sub(a.left, b.left), sub(a.right, b.right));
+	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+	        return new _ast.Equation(sub(a.left, b), sub(a.right, b));
+	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+	        return new _ast.Equation(sub(a, b.left), sub(a, b.right));
+	    } else {
+	        return removeExtraParens(new _ast.Expression(a, new _ast.Operator('-'), b));
+	    }
 	}
 
-	function mul(a, b) {}
+	function mul(a, b) {
+	    if (a.type === 'Equation' && b.type === 'Equation') {
+	        throw new Error("can't multiply two equations");
+	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+	        return new _ast.Equation(mul(a.left, b), mul(a.right, b));
+	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+	        return new _ast.Equation(mul(a, b.left), mul(a, b.right));
+	    } else {
+	        return new _ast.Product(a, '*', b);
+	    }
+	}
+
+	function div(a, b) {
+	    if (a.type === 'Equation' && b.type === 'Equation') {
+	        throw new Error("can't divide two equations");
+	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+	        return new _ast.Equation(div(a.left, b), div(a.right, b));
+	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+	        return new _ast.Equation(div(a, b.left), div(a, b.right));
+	    } else {
+	        return new _ast.Fraction(a, b);
+	    }
+	}
 
 /***/ }
 /******/ ]);

@@ -29,7 +29,7 @@ export default class Operator extends Node {
             if (prev.type === 'Literal' && next.next === 'Literal') {
                 let result = new Literal(operations[this.operator](prev, next));
 
-                let parent = this[_parent];
+                let parent = this.parent;
                 parent.remove(prev);
                 parent.remove(next);
                 parent.replace(this, result);
