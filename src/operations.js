@@ -1,4 +1,4 @@
-import {
+const {
     Expression,
     Product,
     Fraction,
@@ -6,13 +6,13 @@ import {
     Identifier,
     Literal,
     Equation
-} from './ast'
+} = require("./ast.js");
 
 export function removeExtraParens(expr) {
     if (expr.type !== 'Expression') {
         return expr;
     }
-    
+
     let removalList = [];
     for (let child of expr) {
         if (child.type === 'Expression') {
@@ -21,7 +21,7 @@ export function removeExtraParens(expr) {
             }
         }
     }
-    
+
     for (let removal of removalList) {
         for (let child of removal) {
             child.parent = expr;
@@ -39,7 +39,7 @@ export function removeExtraParens(expr) {
             removal.next.prev = removal.last;
         }
     }
-    
+
     return expr;
 }
 

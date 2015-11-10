@@ -12,7 +12,8 @@ let {
     layout,
     render,
     lerpLayout,
-    ctx
+    ctx,
+    hitTest
 } = require('./src/renderer.js');
 
 let { add, sub, removeExtraParens } = require('./src/operations.js');
@@ -114,7 +115,7 @@ function draw1() {
     ctx.translate(600 - equals.x - equalsWidth / 2, 366);
     render(l3, ids);
     ctx.restore();
-    
+
     ctx.save();
     ctx.translate(0, 200);
     render(diffLayout);
@@ -144,7 +145,7 @@ function draw2() {
     ctx.translate(0, 200);
     render(diffLayout);
     ctx.restore();
-    
+
     if (t < 1) {
         t += 0.03;
         requestAnimationFrame(draw2);
@@ -152,6 +153,34 @@ function draw2() {
 
     }
 }
+
+document.addEventListener('click', function(e) {
+    var {pageX:x, pageY:y} = e;
+
+    let equals = findEquals(l2);
+
+    x -= 600 - equals.x - equalsWidth / 2;
+    y -= 366;
+
+    let leaf = hitTest(l2, x, y);
+
+    ctx.clearRect(0, 0, 1200, 700);
+    drawAxes(ctx);
+
+    ctx.save();
+    ctx.translate(600 - equals.x - equalsWidth / 2, 366);
+    if (leaf) {
+        ctx.fillStyle = 'rgba(255,255,0,0.5)';
+        ctx.fillRect(leaf.x, leaf.y - leaf.height, leaf.width, leaf.height);
+    }
+    render(l2, ids, easeOutCubic(t));
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(0, 200);
+    render(diffLayout);
+    ctx.restore();
+});
 
 draw1();
 

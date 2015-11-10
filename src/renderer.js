@@ -28,10 +28,10 @@ let paren = ctx.measureText("(").width;
 
 /**
  * Creates a layout
- * 
+ *
  * @param {Object} node A Math AST node.
  * @param {Object} result The object to store the layout in.
- * @param {Object?} p A point specifying where to render the layout. 
+ * @param {Object?} p A point specifying where to render the layout.
  * @returns {Object} The layout object.
  */
 function layout(node, result = {}, p = { x: 0, y: 0 }) {
@@ -103,11 +103,11 @@ function layout(node, result = {}, p = { x: 0, y: 0 }) {
 
 /**
  * Render a layout.
- * 
+ *
  * @param {Object} layout The layout to render.
  * @param {Array} ids An array of ids specifying which parts of the expression
  *        to render.
- * @param {Number} t A number between 0 and 1, used for fading in new parts 
+ * @param {Number} t A number between 0 and 1, used for fading in new parts
  *        of the expression.
  */
 function render(layout, ids, t) {
@@ -118,9 +118,11 @@ function render(layout, ids, t) {
             ctx.fillStyle = 'rgb(0,0,0)';
             ctx.fillText(text, leaf.x, leaf.y);
         } else if (ids.indexOf(leaf.id.toString()) !== -1) {
+            // always visible
             ctx.fillStyle = 'rgb(0,0,0)';
             ctx.fillText(text, leaf.x, leaf.y);
         } else {
+            // fade in
             var gray = (1 - t) * 255 | 0;
             ctx.fillStyle = `rgb(${gray},${gray},255)`;
             ctx.fillText(text, leaf.x, leaf.y);
@@ -130,7 +132,7 @@ function render(layout, ids, t) {
 
 /**
  * Interpolates between two values.
- * 
+ *
  * @param val1
  * @param val2
  * @param t
@@ -142,7 +144,7 @@ function lerp(val1, val2, t) {
 
 /**
  * Interpolates between two layouts.
- * 
+ *
  * @param {Object} layout1
  * @param {Object} layout2
  * @param {Array} ids
@@ -153,21 +155,36 @@ function lerpLayout(layout1, layout2, ids, t) {
     ids.forEach(id => {
         let l1 = layout1[id];
         let l2 = layout2[id];
-        
+
         layout[id] = {
             id: id,
             x: lerp(l1.x, l2.x, t),
             y: 0,
+            width: lerp(l1.width, l2.width, t),
+            height: lerp(l1.height, l2.height, 2),
             text: l1.text
         };
     });
-    
+
     return layout;
+}
+
+function hitTest(layout, x, y) {
+    let result = null;
+    Object.keys(layout).forEach(id => {
+        let leaf = layout[id];
+        if (x > leaf.x && x < leaf.x + leaf.width && y > leaf.y - leaf.height && y < leaf.y) {
+            console.log(leaf);
+            result = leaf;
+        }
+    });
+    return result;
 }
 
 module.exports = {
     layout,
     render,
     lerpLayout,
-    ctx
+    ctx,
+    hitTest
 };
