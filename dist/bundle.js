@@ -67,7 +67,7 @@
 	var _require3 = __webpack_require__(102);
 
 	var getMetrics = _require3.getMetrics;
-	var Layout = _require3.Layout;
+	var createLayout = _require3.createLayout;
 
 	var _require4 = __webpack_require__(101);
 
@@ -243,10 +243,11 @@
 	ctx.translate(100, 100);
 
 	expr1 = add(new Literal(25), new Literal(64));
+	expr2 = sub(new Literal(5), new Literal(-2));
 
-	console.log("NEW LAYOUT");
-	console.log("----------");
-	var newLayout = new Layout(expr1, 64);
+	eqn1 = new Equation(expr1, expr2);
+
+	var newLayout = createLayout(eqn1, 64);
 	newLayout.render(ctx);
 
 	ctx.restore();
@@ -8123,167 +8124,13 @@
 	    return Glyph;
 	})();
 
-	var Run = (function () {
-	    function Run(text, fontSize) {
-	        _classCallCheck(this, Run);
-
-	        this.x = 0;
-	        this.y = 0;
-	        this.text = text;
-	        this.fontSize = fontSize;
-
-	        this.glyphs = [];
-
-	        var penX = 0;
-
-	        var _iteratorNormalCompletion2 = true;
-	        var _didIteratorError2 = false;
-	        var _iteratorError2 = undefined;
-
-	        try {
-	            for (var _iterator2 = text[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                var c = _step2.value;
-
-	                var glyph = new Glyph(c, fontSize);
-	                glyph.x = penX;
-	                this.glyphs.push(glyph);
-	                penX += glyph.advance;
-	            }
-	        } catch (err) {
-	            _didIteratorError2 = true;
-	            _iteratorError2 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
-	                    _iterator2["return"]();
-	                }
-	            } finally {
-	                if (_didIteratorError2) {
-	                    throw _iteratorError2;
-	                }
-	            }
-	        }
-
-	        this.advance = penX;
-	    }
-
-	    _createClass(Run, [{
-	        key: "render",
-	        value: function render(ctx) {
-	            ctx.save();
-	            ctx.translate(this.x, this.y);
-	            var _iteratorNormalCompletion3 = true;
-	            var _didIteratorError3 = false;
-	            var _iteratorError3 = undefined;
-
-	            try {
-	                for (var _iterator3 = this.glyphs[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	                    var glyph = _step3.value;
-
-	                    glyph.render(ctx);
-	                }
-	            } catch (err) {
-	                _didIteratorError3 = true;
-	                _iteratorError3 = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion3 && _iterator3["return"]) {
-	                        _iterator3["return"]();
-	                    }
-	                } finally {
-	                    if (_didIteratorError3) {
-	                        throw _iteratorError3;
-	                    }
-	                }
-	            }
-
-	            ctx.restore();
-	        }
-	    }]);
-
-	    return Run;
-	})();
-
 	var Layout = (function () {
-	    function Layout(node, fontSize) {
+	    function Layout(children) {
 	        _classCallCheck(this, Layout);
 
-	        var spaceMetrics = getMetrics(" ", fontSize);
-
-	        this.layout = [];
-
-	        // in the case of exponents we'll want to reduce the fontSize
-	        this.fontSize = fontSize;
-
-	        // this is where the layout is located within its parent
 	        this.x = 0;
 	        this.y = 0;
-
-	        // after a child layout has been created, we update its
-	        // position to be the current pen position.
-	        var penX = 0;
-
-	        if (node.type === "Literal") {
-	            var text = String(node.value);
-	            var run = new Run(text, fontSize);
-	            run.x = penX;
-	            penX += run.advance;
-	            this.layout.push(run);
-	        } else if (node.type === "Operator") {
-	            var glyph = new Glyph(node.operator, fontSize);
-	            glyph.x = penX;
-	            penX += glyph.advance;
-	            this.layout.push(glyph);
-	        } else if (node.type === "Expression") {
-	            var _iteratorNormalCompletion4 = true;
-	            var _didIteratorError4 = false;
-	            var _iteratorError4 = undefined;
-
-	            try {
-	                for (var _iterator4 = node[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-	                    var child = _step4.value;
-
-	                    var layout = new Layout(child, fontSize);
-	                    if (child.type === "Operator") {
-	                        penX += spaceMetrics.advance;
-	                    }
-	                    layout.x = penX;
-	                    console.log(layout.x);
-	                    penX += layout.advance;
-	                    this.layout.push(layout);
-	                    if (child.type === "Operator") {
-	                        penX += spaceMetrics.advance;
-	                    }
-	                    penX += layout.advance;
-	                }
-	            } catch (err) {
-	                _didIteratorError4 = true;
-	                _iteratorError4 = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion4 && _iterator4["return"]) {
-	                        _iterator4["return"]();
-	                    }
-	                } finally {
-	                    if (_didIteratorError4) {
-	                        throw _iteratorError4;
-	                    }
-	                }
-	            }
-	        } else if (node.type === "Equation") {
-	            var lhs = new Layout(node.left, fontSize);
-	            var equalGlyph = new Glyph("=", fontSize);
-	            var rhs = new Layout(node.right, fontSize);
-	            lhs.x = penX;
-	            penX += lhs.advance;
-	            equalGlyph.x = penX;
-	            penX += equalGlyph.advance;
-	            rhs.x = penX;
-	            penX += rhs.advance;
-	            this.layout.push(lhs);
-	        }
-
-	        this.advance = penX;
+	        this.children = children;
 	    }
 
 	    _createClass(Layout, [{
@@ -8291,27 +8138,27 @@
 	        value: function render(ctx) {
 	            ctx.save();
 	            ctx.translate(this.x, this.y);
-	            var _iteratorNormalCompletion5 = true;
-	            var _didIteratorError5 = false;
-	            var _iteratorError5 = undefined;
+	            var _iteratorNormalCompletion2 = true;
+	            var _didIteratorError2 = false;
+	            var _iteratorError2 = undefined;
 
 	            try {
-	                for (var _iterator5 = this.layout[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-	                    var layout = _step5.value;
+	                for (var _iterator2 = this.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                    var layout = _step2.value;
 
 	                    layout.render(ctx);
 	                }
 	            } catch (err) {
-	                _didIteratorError5 = true;
-	                _iteratorError5 = err;
+	                _didIteratorError2 = true;
+	                _iteratorError2 = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion5 && _iterator5["return"]) {
-	                        _iterator5["return"]();
+	                    if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
+	                        _iterator2["return"]();
 	                    }
 	                } finally {
-	                    if (_didIteratorError5) {
-	                        throw _iteratorError5;
+	                    if (_didIteratorError2) {
+	                        throw _iteratorError2;
 	                    }
 	                }
 	            }
@@ -8323,9 +8170,119 @@
 	    return Layout;
 	})();
 
+	function createLayout(node, fontSize) {
+	    var spaceMetrics = getMetrics(" ", fontSize);
+
+	    if (node.type === "Literal") {
+	        var text = String(node.value);
+
+	        var penX = 0;
+	        var layouts = [];
+
+	        var _iteratorNormalCompletion3 = true;
+	        var _didIteratorError3 = false;
+	        var _iteratorError3 = undefined;
+
+	        try {
+	            for (var _iterator3 = text[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	                var c = _step3.value;
+
+	                var glyph = new Glyph(c, fontSize);
+
+	                glyph.x = penX;
+	                penX += glyph.advance;
+
+	                layouts.push(glyph);
+	            }
+	        } catch (err) {
+	            _didIteratorError3 = true;
+	            _iteratorError3 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion3 && _iterator3["return"]) {
+	                    _iterator3["return"]();
+	                }
+	            } finally {
+	                if (_didIteratorError3) {
+	                    throw _iteratorError3;
+	                }
+	            }
+	        }
+
+	        var layout = new Layout(layouts);
+	        layout.advance = penX;
+	        return layout;
+	    } else if (node.type === "Operator") {
+	        return new Glyph(node.operator, fontSize);
+	    } else if (node.type === "Expression") {
+	        var penX = 0;
+	        var layouts = [];
+	        var _iteratorNormalCompletion4 = true;
+	        var _didIteratorError4 = false;
+	        var _iteratorError4 = undefined;
+
+	        try {
+	            for (var _iterator4 = node[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	                var child = _step4.value;
+
+	                var childLayout = createLayout(child, fontSize);
+
+	                if (child.type === "Operator") {
+	                    penX += spaceMetrics.advance;
+	                }
+
+	                childLayout.x = penX;
+	                penX += childLayout.advance;
+
+	                if (child.type === "Operator") {
+	                    penX += spaceMetrics.advance;
+	                }
+	                layouts.push(childLayout);
+	            }
+	        } catch (err) {
+	            _didIteratorError4 = true;
+	            _iteratorError4 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion4 && _iterator4["return"]) {
+	                    _iterator4["return"]();
+	                }
+	            } finally {
+	                if (_didIteratorError4) {
+	                    throw _iteratorError4;
+	                }
+	            }
+	        }
+
+	        var layout = new Layout(layouts);
+	        layout.advance = penX;
+	        return layout;
+	    } else if (node.type === "Equation") {
+	        var penX = 0;
+
+	        var lhs = createLayout(node.left, fontSize);
+	        lhs.x = penX;
+	        penX += lhs.advance;
+
+	        // TODO: update Equation to handle inequalities
+	        var equal = new Glyph("=", fontSize);
+	        penX += spaceMetrics.advance;
+	        equal.x = penX;
+	        penX += equal.advance + spaceMetrics.advance;
+
+	        var rhs = createLayout(node.right, fontSize);
+	        rhs.x = penX;
+	        penX += rhs.advance;
+
+	        var layout = new Layout([lhs, equal, rhs]);
+	        layout.advance = penX;
+	        return layout;
+	    }
+	}
+
 	module.exports = {
 	    getMetrics: getMetrics,
-	    Layout: Layout
+	    createLayout: createLayout
 	};
 
 /***/ }

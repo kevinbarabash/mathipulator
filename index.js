@@ -16,7 +16,7 @@ let {
     hitTest
 } = require('./src/renderer.js');
 
-const {getMetrics, Layout} = require("./src/layout.js");
+const {getMetrics, createLayout} = require("./src/layout.js");
 
 let { add, sub, removeExtraParens } = require('./src/operations.js');
 
@@ -191,10 +191,11 @@ ctx.translate(100,100);
 
 
 expr1 = add(new Literal(25), new Literal(64));
+expr2 = sub(new Literal(5), new Literal(-2));
 
-console.log("NEW LAYOUT");
-console.log("----------");
-var newLayout = new Layout(expr1, 64);
+eqn1 = new Equation(expr1, expr2);
+
+var newLayout = createLayout(eqn1, 64);
 newLayout.render(ctx);
 
 ctx.restore();
