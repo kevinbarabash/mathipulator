@@ -68,6 +68,7 @@
 
 	var getMetrics = _require3.getMetrics;
 	var createLayout = _require3.createLayout;
+	var flatten = _require3.flatten;
 
 	var _require4 = __webpack_require__(101);
 
@@ -249,6 +250,11 @@
 
 	var newLayout = createLayout(eqn1, 64);
 	newLayout.render(ctx);
+
+	ctx.translate(0, 100);
+
+	var flattenedLayout = flatten(newLayout);
+	flattenedLayout.render(ctx);
 
 	ctx.restore();
 
@@ -8119,6 +8125,13 @@
 	            ctx.font = this.fontSize + "px 100 Helvetica";
 	            ctx.fillText(this.text, this.x, this.y);
 	        }
+	    }, {
+	        key: "clone",
+	        value: function clone() {
+	            var result = new Glyph(this.text, this.fontSize);
+	            Object.assign(result, this);
+	            return result;
+	        }
 	    }]);
 
 	    return Glyph;
@@ -8280,9 +8293,55 @@
 	    }
 	}
 
+	function _flatten(layout) {
+	    var dx = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+	    var dy = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+	    var result = arguments.length <= 3 || arguments[3] === undefined ? [] : arguments[3];
+
+	    if (layout.children) {
+	        dx += layout.x;
+	        dy += layout.y;
+	        var _iteratorNormalCompletion5 = true;
+	        var _didIteratorError5 = false;
+	        var _iteratorError5 = undefined;
+
+	        try {
+	            for (var _iterator5 = layout.children[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	                var child = _step5.value;
+
+	                _flatten(child, dx, dy, result);
+	            }
+	        } catch (err) {
+	            _didIteratorError5 = true;
+	            _iteratorError5 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion5 && _iterator5["return"]) {
+	                    _iterator5["return"]();
+	                }
+	            } finally {
+	                if (_didIteratorError5) {
+	                    throw _iteratorError5;
+	                }
+	            }
+	        }
+	    } else {
+	        var glyph = layout.clone();
+	        glyph.x += dx;
+	        glyph.y += dy;
+	        result.push(glyph);
+	    }
+	    return result;
+	}
+
+	function flatten(layout) {
+	    return new Layout(_flatten(layout));
+	}
+
 	module.exports = {
 	    getMetrics: getMetrics,
-	    createLayout: createLayout
+	    createLayout: createLayout,
+	    flatten: flatten
 	};
 
 /***/ }

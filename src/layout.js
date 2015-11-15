@@ -31,6 +31,12 @@ class Glyph {
         ctx.font = `${this.fontSize}px 100 Helvetica`;
         ctx.fillText(this.text, this.x, this.y);
     }
+
+    clone() {
+        const result = new Glyph(this.text, this.fontSize);
+        Object.assign(result, this);
+        return result;
+    }
 }
 
 class Layout {
@@ -118,8 +124,28 @@ function createLayout(node, fontSize) {
     }
 }
 
+function _flatten(layout, dx = 0, dy = 0, result = []) {
+    if (layout.children) {
+        dx += layout.x;
+        dy += layout.y;
+        for (const child of layout.children) {
+            _flatten(child, dx, dy, result);
+        }
+    } else {
+        const glyph = layout.clone();
+        glyph.x += dx;
+        glyph.y += dy;
+        result.push(glyph);
+    }
+    return result;
+}
+
+function flatten(layout) {
+    return new Layout(_flatten(layout));
+}
 
 module.exports = {
     getMetrics,
-    createLayout
+    createLayout,
+    flatten
 };

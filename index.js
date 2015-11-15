@@ -16,7 +16,7 @@ let {
     hitTest
 } = require('./src/renderer.js');
 
-const {getMetrics, createLayout} = require("./src/layout.js");
+const {getMetrics, createLayout, flatten} = require("./src/layout.js");
 
 let { add, sub, removeExtraParens } = require('./src/operations.js');
 
@@ -197,6 +197,11 @@ eqn1 = new Equation(expr1, expr2);
 
 var newLayout = createLayout(eqn1, 64);
 newLayout.render(ctx);
+
+ctx.translate(0, 100);
+
+var flattenedLayout = flatten(newLayout);
+flattenedLayout.render(ctx);
 
 ctx.restore();
 
