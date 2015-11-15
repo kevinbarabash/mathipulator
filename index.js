@@ -16,6 +16,8 @@ let {
     hitTest
 } = require('./src/renderer.js');
 
+const {getMetrics, Layout} = require("./src/layout.js");
+
 let { add, sub, removeExtraParens } = require('./src/operations.js');
 
 var expr1, expr2, expr3, sum, diff;
@@ -182,5 +184,20 @@ document.addEventListener('click', function(e) {
     ctx.restore();
 });
 
-draw1();
+//draw1();
 
+ctx.save();
+ctx.translate(100,100);
+
+
+expr1 = add(new Literal(25), new Literal(64));
+
+console.log("NEW LAYOUT");
+console.log("----------");
+var newLayout = new Layout(expr1, 64);
+newLayout.render(ctx);
+
+ctx.restore();
+
+
+//console.log(getMetrics("a", fontSize));

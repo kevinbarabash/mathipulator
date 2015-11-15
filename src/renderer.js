@@ -34,6 +34,8 @@ let paren = ctx.measureText("(").width;
  * @param {Object?} p A point specifying where to render the layout.
  * @returns {Object} The layout object.
  */
+// TODO: use objects that have handy methods for getting bounds
+// TODO: use a two pass process, 1st pass is nested layout, 2nd pass flattens everything
 function layout(node, result = {}, p = { x: 0, y: 0 }) {
     let height = fontSize, id = node.id;
 
@@ -97,6 +99,16 @@ function layout(node, result = {}, p = { x: 0, y: 0 }) {
         p.x += width + space;
 
         layout(node.right, result, p);
+    } else if (node.type === 'Fraction') {
+        let leftLayout = layout(node.left);
+        let rightLayout = layout(node.right);
+
+        let left = Infinity;
+        let right = -Infinity;
+        Object.values(leftLayout).forEach(value => {
+            left = Math.min(left, value.x);
+            right = Math.max(right, value.x + value.width);
+        });
     }
     return result;
 }
