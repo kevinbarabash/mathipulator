@@ -191,14 +191,14 @@ ctx.translate(100,100);
 
 
 expr1 = add(new Literal(25), new Literal(64));
-expr2 = sub(new Literal(5), new Literal(-2));
+expr2 = sub(new Fraction(new Literal(1), add(new Literal(5), new Literal(9))), new Literal(-2));
 
 eqn1 = new Equation(expr1, expr2);
 
 var newLayout = createLayout(eqn1, 64);
 newLayout.render(ctx);
 
-ctx.translate(0, 100);
+ctx.translate(0, 300);
 
 var flattenedLayout = flatten(newLayout);
 flattenedLayout.render(ctx);

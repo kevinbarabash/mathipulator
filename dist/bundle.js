@@ -244,14 +244,14 @@
 	ctx.translate(100, 100);
 
 	expr1 = add(new Literal(25), new Literal(64));
-	expr2 = sub(new Literal(5), new Literal(-2));
+	expr2 = sub(new Fraction(new Literal(1), add(new Literal(5), new Literal(9))), new Literal(-2));
 
 	eqn1 = new Equation(expr1, expr2);
 
 	var newLayout = createLayout(eqn1, 64);
 	newLayout.render(ctx);
 
-	ctx.translate(0, 100);
+	ctx.translate(0, 300);
 
 	var flattenedLayout = flatten(newLayout);
 	flattenedLayout.render(ctx);
@@ -8111,10 +8111,10 @@
 
 	        this.x = 0;
 	        this.y = 0;
-	        this.text = c;
+	        this.text = formatText(c);
 	        this.fontSize = fontSize;
 
-	        var metrics = getMetrics(c, fontSize);
+	        var metrics = getMetrics(this.text, fontSize);
 	        this.advance = metrics.advance;
 	    }
 
@@ -8135,6 +8135,28 @@
 	    }]);
 
 	    return Glyph;
+	})();
+
+	var Box = (function () {
+	    function Box(x, y, width, height) {
+	        _classCallCheck(this, Box);
+
+	        Object.assign(this, { x: x, y: y, width: width, height: height });
+	    }
+
+	    _createClass(Box, [{
+	        key: "render",
+	        value: function render(ctx) {
+	            ctx.fillRect(this.x, this.y, this.width, this.height);
+	        }
+	    }, {
+	        key: "clone",
+	        value: function clone() {
+	            return new Box(this.x, this.y, this.width, this.height);
+	        }
+	    }]);
+
+	    return Box;
 	})();
 
 	var Layout = (function () {
@@ -8185,6 +8207,7 @@
 
 	function createLayout(node, fontSize) {
 	    var spaceMetrics = getMetrics(" ", fontSize);
+	    var dashMetrics = getMetrics("-", fontSize);
 
 	    if (node.type === "Literal") {
 	        var text = String(node.value);
@@ -8289,6 +8312,31 @@
 
 	        var layout = new Layout([lhs, equal, rhs]);
 	        layout.advance = penX;
+	        return layout;
+	    } else if (node.type === "Fraction") {
+	        var num = createLayout(node.numerator, fontSize);
+	        var den = createLayout(node.denominator, fontSize);
+
+	        // TODO: add Box class to actual render divisior bar
+	        // TODO: use x-height / 2 to determine divisor bar position
+	        // TODO: use ascender/descender + gap to determine y-shift
+	        num.y -= fontSize / 2;
+	        den.y += fontSize / 2 + 0.15 * fontSize;
+
+	        // TODO: calc width so that we can use width where it makes sense
+	        if (den.advance > num.advance) {
+	            num.x += (den.advance - num.advance) / 2;
+	        } else {
+	            den.x += (num.advance - den.advance) / 2;
+	        }
+
+	        var width = Math.max(num.advance, den.advance);
+	        var thickness = dashMetrics.height;
+	        var y = -dashMetrics.bearingY - thickness;
+	        var bar = new Box(0, y, width, thickness);
+
+	        var layout = new Layout([num, den, bar]);
+	        layout.advance = width;
 	        return layout;
 	    }
 	}
