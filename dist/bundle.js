@@ -243,8 +243,9 @@
 	ctx.save();
 	ctx.translate(100, 100);
 
-	expr1 = add(new Literal(25), new Literal(64));
-	expr2 = sub(new Fraction(new Literal(1), add(new Literal(5), new Literal(9))), new Literal(-2));
+	expr1 = add(new Literal(25), new Product(new Literal(2), new Identifier('pi'), new Identifier('r')));
+	expr1 = add(expr1, new Identifier('theta'));
+	expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier('x'))), new Literal(-2));
 
 	eqn1 = new Equation(expr1, expr2);
 
@@ -8111,7 +8112,7 @@
 
 	        this.x = 0;
 	        this.y = 0;
-	        this.text = formatText(c);
+	        this.text = c;
 	        this.fontSize = fontSize;
 
 	        var metrics = getMetrics(this.text, fontSize);
@@ -8205,12 +8206,24 @@
 	    return Layout;
 	})();
 
+	function formatIdentifier(identifier) {
+	    if (identifier.length > 1) {
+	        // TODO: have a fallback when we don't have the glyph
+	        if (identifier === 'pi') {
+	            return "π";
+	        } else if (identifier === 'theta') {
+	            return "θ";
+	        }
+	    }
+	    return identifier;
+	}
+
 	function createLayout(node, fontSize) {
 	    var spaceMetrics = getMetrics(" ", fontSize);
 	    var dashMetrics = getMetrics("-", fontSize);
 
 	    if (node.type === "Literal") {
-	        var text = String(node.value);
+	        var text = formatText(String(node.value));
 
 	        var penX = 0;
 	        var layouts = [];
@@ -8248,8 +8261,12 @@
 	        var layout = new Layout(layouts);
 	        layout.advance = penX;
 	        return layout;
+	    } else if (node.type === "Identifier") {
+	        var _name = formatIdentifier(node.name);
+	        return new Glyph(_name, fontSize);
 	    } else if (node.type === "Operator") {
-	        return new Glyph(node.operator, fontSize);
+	        var operator = formatText(node.operator);
+	        return new Glyph(operator, fontSize);
 	    } else if (node.type === "Expression") {
 	        var penX = 0;
 	        var layouts = [];
@@ -8320,8 +8337,8 @@
 	        // TODO: add Box class to actual render divisior bar
 	        // TODO: use x-height / 2 to determine divisor bar position
 	        // TODO: use ascender/descender + gap to determine y-shift
-	        num.y -= fontSize / 2;
-	        den.y += fontSize / 2 + 0.15 * fontSize;
+	        num.y -= fontSize / 2 + 0.05 * fontSize;
+	        den.y += fontSize / 2 + 0.20 * fontSize;
 
 	        // TODO: calc width so that we can use width where it makes sense
 	        if (den.advance > num.advance) {
@@ -8330,7 +8347,12 @@
 	            den.x += (num.advance - den.advance) / 2;
 	        }
 
-	        var width = Math.max(num.advance, den.advance);
+	        var padding = 0.1 * fontSize;
+
+	        num.x += padding;
+	        den.x += padding;
+
+	        var width = Math.max(num.advance, den.advance) + 2 * padding;
 	        var thickness = dashMetrics.height;
 	        var y = -dashMetrics.bearingY - thickness;
 	        var bar = new Box(0, y, width, thickness);
@@ -8338,26 +8360,22 @@
 	        var layout = new Layout([num, den, bar]);
 	        layout.advance = width;
 	        return layout;
-	    }
-	}
-
-	function _flatten(layout) {
-	    var dx = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
-	    var dy = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
-	    var result = arguments.length <= 3 || arguments[3] === undefined ? [] : arguments[3];
-
-	    if (layout.children) {
-	        dx += layout.x;
-	        dy += layout.y;
+	    } else if (node.type === "Product") {
+	        var penX = 0;
+	        var layouts = [];
 	        var _iteratorNormalCompletion5 = true;
 	        var _didIteratorError5 = false;
 	        var _iteratorError5 = undefined;
 
 	        try {
-	            for (var _iterator5 = layout.children[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	            for (var _iterator5 = node[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
 	                var child = _step5.value;
 
-	                _flatten(child, dx, dy, result);
+	                // TODO: handle multiple numbers and numbers that come in the middle
+	                var childLayout = createLayout(child, fontSize);
+	                childLayout.x = penX;
+	                penX += childLayout.advance;
+	                layouts.push(childLayout);
 	            }
 	        } catch (err) {
 	            _didIteratorError5 = true;
@@ -8370,6 +8388,45 @@
 	            } finally {
 	                if (_didIteratorError5) {
 	                    throw _iteratorError5;
+	                }
+	            }
+	        }
+
+	        var layout = new Layout(layouts);
+	        layout.advance = penX;
+	        return layout;
+	    }
+	}
+
+	function _flatten(layout) {
+	    var dx = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+	    var dy = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+	    var result = arguments.length <= 3 || arguments[3] === undefined ? [] : arguments[3];
+
+	    if (layout.children) {
+	        dx += layout.x;
+	        dy += layout.y;
+	        var _iteratorNormalCompletion6 = true;
+	        var _didIteratorError6 = false;
+	        var _iteratorError6 = undefined;
+
+	        try {
+	            for (var _iterator6 = layout.children[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+	                var child = _step6.value;
+
+	                _flatten(child, dx, dy, result);
+	            }
+	        } catch (err) {
+	            _didIteratorError6 = true;
+	            _iteratorError6 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion6 && _iterator6["return"]) {
+	                    _iterator6["return"]();
+	                }
+	            } finally {
+	                if (_didIteratorError6) {
+	                    throw _iteratorError6;
 	                }
 	            }
 	        }

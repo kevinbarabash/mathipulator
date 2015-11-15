@@ -190,8 +190,9 @@ ctx.save();
 ctx.translate(100,100);
 
 
-expr1 = add(new Literal(25), new Literal(64));
-expr2 = sub(new Fraction(new Literal(1), add(new Literal(5), new Literal(9))), new Literal(-2));
+expr1 = add(new Literal(25), new Product(new Literal(2), new Identifier('pi'), new Identifier('r')));
+expr1 = add(expr1, new Identifier('theta'));
+expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier('x'))), new Literal(-2));
 
 eqn1 = new Equation(expr1, expr2);
 

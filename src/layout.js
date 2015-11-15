@@ -19,7 +19,7 @@ class Glyph {
     constructor(c, fontSize) {
         this.x = 0;
         this.y = 0;
-        this.text = formatText(c);
+        this.text = c;
         this.fontSize = fontSize;
 
         const metrics = getMetrics(this.text, fontSize);
@@ -71,12 +71,25 @@ class Layout {
 }
 
 
+function formatIdentifier(identifier) {
+    if (identifier.length > 1) {
+        // TODO: have a fallback when we don't have the glyph
+        if (identifier === 'pi') {
+            return '\u03C0';
+        } else if (identifier === 'theta') {
+            return '\u03B8';
+        }
+    }
+    return identifier;
+}
+
+
 function createLayout(node, fontSize) {
     const spaceMetrics = getMetrics(" ", fontSize);
     const dashMetrics = getMetrics("-", fontSize);
 
     if (node.type === "Literal") {
-        const text = String(node.value);
+        const text = formatText(String(node.value));
 
         let penX = 0;
         const layouts = [];
@@ -93,8 +106,12 @@ function createLayout(node, fontSize) {
         const layout = new Layout(layouts);
         layout.advance = penX;
         return layout;
+    } else if (node.type === "Identifier") {
+        const name = formatIdentifier(node.name);
+        return new Glyph(name, fontSize);
     } else if (node.type === "Operator") {
-        return new Glyph(node.operator, fontSize);
+        const operator = formatText(node.operator);
+        return new Glyph(operator, fontSize);
     } else if (node.type === "Expression") {
         let penX = 0;
         const layouts = [];
@@ -143,8 +160,8 @@ function createLayout(node, fontSize) {
         // TODO: add Box class to actual render divisior bar
         // TODO: use x-height / 2 to determine divisor bar position
         // TODO: use ascender/descender + gap to determine y-shift
-        num.y -= fontSize / 2;
-        den.y += fontSize / 2 + 0.15 * fontSize;
+        num.y -= fontSize / 2 + 0.05 * fontSize;
+        den.y += fontSize / 2 + 0.20 * fontSize;
 
         // TODO: calc width so that we can use width where it makes sense
         if (den.advance > num.advance) {
@@ -153,13 +170,31 @@ function createLayout(node, fontSize) {
             den.x += (num.advance - den.advance) / 2;
         }
 
-        const width = Math.max(num.advance, den.advance);
+        const padding = 0.1 * fontSize;
+
+        num.x += padding;
+        den.x += padding;
+
+        const width = Math.max(num.advance, den.advance) + 2 * padding;
         const thickness = dashMetrics.height;
         const y = -dashMetrics.bearingY - thickness;
         const bar = new Box(0, y, width, thickness);
 
         const layout = new Layout([num, den, bar]);
         layout.advance = width;
+        return layout;
+    } else if (node.type === "Product") {
+        let penX = 0;
+        const layouts = [];
+        for (let child of node) {
+            // TODO: handle multiple numbers and numbers that come in the middle
+            const childLayout = createLayout(child, fontSize);
+            childLayout.x = penX;
+            penX += childLayout.advance;
+            layouts.push(childLayout);
+        }
+        const layout = new Layout(layouts);
+        layout.advance = penX;
         return layout;
     }
 }
