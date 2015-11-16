@@ -210,7 +210,11 @@ document.addEventListener('click', function(e) {
     var x = e.pageX - 100;
     var y = e.pageY - 100;
 
-    console.log(newLayout.hitTest(x, y));
+    const layoutNode = newLayout.hitTest(x, y);
+    console.log(layoutNode);
+
+    // TODO: implement findNode
+    // const expressionNode = findNode(expression, id);
 });
 
 //console.log(getMetrics("a", fontSize));

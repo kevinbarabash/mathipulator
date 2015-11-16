@@ -31,13 +31,25 @@ class Glyph {
 
     render(ctx) {
         // TODO when we flatten group all of the items with the same fontSize
-        ctx.strokeStyle = 'red';
-        const {bearingX, bearingY, width, height} = this.metrics;
-        ctx.strokeRect(bearingX + this.x, this.y - bearingY - height, width, height);
+        if (this.id) {
+            ctx.strokeStyle = 'red';
+            const bounds = this.bounds;
+            ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
+        }
+
         const weight = 100;
         ctx.font = `${weight} ${this.fontSize}px Helvetica`;
         ctx.fillStyle = 'black';
         ctx.fillText(this.text, this.x, this.y);
+    }
+
+    get bounds() {
+        const {bearingX, bearingY, width, height} = this.metrics;
+        const left = this.x + bearingX;
+        const right = left + width;
+        const top = this.y - bearingY - height;
+        const bottom = top + height;
+        return { left, right, top, bottom };
     }
 
     clone() {
@@ -85,13 +97,46 @@ class Layout {
     render(ctx) {
         ctx.save();
         ctx.translate(this.x, this.y);
+        if (this.atomic) {
+            ctx.strokeStyle = 'red';
+            const bounds = this.bounds;
+            ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
+        }
+
         for (const child of this.children) {
             child.render(ctx);
         }
         ctx.restore();
     }
 
+    get bounds() {
+        let initialBounds = {
+            left: Infinity,
+            right: -Infinity,
+            top: Infinity,
+            bottom: -Infinity
+        };
+
+        const bounds = this.children.reduce((bounds, child) => {
+            const childBounds = child.bounds;
+            return {
+                left: Math.min(bounds.left, childBounds.left),
+                right: Math.max(bounds.right, childBounds.right),
+                top: Math.min(bounds.top, childBounds.top),
+                bottom: Math.max(bounds.bottom, childBounds.bottom)
+            }
+        }, initialBounds);
+
+        return bounds;
+    }
+
     hitTest(x, y) {
+        if (this.atomic) {
+            const bounds = this.bounds;
+            if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) {
+                return this;
+            }
+        }
         for (const child of this.children) {
             const result = child.hitTest(x - this.x, y - this.y);
             if (result) {
@@ -136,13 +181,19 @@ function createLayout(node, fontSize) {
 
         const layout = new Layout(layouts, true);
         layout.advance = penX;
+        layout.id = node.id;
         return layout;
     } else if (node.type === "Identifier") {
         const name = formatIdentifier(node.name);
-        return new Glyph(name, fontSize);
+        // TODO handle multi character identifiers such as sin, cos, tan, etc.
+        const glyph = new Glyph(name, fontSize);
+        glyph.id = node.id;
+        return glyph;
     } else if (node.type === "Operator") {
         const operator = formatText(node.operator);
-        return new Glyph(operator, fontSize);
+        const glyph = new Glyph(operator, fontSize);
+        glyph.id = node.id;
+        return glyph;
     } else if (node.type === "Expression") {
         let penX = 0;
         const layouts = [];
@@ -163,6 +214,7 @@ function createLayout(node, fontSize) {
         }
         const layout = new Layout(layouts);
         layout.advance = penX;
+        layout.id = node.id;
         return layout;
     } else if (node.type === "Equation") {
         let penX = 0;
@@ -183,6 +235,7 @@ function createLayout(node, fontSize) {
 
         const layout = new Layout([lhs, equal, rhs]);
         layout.advance = penX;
+        layout.id = node.id;
         return layout;
     } else if (node.type === "Fraction") {
         const num = createLayout(node.numerator, fontSize);
@@ -214,6 +267,7 @@ function createLayout(node, fontSize) {
 
         const layout = new Layout([num, den, bar]);
         layout.advance = width;
+        layout.id = node.id;
         return layout;
     } else if (node.type === "Product") {
         let penX = 0;
@@ -227,12 +281,17 @@ function createLayout(node, fontSize) {
         }
         const layout = new Layout(layouts);
         layout.advance = penX;
+        layout.id = node.id;
         return layout;
     }
 }
 
 function _flatten(layout, dx = 0, dy = 0, result = []) {
-    if (layout.children) {
+    if (layout.atomic) {
+        layout.x += dx;
+        layout.y += dy;
+        result.push(layout);
+    } else if (layout.children) {
         dx += layout.x;
         dy += layout.y;
         for (const child of layout.children) {

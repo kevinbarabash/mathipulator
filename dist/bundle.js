@@ -262,7 +262,11 @@
 	    var x = e.pageX - 100;
 	    var y = e.pageY - 100;
 
-	    console.log(newLayout.hitTest(x, y));
+	    var layoutNode = newLayout.hitTest(x, y);
+	    console.log(layoutNode);
+
+	    // TODO: implement findNode
+	    // const expressionNode = findNode(expression, id);
 	});
 
 	//console.log(getMetrics("a", fontSize));
@@ -5940,14 +5944,12 @@
 	        key: "render",
 	        value: function render(ctx) {
 	            // TODO when we flatten group all of the items with the same fontSize
-	            ctx.strokeStyle = 'red';
-	            var _metrics = this.metrics;
-	            var bearingX = _metrics.bearingX;
-	            var bearingY = _metrics.bearingY;
-	            var width = _metrics.width;
-	            var height = _metrics.height;
+	            if (this.id) {
+	                ctx.strokeStyle = 'red';
+	                var bounds = this.bounds;
+	                ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
+	            }
 
-	            ctx.strokeRect(bearingX + this.x, this.y - bearingY - height, width, height);
 	            var weight = 100;
 	            ctx.font = weight + " " + this.fontSize + "px Helvetica";
 	            ctx.fillStyle = 'black';
@@ -5963,11 +5965,11 @@
 	    }, {
 	        key: "hitTest",
 	        value: function hitTest(x, y) {
-	            var _metrics2 = this.metrics;
-	            var bearingX = _metrics2.bearingX;
-	            var bearingY = _metrics2.bearingY;
-	            var width = _metrics2.width;
-	            var height = _metrics2.height;
+	            var _metrics = this.metrics;
+	            var bearingX = _metrics.bearingX;
+	            var bearingY = _metrics.bearingY;
+	            var width = _metrics.width;
+	            var height = _metrics.height;
 
 	            var left = bearingX + this.x;
 	            var right = left + width;
@@ -5976,6 +5978,21 @@
 	            if (x >= left && x <= right && y >= top && y <= bottom) {
 	                return this;
 	            }
+	        }
+	    }, {
+	        key: "bounds",
+	        get: function get() {
+	            var _metrics2 = this.metrics;
+	            var bearingX = _metrics2.bearingX;
+	            var bearingY = _metrics2.bearingY;
+	            var width = _metrics2.width;
+	            var height = _metrics2.height;
+
+	            var left = this.x + bearingX;
+	            var right = left + width;
+	            var top = this.y - bearingY - height;
+	            var bottom = top + height;
+	            return { left: left, right: right, top: top, bottom: bottom };
 	        }
 	    }]);
 
@@ -6025,6 +6042,12 @@
 	        value: function render(ctx) {
 	            ctx.save();
 	            ctx.translate(this.x, this.y);
+	            if (this.atomic) {
+	                ctx.strokeStyle = 'red';
+	                var bounds = this.bounds;
+	                ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
+	            }
+
 	            var _iteratorNormalCompletion2 = true;
 	            var _didIteratorError2 = false;
 	            var _iteratorError2 = undefined;
@@ -6055,6 +6078,12 @@
 	    }, {
 	        key: "hitTest",
 	        value: function hitTest(x, y) {
+	            if (this.atomic) {
+	                var bounds = this.bounds;
+	                if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) {
+	                    return this;
+	                }
+	            }
 	            var _iteratorNormalCompletion3 = true;
 	            var _didIteratorError3 = false;
 	            var _iteratorError3 = undefined;
@@ -6082,6 +6111,28 @@
 	                    }
 	                }
 	            }
+	        }
+	    }, {
+	        key: "bounds",
+	        get: function get() {
+	            var initialBounds = {
+	                left: Infinity,
+	                right: -Infinity,
+	                top: Infinity,
+	                bottom: -Infinity
+	            };
+
+	            var bounds = this.children.reduce(function (bounds, child) {
+	                var childBounds = child.bounds;
+	                return {
+	                    left: Math.min(bounds.left, childBounds.left),
+	                    right: Math.max(bounds.right, childBounds.right),
+	                    top: Math.min(bounds.top, childBounds.top),
+	                    bottom: Math.max(bounds.bottom, childBounds.bottom)
+	                };
+	            }, initialBounds);
+
+	            return bounds;
 	        }
 	    }]);
 
@@ -6142,13 +6193,19 @@
 
 	        var layout = new Layout(layouts, true);
 	        layout.advance = penX;
+	        layout.id = node.id;
 	        return layout;
 	    } else if (node.type === "Identifier") {
 	        var _name = formatIdentifier(node.name);
-	        return new Glyph(_name, fontSize);
+	        // TODO handle multi character identifiers such as sin, cos, tan, etc.
+	        var glyph = new Glyph(_name, fontSize);
+	        glyph.id = node.id;
+	        return glyph;
 	    } else if (node.type === "Operator") {
 	        var operator = formatText(node.operator);
-	        return new Glyph(operator, fontSize);
+	        var glyph = new Glyph(operator, fontSize);
+	        glyph.id = node.id;
+	        return glyph;
 	    } else if (node.type === "Expression") {
 	        var penX = 0;
 	        var layouts = [];
@@ -6191,6 +6248,7 @@
 
 	        var layout = new Layout(layouts);
 	        layout.advance = penX;
+	        layout.id = node.id;
 	        return layout;
 	    } else if (node.type === "Equation") {
 	        var penX = 0;
@@ -6211,6 +6269,7 @@
 
 	        var layout = new Layout([lhs, equal, rhs]);
 	        layout.advance = penX;
+	        layout.id = node.id;
 	        return layout;
 	    } else if (node.type === "Fraction") {
 	        var num = createLayout(node.numerator, fontSize);
@@ -6242,6 +6301,7 @@
 
 	        var layout = new Layout([num, den, bar]);
 	        layout.advance = width;
+	        layout.id = node.id;
 	        return layout;
 	    } else if (node.type === "Product") {
 	        var penX = 0;
@@ -6277,6 +6337,7 @@
 
 	        var layout = new Layout(layouts);
 	        layout.advance = penX;
+	        layout.id = node.id;
 	        return layout;
 	    }
 	}
@@ -6286,7 +6347,11 @@
 	    var dy = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
 	    var result = arguments.length <= 3 || arguments[3] === undefined ? [] : arguments[3];
 
-	    if (layout.children) {
+	    if (layout.atomic) {
+	        layout.x += dx;
+	        layout.y += dy;
+	        result.push(layout);
+	    } else if (layout.children) {
 	        dx += layout.x;
 	        dy += layout.y;
 	        var _iteratorNormalCompletion7 = true;
