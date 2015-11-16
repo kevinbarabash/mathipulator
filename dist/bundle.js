@@ -209,34 +209,33 @@
 	    } else {}
 	}
 
-	document.addEventListener('click', function (e) {
-	    var x = e.pageX;
-	    var y = e.pageY;
-
-	    var equals = findEquals(l2);
-
-	    x -= 600 - equals.x - equalsWidth / 2;
-	    y -= 366;
-
-	    var leaf = hitTest(l2, x, y);
-
-	    ctx.clearRect(0, 0, 1200, 700);
-	    drawAxes(ctx);
-
-	    ctx.save();
-	    ctx.translate(600 - equals.x - equalsWidth / 2, 366);
-	    if (leaf) {
-	        ctx.fillStyle = 'rgba(255,255,0,0.5)';
-	        ctx.fillRect(leaf.x, leaf.y - leaf.height, leaf.width, leaf.height);
-	    }
-	    render(l2, ids, easeOutCubic(t));
-	    ctx.restore();
-
-	    ctx.save();
-	    ctx.translate(0, 200);
-	    render(diffLayout);
-	    ctx.restore();
-	});
+	//document.addEventListener('click', function(e) {
+	//    var {pageX:x, pageY:y} = e;
+	//
+	//    let equals = findEquals(l2);
+	//
+	//    x -= 600 - equals.x - equalsWidth / 2;
+	//    y -= 366;
+	//
+	//    let leaf = hitTest(l2, x, y);
+	//
+	//    ctx.clearRect(0, 0, 1200, 700);
+	//    drawAxes(ctx);
+	//
+	//    ctx.save();
+	//    ctx.translate(600 - equals.x - equalsWidth / 2, 366);
+	//    if (leaf) {
+	//        ctx.fillStyle = 'rgba(255,255,0,0.5)';
+	//        ctx.fillRect(leaf.x, leaf.y - leaf.height, leaf.width, leaf.height);
+	//    }
+	//    render(l2, ids, easeOutCubic(t));
+	//    ctx.restore();
+	//
+	//    ctx.save();
+	//    ctx.translate(0, 200);
+	//    render(diffLayout);
+	//    ctx.restore();
+	//});
 
 	//draw1();
 
@@ -249,7 +248,7 @@
 
 	eqn1 = new Equation(expr1, expr2);
 
-	var newLayout = createLayout(eqn1, 64);
+	var newLayout = createLayout(eqn1, 72);
 	newLayout.render(ctx);
 
 	ctx.translate(0, 300);
@@ -258,6 +257,13 @@
 	flattenedLayout.render(ctx);
 
 	ctx.restore();
+
+	document.addEventListener('click', function (e) {
+	    var x = e.pageX - 100;
+	    var y = e.pageY - 100;
+
+	    console.log(newLayout.hitTest(x, y));
+	});
 
 	//console.log(getMetrics("a", fontSize));
 
@@ -5936,15 +5942,25 @@
 	        this.text = c;
 	        this.fontSize = fontSize;
 
-	        var metrics = getMetrics(this.text, fontSize);
-	        this.advance = metrics.advance;
+	        this.metrics = getMetrics(this.text, fontSize);
+	        this.advance = this.metrics.advance;
 	    }
 
 	    _createClass(Glyph, [{
 	        key: "render",
 	        value: function render(ctx) {
 	            // TODO when we flatten group all of the items with the same fontSize
-	            ctx.font = this.fontSize + "px 100 Helvetica";
+	            ctx.strokeStyle = 'red';
+	            var _metrics = this.metrics;
+	            var bearingX = _metrics.bearingX;
+	            var bearingY = _metrics.bearingY;
+	            var width = _metrics.width;
+	            var height = _metrics.height;
+
+	            ctx.strokeRect(bearingX + this.x, this.y - bearingY - height, width, height);
+	            var weight = 100;
+	            ctx.font = weight + " " + this.fontSize + "px Helvetica";
+	            ctx.fillStyle = 'black';
 	            ctx.fillText(this.text, this.x, this.y);
 	        }
 	    }, {
@@ -5953,6 +5969,23 @@
 	            var result = new Glyph(this.text, this.fontSize);
 	            Object.assign(result, this);
 	            return result;
+	        }
+	    }, {
+	        key: "hitTest",
+	        value: function hitTest(x, y) {
+	            var _metrics2 = this.metrics;
+	            var bearingX = _metrics2.bearingX;
+	            var bearingY = _metrics2.bearingY;
+	            var width = _metrics2.width;
+	            var height = _metrics2.height;
+
+	            var left = bearingX + this.x;
+	            var right = left + width;
+	            var top = this.y - bearingY - height;
+	            var bottom = top + height;
+	            if (x >= left && x <= right && y >= top && y <= bottom) {
+	                return this;
+	            }
 	        }
 	    }]);
 
@@ -5966,6 +5999,8 @@
 	        Object.assign(this, { x: x, y: y, width: width, height: height });
 	    }
 
+	    // TODO: treat short runs such as "25" and "sin" atomic units
+
 	    _createClass(Box, [{
 	        key: "render",
 	        value: function render(ctx) {
@@ -5976,6 +6011,9 @@
 	        value: function clone() {
 	            return new Box(this.x, this.y, this.width, this.height);
 	        }
+	    }, {
+	        key: "hitTest",
+	        value: function hitTest(x, y) {}
 	    }]);
 
 	    return Box;
@@ -5983,11 +6021,13 @@
 
 	var Layout = (function () {
 	    function Layout(children) {
+	        var atomic = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
 	        _classCallCheck(this, Layout);
 
 	        this.x = 0;
 	        this.y = 0;
-	        this.children = children;
+	        Object.assign(this, { children: children, atomic: atomic });
 	    }
 
 	    _createClass(Layout, [{
@@ -6001,9 +6041,9 @@
 
 	            try {
 	                for (var _iterator2 = this.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                    var layout = _step2.value;
+	                    var child = _step2.value;
 
-	                    layout.render(ctx);
+	                    child.render(ctx);
 	                }
 	            } catch (err) {
 	                _didIteratorError2 = true;
@@ -6021,6 +6061,37 @@
 	            }
 
 	            ctx.restore();
+	        }
+	    }, {
+	        key: "hitTest",
+	        value: function hitTest(x, y) {
+	            var _iteratorNormalCompletion3 = true;
+	            var _didIteratorError3 = false;
+	            var _iteratorError3 = undefined;
+
+	            try {
+	                for (var _iterator3 = this.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	                    var child = _step3.value;
+
+	                    var result = child.hitTest(x - this.x, y - this.y);
+	                    if (result) {
+	                        return result;
+	                    }
+	                }
+	            } catch (err) {
+	                _didIteratorError3 = true;
+	                _iteratorError3 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion3 && _iterator3["return"]) {
+	                        _iterator3["return"]();
+	                    }
+	                } finally {
+	                    if (_didIteratorError3) {
+	                        throw _iteratorError3;
+	                    }
+	                }
+	            }
 	        }
 	    }]);
 
@@ -6049,13 +6120,13 @@
 	        var penX = 0;
 	        var layouts = [];
 
-	        var _iteratorNormalCompletion3 = true;
-	        var _didIteratorError3 = false;
-	        var _iteratorError3 = undefined;
+	        var _iteratorNormalCompletion4 = true;
+	        var _didIteratorError4 = false;
+	        var _iteratorError4 = undefined;
 
 	        try {
-	            for (var _iterator3 = text[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	                var c = _step3.value;
+	            for (var _iterator4 = text[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	                var c = _step4.value;
 
 	                var glyph = new Glyph(c, fontSize);
 
@@ -6065,21 +6136,21 @@
 	                layouts.push(glyph);
 	            }
 	        } catch (err) {
-	            _didIteratorError3 = true;
-	            _iteratorError3 = err;
+	            _didIteratorError4 = true;
+	            _iteratorError4 = err;
 	        } finally {
 	            try {
-	                if (!_iteratorNormalCompletion3 && _iterator3["return"]) {
-	                    _iterator3["return"]();
+	                if (!_iteratorNormalCompletion4 && _iterator4["return"]) {
+	                    _iterator4["return"]();
 	                }
 	            } finally {
-	                if (_didIteratorError3) {
-	                    throw _iteratorError3;
+	                if (_didIteratorError4) {
+	                    throw _iteratorError4;
 	                }
 	            }
 	        }
 
-	        var layout = new Layout(layouts);
+	        var layout = new Layout(layouts, true);
 	        layout.advance = penX;
 	        return layout;
 	    } else if (node.type === "Identifier") {
@@ -6091,13 +6162,13 @@
 	    } else if (node.type === "Expression") {
 	        var penX = 0;
 	        var layouts = [];
-	        var _iteratorNormalCompletion4 = true;
-	        var _didIteratorError4 = false;
-	        var _iteratorError4 = undefined;
+	        var _iteratorNormalCompletion5 = true;
+	        var _didIteratorError5 = false;
+	        var _iteratorError5 = undefined;
 
 	        try {
-	            for (var _iterator4 = node[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-	                var child = _step4.value;
+	            for (var _iterator5 = node[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	                var child = _step5.value;
 
 	                var childLayout = createLayout(child, fontSize);
 
@@ -6114,16 +6185,16 @@
 	                layouts.push(childLayout);
 	            }
 	        } catch (err) {
-	            _didIteratorError4 = true;
-	            _iteratorError4 = err;
+	            _didIteratorError5 = true;
+	            _iteratorError5 = err;
 	        } finally {
 	            try {
-	                if (!_iteratorNormalCompletion4 && _iterator4["return"]) {
-	                    _iterator4["return"]();
+	                if (!_iteratorNormalCompletion5 && _iterator5["return"]) {
+	                    _iterator5["return"]();
 	                }
 	            } finally {
-	                if (_didIteratorError4) {
-	                    throw _iteratorError4;
+	                if (_didIteratorError5) {
+	                    throw _iteratorError5;
 	                }
 	            }
 	        }
@@ -6185,13 +6256,13 @@
 	    } else if (node.type === "Product") {
 	        var penX = 0;
 	        var layouts = [];
-	        var _iteratorNormalCompletion5 = true;
-	        var _didIteratorError5 = false;
-	        var _iteratorError5 = undefined;
+	        var _iteratorNormalCompletion6 = true;
+	        var _didIteratorError6 = false;
+	        var _iteratorError6 = undefined;
 
 	        try {
-	            for (var _iterator5 = node[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-	                var child = _step5.value;
+	            for (var _iterator6 = node[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+	                var child = _step6.value;
 
 	                // TODO: handle multiple numbers and numbers that come in the middle
 	                var childLayout = createLayout(child, fontSize);
@@ -6200,16 +6271,16 @@
 	                layouts.push(childLayout);
 	            }
 	        } catch (err) {
-	            _didIteratorError5 = true;
-	            _iteratorError5 = err;
+	            _didIteratorError6 = true;
+	            _iteratorError6 = err;
 	        } finally {
 	            try {
-	                if (!_iteratorNormalCompletion5 && _iterator5["return"]) {
-	                    _iterator5["return"]();
+	                if (!_iteratorNormalCompletion6 && _iterator6["return"]) {
+	                    _iterator6["return"]();
 	                }
 	            } finally {
-	                if (_didIteratorError5) {
-	                    throw _iteratorError5;
+	                if (_didIteratorError6) {
+	                    throw _iteratorError6;
 	                }
 	            }
 	        }
@@ -6228,27 +6299,27 @@
 	    if (layout.children) {
 	        dx += layout.x;
 	        dy += layout.y;
-	        var _iteratorNormalCompletion6 = true;
-	        var _didIteratorError6 = false;
-	        var _iteratorError6 = undefined;
+	        var _iteratorNormalCompletion7 = true;
+	        var _didIteratorError7 = false;
+	        var _iteratorError7 = undefined;
 
 	        try {
-	            for (var _iterator6 = layout.children[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-	                var child = _step6.value;
+	            for (var _iterator7 = layout.children[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+	                var child = _step7.value;
 
 	                _flatten(child, dx, dy, result);
 	            }
 	        } catch (err) {
-	            _didIteratorError6 = true;
-	            _iteratorError6 = err;
+	            _didIteratorError7 = true;
+	            _iteratorError7 = err;
 	        } finally {
 	            try {
-	                if (!_iteratorNormalCompletion6 && _iterator6["return"]) {
-	                    _iterator6["return"]();
+	                if (!_iteratorNormalCompletion7 && _iterator7["return"]) {
+	                    _iterator7["return"]();
 	                }
 	            } finally {
-	                if (_didIteratorError6) {
-	                    throw _iteratorError6;
+	                if (_didIteratorError7) {
+	                    throw _iteratorError7;
 	                }
 	            }
 	        }

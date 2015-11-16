@@ -25,13 +25,18 @@ class Glyph {
         this.text = c;
         this.fontSize = fontSize;
 
-        const metrics = getMetrics(this.text, fontSize);
-        this.advance = metrics.advance;
+        this.metrics = getMetrics(this.text, fontSize);
+        this.advance = this.metrics.advance;
     }
 
     render(ctx) {
         // TODO when we flatten group all of the items with the same fontSize
-        ctx.font = `${this.fontSize}px 100 Helvetica`;
+        ctx.strokeStyle = 'red';
+        const {bearingX, bearingY, width, height} = this.metrics;
+        ctx.strokeRect(bearingX + this.x, this.y - bearingY - height, width, height);
+        const weight = 100;
+        ctx.font = `${weight} ${this.fontSize}px Helvetica`;
+        ctx.fillStyle = 'black';
         ctx.fillText(this.text, this.x, this.y);
     }
 
@@ -39,6 +44,17 @@ class Glyph {
         const result = new Glyph(this.text, this.fontSize);
         Object.assign(result, this);
         return result;
+    }
+
+    hitTest(x, y) {
+        const {bearingX, bearingY, width, height} = this.metrics;
+        const left = bearingX + this.x;
+        const right = left + width;
+        const top = this.y - bearingY - height;
+        const bottom = top + height;
+        if (x >= left && x <= right && y >= top && y <= bottom) {
+            return this;
+        }
     }
 }
 
@@ -54,22 +70,34 @@ class Box {
     clone() {
         return new Box(this.x, this.y, this.width, this.height);
     }
+
+    hitTest(x, y) { }
 }
 
+// TODO: treat short runs such as "25" and "sin" atomic units
 class Layout {
-    constructor(children) {
+    constructor(children, atomic = false) {
         this.x = 0;
         this.y = 0;
-        this.children = children;
+        Object.assign(this, {children, atomic});
     }
 
     render(ctx) {
         ctx.save();
         ctx.translate(this.x, this.y);
-        for (const layout of this.children) {
-            layout.render(ctx);
+        for (const child of this.children) {
+            child.render(ctx);
         }
         ctx.restore();
+    }
+
+    hitTest(x, y) {
+        for (const child of this.children) {
+            const result = child.hitTest(x - this.x, y - this.y);
+            if (result) {
+                return result;
+            }
+        }
     }
 }
 
@@ -106,7 +134,7 @@ function createLayout(node, fontSize) {
             layouts.push(glyph);
         }
 
-        const layout = new Layout(layouts);
+        const layout = new Layout(layouts, true);
         layout.advance = penX;
         return layout;
     } else if (node.type === "Identifier") {

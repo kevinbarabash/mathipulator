@@ -156,33 +156,33 @@ function draw2() {
     }
 }
 
-document.addEventListener('click', function(e) {
-    var {pageX:x, pageY:y} = e;
-
-    let equals = findEquals(l2);
-
-    x -= 600 - equals.x - equalsWidth / 2;
-    y -= 366;
-
-    let leaf = hitTest(l2, x, y);
-
-    ctx.clearRect(0, 0, 1200, 700);
-    drawAxes(ctx);
-
-    ctx.save();
-    ctx.translate(600 - equals.x - equalsWidth / 2, 366);
-    if (leaf) {
-        ctx.fillStyle = 'rgba(255,255,0,0.5)';
-        ctx.fillRect(leaf.x, leaf.y - leaf.height, leaf.width, leaf.height);
-    }
-    render(l2, ids, easeOutCubic(t));
-    ctx.restore();
-
-    ctx.save();
-    ctx.translate(0, 200);
-    render(diffLayout);
-    ctx.restore();
-});
+//document.addEventListener('click', function(e) {
+//    var {pageX:x, pageY:y} = e;
+//
+//    let equals = findEquals(l2);
+//
+//    x -= 600 - equals.x - equalsWidth / 2;
+//    y -= 366;
+//
+//    let leaf = hitTest(l2, x, y);
+//
+//    ctx.clearRect(0, 0, 1200, 700);
+//    drawAxes(ctx);
+//
+//    ctx.save();
+//    ctx.translate(600 - equals.x - equalsWidth / 2, 366);
+//    if (leaf) {
+//        ctx.fillStyle = 'rgba(255,255,0,0.5)';
+//        ctx.fillRect(leaf.x, leaf.y - leaf.height, leaf.width, leaf.height);
+//    }
+//    render(l2, ids, easeOutCubic(t));
+//    ctx.restore();
+//
+//    ctx.save();
+//    ctx.translate(0, 200);
+//    render(diffLayout);
+//    ctx.restore();
+//});
 
 //draw1();
 
@@ -196,7 +196,7 @@ expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier
 
 eqn1 = new Equation(expr1, expr2);
 
-var newLayout = createLayout(eqn1, 64);
+var newLayout = createLayout(eqn1, 72);
 newLayout.render(ctx);
 
 ctx.translate(0, 300);
@@ -206,5 +206,11 @@ flattenedLayout.render(ctx);
 
 ctx.restore();
 
+document.addEventListener('click', function(e) {
+    var x = e.pageX - 100;
+    var y = e.pageY - 100;
+
+    console.log(newLayout.hitTest(x, y));
+});
 
 //console.log(getMetrics("a", fontSize));
