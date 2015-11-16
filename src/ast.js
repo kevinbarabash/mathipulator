@@ -1,5 +1,5 @@
 import Expression from './ast/expression'
-import Product from './ast/expression'
+import Product from './ast/product'
 import Fraction from './ast/fraction'
 import Operator from './ast/operator'
 import Identifier from './ast/identifier'

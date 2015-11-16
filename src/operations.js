@@ -43,6 +43,35 @@ export function removeExtraParens(expr) {
     return expr;
 }
 
+function removeExtraProductParens(prod) {
+    let removalList = [];
+    for (let child of prod) {
+        if (child.type === 'Product') {
+            removalList.push(child);
+        }
+    }
+
+    for (let removal of removalList) {
+        for (let child of removal) {
+            child.parent = prod;
+        }
+        removal.first.prev = removal.prev;
+        removal.last.next = removal.next;
+        if (removal.prev === null) {
+            prod.first = removal.first;
+        } else {
+            removal.prev.next = removal.first;
+        }
+        if (removal.next === null) {
+            prod.last = removal.last;
+        } else {
+            removal.next.prev = removal.last;
+        }
+    }
+
+    return prod;
+}
+
 export function add(a, b) {
     if (a.type === 'Equation' && b.type === 'Equation') {
         return new Equation(add(a.left, b.left), add(a.right, b.right));
@@ -75,7 +104,7 @@ export function mul(a, b) {
     } else if (a.type !== 'Equation' && b.type === 'Equation') {
         return new Equation(mul(a, b.left), mul(a, b.right));
     } else {
-        return new Product(a, '*', b);
+        return removeExtraProductParens(new Product(a, b));
     }
 }
 

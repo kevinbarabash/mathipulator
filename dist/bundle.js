@@ -279,7 +279,9 @@
 
 	var _astExpression2 = _interopRequireDefault(_astExpression);
 
-	var _astExpression3 = _interopRequireDefault(_astExpression);
+	var _astProduct = __webpack_require__(105);
+
+	var _astProduct2 = _interopRequireDefault(_astProduct);
 
 	var _astFraction = __webpack_require__(95);
 
@@ -303,7 +305,7 @@
 
 	module.exports = {
 	    Expression: _astExpression2['default'],
-	    Product: _astExpression3['default'],
+	    Product: _astProduct2['default'],
 	    Fraction: _astFraction2['default'],
 	    Operator: _astOperator2['default'],
 	    Identifier: _astIdentifier2['default'],
@@ -5723,6 +5725,98 @@
 	    return expr;
 	}
 
+	function removeExtraProductParens(prod) {
+	    var removalList = [];
+	    var _iteratorNormalCompletion4 = true;
+	    var _didIteratorError4 = false;
+	    var _iteratorError4 = undefined;
+
+	    try {
+	        for (var _iterator4 = prod[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	            var child = _step4.value;
+
+	            if (child.type === 'Product') {
+	                removalList.push(child);
+	            }
+	        }
+	    } catch (err) {
+	        _didIteratorError4 = true;
+	        _iteratorError4 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+	                _iterator4['return']();
+	            }
+	        } finally {
+	            if (_didIteratorError4) {
+	                throw _iteratorError4;
+	            }
+	        }
+	    }
+
+	    var _iteratorNormalCompletion5 = true;
+	    var _didIteratorError5 = false;
+	    var _iteratorError5 = undefined;
+
+	    try {
+	        for (var _iterator5 = removalList[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	            var removal = _step5.value;
+	            var _iteratorNormalCompletion6 = true;
+	            var _didIteratorError6 = false;
+	            var _iteratorError6 = undefined;
+
+	            try {
+	                for (var _iterator6 = removal[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+	                    var child = _step6.value;
+
+	                    child.parent = prod;
+	                }
+	            } catch (err) {
+	                _didIteratorError6 = true;
+	                _iteratorError6 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion6 && _iterator6['return']) {
+	                        _iterator6['return']();
+	                    }
+	                } finally {
+	                    if (_didIteratorError6) {
+	                        throw _iteratorError6;
+	                    }
+	                }
+	            }
+
+	            removal.first.prev = removal.prev;
+	            removal.last.next = removal.next;
+	            if (removal.prev === null) {
+	                prod.first = removal.first;
+	            } else {
+	                removal.prev.next = removal.first;
+	            }
+	            if (removal.next === null) {
+	                prod.last = removal.last;
+	            } else {
+	                removal.next.prev = removal.last;
+	            }
+	        }
+	    } catch (err) {
+	        _didIteratorError5 = true;
+	        _iteratorError5 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+	                _iterator5['return']();
+	            }
+	        } finally {
+	            if (_didIteratorError5) {
+	                throw _iteratorError5;
+	            }
+	        }
+	    }
+
+	    return prod;
+	}
+
 	function add(a, b) {
 	    if (a.type === 'Equation' && b.type === 'Equation') {
 	        return new Equation(add(a.left, b.left), add(a.right, b.right));
@@ -5755,7 +5849,7 @@
 	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
 	        return new Equation(mul(a, b.left), mul(a, b.right));
 	    } else {
-	        return new Product(a, '*', b);
+	        return removeExtraProductParens(new Product(a, b));
 	    }
 	}
 
@@ -8424,6 +8518,69 @@
 		},
 		"unitsPerEm": 1000
 	};
+
+/***/ },
+/* 104 */,
+/* 105 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
+	var _bind = Function.prototype.bind;
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var _listNode = __webpack_require__(92);
+
+	var _listNode2 = _interopRequireDefault(_listNode);
+
+	var _functify = __webpack_require__(3);
+
+	var _functify2 = _interopRequireDefault(_functify);
+
+	var Product = (function (_ListNode) {
+	    _inherits(Product, _ListNode);
+
+	    function Product() {
+	        _classCallCheck(this, Product);
+
+	        _get(Object.getPrototypeOf(Product.prototype), 'constructor', this).call(this);
+	        this.type = 'Product';
+	        this.append.apply(this, arguments);
+	    }
+
+	    _createClass(Product, [{
+	        key: 'toString',
+	        value: function toString() {
+	            return this.type + ':' + _get(Object.getPrototypeOf(Product.prototype), 'toString', this).call(this);
+	        }
+	    }, {
+	        key: 'clone',
+	        value: function clone() {
+	            return new (_bind.apply(Product, [null].concat(_toConsumableArray((0, _functify2['default'])(this).map(function (x) {
+	                return x.clone();
+	            })))))();
+	        }
+	    }]);
+
+	    return Product;
+	})(_listNode2['default']);
+
+	exports['default'] = Product;
+	module.exports = exports['default'];
 
 /***/ }
 /******/ ]);

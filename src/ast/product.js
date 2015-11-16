@@ -1,4 +1,4 @@
-import ListNode from './node'
+import ListNode from './list-node'
 import f from 'functify'
 
 export default class Product extends ListNode {

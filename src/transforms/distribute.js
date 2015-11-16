@@ -1,7 +1,8 @@
 import LinkedList, { _prev, _next, _parent } from '../util/linked-list'
-import { Expression, Product, Fraction, Operator, Identifier, Literal } from '../ast';
+const { Expression, Product, Fraction, Operator, Identifier, Literal } = require('../ast.js');
 
 let distributeBackwards = function(node) {
+    // TODO: check that the parent is a 'Product' node and that the node in question is last
     if (node[_prev] && node[_prev].operator === '*') {
         let operator = node[_prev];
         if (operator[_prev] && operator[_prev].type === 'Expression') {
@@ -29,6 +30,7 @@ let distributeBackwards = function(node) {
 };
 
 let distributeForwards = function(node) {
+    // TODO: check that the parent is a 'Product' node and that the node in question is first
     if (node[_next] && node[_next].operator === '*') {
         let operator = node[_next];
         if (operator[_next] && operator[_next].type === 'Expression') {
