@@ -1,4 +1,7 @@
-const metrics = require("../data/metrics.json");
+const fontMetrics = require("../metrics/helvetica-light.json");
+
+// TODO: handle fonts with different unitsPerEm
+const {unitsPerEm, glyphMetrics} = fontMetrics;
 
 function formatText(text) {
     if (parseFloat(text) < 0) {
@@ -9,8 +12,8 @@ function formatText(text) {
 
 function getMetrics(c, fontSize) {
     const result = {};
-    for (const [k, v] of Object.entries(metrics[c.charCodeAt(0)])) {
-        result[k] = fontSize * v / 1000;
+    for (const [k, v] of Object.entries(glyphMetrics[c.charCodeAt(0)])) {
+        result[k] = fontSize * v / unitsPerEm;
     }
     return result;
 }
@@ -160,6 +163,7 @@ function createLayout(node, fontSize) {
         // TODO: add Box class to actual render divisior bar
         // TODO: use x-height / 2 to determine divisor bar position
         // TODO: use ascender/descender + gap to determine y-shift
+        // TODO: use height of numerator/denominator too
         num.y -= fontSize / 2 + 0.05 * fontSize;
         den.y += fontSize / 2 + 0.20 * fontSize;
 
