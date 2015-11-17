@@ -130,7 +130,19 @@ class Layout {
         return bounds;
     }
 
+    clone() {
+        const result = new Layout(this.children.map(child => child.clone()), this.atomic);
+        result.id = this.id;
+        result.x = this.x;
+        result.y = this.y;
+        return result;
+    }
+
     hitTest(x, y) {
+        // correct for the offset of the layout
+        x = x - this.x;
+        y = y - this.y;
+
         if (this.atomic) {
             const bounds = this.bounds;
             if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) {
@@ -138,7 +150,7 @@ class Layout {
             }
         }
         for (const child of this.children) {
-            const result = child.hitTest(x - this.x, y - this.y);
+            const result = child.hitTest(x, y);
             if (result) {
                 return result;
             }
@@ -288,6 +300,7 @@ function createLayout(node, fontSize) {
 
 function _flatten(layout, dx = 0, dy = 0, result = []) {
     if (layout.atomic) {
+        layout = layout.clone();
         layout.x += dx;
         layout.y += dy;
         result.push(layout);

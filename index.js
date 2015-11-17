@@ -190,7 +190,7 @@ ctx.save();
 ctx.translate(100,100);
 
 
-expr1 = add(new Literal(25), new Product(new Literal(2), new Identifier('pi'), new Identifier('r')));
+expr1 = add(new Literal(25), new Product(new Literal(42), new Identifier('pi'), new Identifier('r')));
 expr1 = add(expr1, new Identifier('theta'));
 expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier('x'))), new Literal(-2));
 
@@ -208,9 +208,9 @@ ctx.restore();
 
 document.addEventListener('click', function(e) {
     var x = e.pageX - 100;
-    var y = e.pageY - 100;
+    var y = e.pageY - 400;
 
-    const layoutNode = newLayout.hitTest(x, y);
+    const layoutNode = flattenedLayout.hitTest(x, y);
     console.log(layoutNode);
 
     // TODO: implement findNode

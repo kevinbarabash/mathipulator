@@ -56,7 +56,7 @@
 	var Operator = _require.Operator;
 	var Equation = _require.Equation;
 
-	var _require2 = __webpack_require__(99);
+	var _require2 = __webpack_require__(100);
 
 	var layout = _require2.layout;
 	var render = _require2.render;
@@ -64,13 +64,13 @@
 	var ctx = _require2.ctx;
 	var hitTest = _require2.hitTest;
 
-	var _require3 = __webpack_require__(102);
+	var _require3 = __webpack_require__(101);
 
 	var getMetrics = _require3.getMetrics;
 	var createLayout = _require3.createLayout;
 	var flatten = _require3.flatten;
 
-	var _require4 = __webpack_require__(101);
+	var _require4 = __webpack_require__(103);
 
 	var add = _require4.add;
 	var sub = _require4.sub;
@@ -242,7 +242,7 @@
 	ctx.save();
 	ctx.translate(100, 100);
 
-	expr1 = add(new Literal(25), new Product(new Literal(2), new Identifier('pi'), new Identifier('r')));
+	expr1 = add(new Literal(25), new Product(new Literal(42), new Identifier('pi'), new Identifier('r')));
 	expr1 = add(expr1, new Identifier('theta'));
 	expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier('x'))), new Literal(-2));
 
@@ -260,9 +260,9 @@
 
 	document.addEventListener('click', function (e) {
 	    var x = e.pageX - 100;
-	    var y = e.pageY - 100;
+	    var y = e.pageY - 400;
 
-	    var layoutNode = newLayout.hitTest(x, y);
+	    var layoutNode = flattenedLayout.hitTest(x, y);
 	    console.log(layoutNode);
 
 	    // TODO: implement findNode
@@ -283,11 +283,11 @@
 
 	var _astExpression2 = _interopRequireDefault(_astExpression);
 
-	var _astProduct = __webpack_require__(105);
+	var _astProduct = __webpack_require__(95);
 
 	var _astProduct2 = _interopRequireDefault(_astProduct);
 
-	var _astFraction = __webpack_require__(95);
+	var _astFraction = __webpack_require__(96);
 
 	var _astFraction2 = _interopRequireDefault(_astFraction);
 
@@ -295,15 +295,15 @@
 
 	var _astOperator2 = _interopRequireDefault(_astOperator);
 
-	var _astIdentifier = __webpack_require__(96);
+	var _astIdentifier = __webpack_require__(97);
 
 	var _astIdentifier2 = _interopRequireDefault(_astIdentifier);
 
-	var _astLiteral = __webpack_require__(97);
+	var _astLiteral = __webpack_require__(98);
 
 	var _astLiteral2 = _interopRequireDefault(_astLiteral);
 
-	var _astEquation = __webpack_require__(98);
+	var _astEquation = __webpack_require__(99);
 
 	var _astEquation2 = _interopRequireDefault(_astEquation);
 
@@ -5138,6 +5138,68 @@
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
+	var _bind = Function.prototype.bind;
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var _listNode = __webpack_require__(92);
+
+	var _listNode2 = _interopRequireDefault(_listNode);
+
+	var _functify = __webpack_require__(3);
+
+	var _functify2 = _interopRequireDefault(_functify);
+
+	var Product = (function (_ListNode) {
+	    _inherits(Product, _ListNode);
+
+	    function Product() {
+	        _classCallCheck(this, Product);
+
+	        _get(Object.getPrototypeOf(Product.prototype), 'constructor', this).call(this);
+	        this.type = 'Product';
+	        this.append.apply(this, arguments);
+	    }
+
+	    _createClass(Product, [{
+	        key: 'toString',
+	        value: function toString() {
+	            return this.type + ':' + _get(Object.getPrototypeOf(Product.prototype), 'toString', this).call(this);
+	        }
+	    }, {
+	        key: 'clone',
+	        value: function clone() {
+	            return new (_bind.apply(Product, [null].concat(_toConsumableArray((0, _functify2['default'])(this).map(function (x) {
+	                return x.clone();
+	            })))))();
+	        }
+	    }]);
+
+	    return Product;
+	})(_listNode2['default']);
+
+	exports['default'] = Product;
+	module.exports = exports['default'];
+
+/***/ },
+/* 96 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
 
 	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -5186,7 +5248,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 96 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5243,7 +5305,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 97 */
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5295,7 +5357,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 98 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5347,7 +5409,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 99 */
+/* 100 */
 /***/ function(module, exports) {
 
 	/**
@@ -5606,271 +5668,7 @@
 	};
 
 /***/ },
-/* 100 */,
 /* 101 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	    value: true
-	});
-	exports.removeExtraParens = removeExtraParens;
-	exports.add = add;
-	exports.sub = sub;
-	exports.mul = mul;
-	exports.div = div;
-
-	var _require = __webpack_require__(1);
-
-	var Expression = _require.Expression;
-	var Product = _require.Product;
-	var Fraction = _require.Fraction;
-	var Operator = _require.Operator;
-	var Identifier = _require.Identifier;
-	var Literal = _require.Literal;
-	var Equation = _require.Equation;
-
-	function removeExtraParens(expr) {
-	    if (expr.type !== 'Expression') {
-	        return expr;
-	    }
-
-	    var removalList = [];
-	    var _iteratorNormalCompletion = true;
-	    var _didIteratorError = false;
-	    var _iteratorError = undefined;
-
-	    try {
-	        for (var _iterator = expr[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	            var child = _step.value;
-
-	            if (child.type === 'Expression') {
-	                if (child.prev == null || child.prev.operator === '+') {
-	                    removalList.push(child);
-	                }
-	            }
-	        }
-	    } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	    } finally {
-	        try {
-	            if (!_iteratorNormalCompletion && _iterator['return']) {
-	                _iterator['return']();
-	            }
-	        } finally {
-	            if (_didIteratorError) {
-	                throw _iteratorError;
-	            }
-	        }
-	    }
-
-	    var _iteratorNormalCompletion2 = true;
-	    var _didIteratorError2 = false;
-	    var _iteratorError2 = undefined;
-
-	    try {
-	        for (var _iterator2 = removalList[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	            var removal = _step2.value;
-	            var _iteratorNormalCompletion3 = true;
-	            var _didIteratorError3 = false;
-	            var _iteratorError3 = undefined;
-
-	            try {
-	                for (var _iterator3 = removal[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	                    var child = _step3.value;
-
-	                    child.parent = expr;
-	                }
-	            } catch (err) {
-	                _didIteratorError3 = true;
-	                _iteratorError3 = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-	                        _iterator3['return']();
-	                    }
-	                } finally {
-	                    if (_didIteratorError3) {
-	                        throw _iteratorError3;
-	                    }
-	                }
-	            }
-
-	            removal.first.prev = removal.prev;
-	            removal.last.next = removal.next;
-	            if (removal.prev === null) {
-	                expr.first = removal.first;
-	            } else {
-	                removal.prev.next = removal.first;
-	            }
-	            if (removal.next === null) {
-	                expr.last = removal.last;
-	            } else {
-	                removal.next.prev = removal.last;
-	            }
-	        }
-	    } catch (err) {
-	        _didIteratorError2 = true;
-	        _iteratorError2 = err;
-	    } finally {
-	        try {
-	            if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-	                _iterator2['return']();
-	            }
-	        } finally {
-	            if (_didIteratorError2) {
-	                throw _iteratorError2;
-	            }
-	        }
-	    }
-
-	    return expr;
-	}
-
-	function removeExtraProductParens(prod) {
-	    var removalList = [];
-	    var _iteratorNormalCompletion4 = true;
-	    var _didIteratorError4 = false;
-	    var _iteratorError4 = undefined;
-
-	    try {
-	        for (var _iterator4 = prod[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-	            var child = _step4.value;
-
-	            if (child.type === 'Product') {
-	                removalList.push(child);
-	            }
-	        }
-	    } catch (err) {
-	        _didIteratorError4 = true;
-	        _iteratorError4 = err;
-	    } finally {
-	        try {
-	            if (!_iteratorNormalCompletion4 && _iterator4['return']) {
-	                _iterator4['return']();
-	            }
-	        } finally {
-	            if (_didIteratorError4) {
-	                throw _iteratorError4;
-	            }
-	        }
-	    }
-
-	    var _iteratorNormalCompletion5 = true;
-	    var _didIteratorError5 = false;
-	    var _iteratorError5 = undefined;
-
-	    try {
-	        for (var _iterator5 = removalList[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-	            var removal = _step5.value;
-	            var _iteratorNormalCompletion6 = true;
-	            var _didIteratorError6 = false;
-	            var _iteratorError6 = undefined;
-
-	            try {
-	                for (var _iterator6 = removal[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-	                    var child = _step6.value;
-
-	                    child.parent = prod;
-	                }
-	            } catch (err) {
-	                _didIteratorError6 = true;
-	                _iteratorError6 = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion6 && _iterator6['return']) {
-	                        _iterator6['return']();
-	                    }
-	                } finally {
-	                    if (_didIteratorError6) {
-	                        throw _iteratorError6;
-	                    }
-	                }
-	            }
-
-	            removal.first.prev = removal.prev;
-	            removal.last.next = removal.next;
-	            if (removal.prev === null) {
-	                prod.first = removal.first;
-	            } else {
-	                removal.prev.next = removal.first;
-	            }
-	            if (removal.next === null) {
-	                prod.last = removal.last;
-	            } else {
-	                removal.next.prev = removal.last;
-	            }
-	        }
-	    } catch (err) {
-	        _didIteratorError5 = true;
-	        _iteratorError5 = err;
-	    } finally {
-	        try {
-	            if (!_iteratorNormalCompletion5 && _iterator5['return']) {
-	                _iterator5['return']();
-	            }
-	        } finally {
-	            if (_didIteratorError5) {
-	                throw _iteratorError5;
-	            }
-	        }
-	    }
-
-	    return prod;
-	}
-
-	function add(a, b) {
-	    if (a.type === 'Equation' && b.type === 'Equation') {
-	        return new Equation(add(a.left, b.left), add(a.right, b.right));
-	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
-	        return new Equation(add(a.left, b.clone()), add(a.right, b.clone()));
-	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
-	        return new Equation(add(a.clone(), b.left), add(a.clone(), b.right));
-	    } else {
-	        return removeExtraParens(new Expression(a, new Operator('+'), b));
-	    }
-	}
-
-	function sub(a, b) {
-	    if (a.type === 'Equation' && b.type === 'Equation') {
-	        return new Equation(sub(a.left, b.left), sub(a.right, b.right));
-	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
-	        return new Equation(sub(a.left, b), sub(a.right, b));
-	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
-	        return new Equation(sub(a, b.left), sub(a, b.right));
-	    } else {
-	        return removeExtraParens(new Expression(a, new Operator('-'), b));
-	    }
-	}
-
-	function mul(a, b) {
-	    if (a.type === 'Equation' && b.type === 'Equation') {
-	        throw new Error("can't multiply two equations");
-	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
-	        return new Equation(mul(a.left, b), mul(a.right, b));
-	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
-	        return new Equation(mul(a, b.left), mul(a, b.right));
-	    } else {
-	        return removeExtraProductParens(new Product(a, b));
-	    }
-	}
-
-	function div(a, b) {
-	    if (a.type === 'Equation' && b.type === 'Equation') {
-	        throw new Error("can't divide two equations");
-	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
-	        return new Equation(div(a.left, b), div(a.right, b));
-	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
-	        return new Equation(div(a, b.left), div(a, b.right));
-	    } else {
-	        return new Fraction(a, b);
-	    }
-	}
-
-/***/ },
-/* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5881,7 +5679,7 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var fontMetrics = __webpack_require__(103);
+	var fontMetrics = __webpack_require__(102);
 
 	// TODO: handle fonts with different unitsPerEm
 	var unitsPerEm = fontMetrics.unitsPerEm;
@@ -6076,8 +5874,23 @@
 	            ctx.restore();
 	        }
 	    }, {
+	        key: "clone",
+	        value: function clone() {
+	            var result = new Layout(this.children.map(function (child) {
+	                return child.clone();
+	            }), this.atomic);
+	            result.id = this.id;
+	            result.x = this.x;
+	            result.y = this.y;
+	            return result;
+	        }
+	    }, {
 	        key: "hitTest",
 	        value: function hitTest(x, y) {
+	            // correct for the offset of the layout
+	            x = x - this.x;
+	            y = y - this.y;
+
 	            if (this.atomic) {
 	                var bounds = this.bounds;
 	                if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) {
@@ -6092,7 +5905,7 @@
 	                for (var _iterator3 = this.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
 	                    var child = _step3.value;
 
-	                    var result = child.hitTest(x - this.x, y - this.y);
+	                    var result = child.hitTest(x, y);
 	                    if (result) {
 	                        return result;
 	                    }
@@ -6348,6 +6161,7 @@
 	    var result = arguments.length <= 3 || arguments[3] === undefined ? [] : arguments[3];
 
 	    if (layout.atomic) {
+	        layout = layout.clone();
 	        layout.x += dx;
 	        layout.y += dy;
 	        result.push(layout);
@@ -6398,7 +6212,7 @@
 	};
 
 /***/ },
-/* 103 */
+/* 102 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -8585,8 +8399,7 @@
 	};
 
 /***/ },
-/* 104 */,
-/* 105 */
+/* 103 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8594,58 +8407,259 @@
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-	var _bind = Function.prototype.bind;
+	exports.removeExtraParens = removeExtraParens;
+	exports.add = add;
+	exports.sub = sub;
+	exports.mul = mul;
+	exports.div = div;
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	var _require = __webpack_require__(1);
 
-	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+	var Expression = _require.Expression;
+	var Product = _require.Product;
+	var Fraction = _require.Fraction;
+	var Operator = _require.Operator;
+	var Identifier = _require.Identifier;
+	var Literal = _require.Literal;
+	var Equation = _require.Equation;
 
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var _listNode = __webpack_require__(92);
-
-	var _listNode2 = _interopRequireDefault(_listNode);
-
-	var _functify = __webpack_require__(3);
-
-	var _functify2 = _interopRequireDefault(_functify);
-
-	var Product = (function (_ListNode) {
-	    _inherits(Product, _ListNode);
-
-	    function Product() {
-	        _classCallCheck(this, Product);
-
-	        _get(Object.getPrototypeOf(Product.prototype), 'constructor', this).call(this);
-	        this.type = 'Product';
-	        this.append.apply(this, arguments);
+	function removeExtraParens(expr) {
+	    if (expr.type !== 'Expression') {
+	        return expr;
 	    }
 
-	    _createClass(Product, [{
-	        key: 'toString',
-	        value: function toString() {
-	            return this.type + ':' + _get(Object.getPrototypeOf(Product.prototype), 'toString', this).call(this);
-	        }
-	    }, {
-	        key: 'clone',
-	        value: function clone() {
-	            return new (_bind.apply(Product, [null].concat(_toConsumableArray((0, _functify2['default'])(this).map(function (x) {
-	                return x.clone();
-	            })))))();
-	        }
-	    }]);
+	    var removalList = [];
+	    var _iteratorNormalCompletion = true;
+	    var _didIteratorError = false;
+	    var _iteratorError = undefined;
 
-	    return Product;
-	})(_listNode2['default']);
+	    try {
+	        for (var _iterator = expr[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	            var child = _step.value;
 
-	exports['default'] = Product;
-	module.exports = exports['default'];
+	            if (child.type === 'Expression') {
+	                if (child.prev == null || child.prev.operator === '+') {
+	                    removalList.push(child);
+	                }
+	            }
+	        }
+	    } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion && _iterator['return']) {
+	                _iterator['return']();
+	            }
+	        } finally {
+	            if (_didIteratorError) {
+	                throw _iteratorError;
+	            }
+	        }
+	    }
+
+	    var _iteratorNormalCompletion2 = true;
+	    var _didIteratorError2 = false;
+	    var _iteratorError2 = undefined;
+
+	    try {
+	        for (var _iterator2 = removalList[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	            var removal = _step2.value;
+	            var _iteratorNormalCompletion3 = true;
+	            var _didIteratorError3 = false;
+	            var _iteratorError3 = undefined;
+
+	            try {
+	                for (var _iterator3 = removal[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	                    var child = _step3.value;
+
+	                    child.parent = expr;
+	                }
+	            } catch (err) {
+	                _didIteratorError3 = true;
+	                _iteratorError3 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+	                        _iterator3['return']();
+	                    }
+	                } finally {
+	                    if (_didIteratorError3) {
+	                        throw _iteratorError3;
+	                    }
+	                }
+	            }
+
+	            removal.first.prev = removal.prev;
+	            removal.last.next = removal.next;
+	            if (removal.prev === null) {
+	                expr.first = removal.first;
+	            } else {
+	                removal.prev.next = removal.first;
+	            }
+	            if (removal.next === null) {
+	                expr.last = removal.last;
+	            } else {
+	                removal.next.prev = removal.last;
+	            }
+	        }
+	    } catch (err) {
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+	                _iterator2['return']();
+	            }
+	        } finally {
+	            if (_didIteratorError2) {
+	                throw _iteratorError2;
+	            }
+	        }
+	    }
+
+	    return expr;
+	}
+
+	function removeExtraProductParens(prod) {
+	    var removalList = [];
+	    var _iteratorNormalCompletion4 = true;
+	    var _didIteratorError4 = false;
+	    var _iteratorError4 = undefined;
+
+	    try {
+	        for (var _iterator4 = prod[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	            var child = _step4.value;
+
+	            if (child.type === 'Product') {
+	                removalList.push(child);
+	            }
+	        }
+	    } catch (err) {
+	        _didIteratorError4 = true;
+	        _iteratorError4 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+	                _iterator4['return']();
+	            }
+	        } finally {
+	            if (_didIteratorError4) {
+	                throw _iteratorError4;
+	            }
+	        }
+	    }
+
+	    var _iteratorNormalCompletion5 = true;
+	    var _didIteratorError5 = false;
+	    var _iteratorError5 = undefined;
+
+	    try {
+	        for (var _iterator5 = removalList[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	            var removal = _step5.value;
+	            var _iteratorNormalCompletion6 = true;
+	            var _didIteratorError6 = false;
+	            var _iteratorError6 = undefined;
+
+	            try {
+	                for (var _iterator6 = removal[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+	                    var child = _step6.value;
+
+	                    child.parent = prod;
+	                }
+	            } catch (err) {
+	                _didIteratorError6 = true;
+	                _iteratorError6 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion6 && _iterator6['return']) {
+	                        _iterator6['return']();
+	                    }
+	                } finally {
+	                    if (_didIteratorError6) {
+	                        throw _iteratorError6;
+	                    }
+	                }
+	            }
+
+	            removal.first.prev = removal.prev;
+	            removal.last.next = removal.next;
+	            if (removal.prev === null) {
+	                prod.first = removal.first;
+	            } else {
+	                removal.prev.next = removal.first;
+	            }
+	            if (removal.next === null) {
+	                prod.last = removal.last;
+	            } else {
+	                removal.next.prev = removal.last;
+	            }
+	        }
+	    } catch (err) {
+	        _didIteratorError5 = true;
+	        _iteratorError5 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+	                _iterator5['return']();
+	            }
+	        } finally {
+	            if (_didIteratorError5) {
+	                throw _iteratorError5;
+	            }
+	        }
+	    }
+
+	    return prod;
+	}
+
+	function add(a, b) {
+	    if (a.type === 'Equation' && b.type === 'Equation') {
+	        return new Equation(add(a.left, b.left), add(a.right, b.right));
+	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+	        return new Equation(add(a.left, b.clone()), add(a.right, b.clone()));
+	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+	        return new Equation(add(a.clone(), b.left), add(a.clone(), b.right));
+	    } else {
+	        return removeExtraParens(new Expression(a, new Operator('+'), b));
+	    }
+	}
+
+	function sub(a, b) {
+	    if (a.type === 'Equation' && b.type === 'Equation') {
+	        return new Equation(sub(a.left, b.left), sub(a.right, b.right));
+	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+	        return new Equation(sub(a.left, b), sub(a.right, b));
+	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+	        return new Equation(sub(a, b.left), sub(a, b.right));
+	    } else {
+	        return removeExtraParens(new Expression(a, new Operator('-'), b));
+	    }
+	}
+
+	function mul(a, b) {
+	    if (a.type === 'Equation' && b.type === 'Equation') {
+	        throw new Error("can't multiply two equations");
+	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+	        return new Equation(mul(a.left, b), mul(a.right, b));
+	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+	        return new Equation(mul(a, b.left), mul(a, b.right));
+	    } else {
+	        return removeExtraProductParens(new Product(a, b));
+	    }
+	}
+
+	function div(a, b) {
+	    if (a.type === 'Equation' && b.type === 'Equation') {
+	        throw new Error("can't divide two equations");
+	    } else if (a.type === 'Equation' && b.type !== 'Equation') {
+	        return new Equation(div(a.left, b), div(a.right, b));
+	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
+	        return new Equation(div(a, b.left), div(a, b.right));
+	    } else {
+	        return new Fraction(a, b);
+	    }
+	}
 
 /***/ }
 /******/ ]);
