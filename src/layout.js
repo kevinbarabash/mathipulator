@@ -19,13 +19,13 @@ function getMetrics(c, fontSize) {
 }
 
 class Glyph {
-    constructor(c, fontSize) {
+    constructor(c, fontSize, metrics = getMetrics(c, fontSize)) {
         this.x = 0;
         this.y = 0;
         this.text = c;
         this.fontSize = fontSize;
 
-        this.metrics = getMetrics(this.text, fontSize);
+        this.metrics = metrics;
         this.advance = this.metrics.advance;
     }
 
@@ -86,7 +86,6 @@ class Box {
     hitTest(x, y) { }
 }
 
-// TODO: treat short runs such as "25" and "sin" atomic units
 class Layout {
     constructor(children, atomic = false) {
         this.x = 0;
@@ -172,6 +171,27 @@ function formatIdentifier(identifier) {
 }
 
 
+function makeMetricsSquare(metrics) {
+    if (metrics.width >= metrics.height) {
+        const vPad = (metrics.width - metrics.height) / 2;
+        return {
+            bearingX: metrics.bearingX,
+            bearingY: metrics.bearingY - vPad,
+            width: metrics.width,
+            height: metrics.height + 2 * vPad
+        };
+    } else {
+        const hPad = (metrics.height - metrics.width) / 2;
+        return {
+            bearingX: metrics.bearingX - hPad,
+            bearingY: metrics.bearingY,
+            width: metrics.width + 2 * hPad,
+            height: metrics.height
+        };
+    }
+}
+
+
 function createLayout(node, fontSize) {
     const spaceMetrics = getMetrics(" ", fontSize);
     const dashMetrics = getMetrics("-", fontSize);
@@ -204,6 +224,9 @@ function createLayout(node, fontSize) {
     } else if (node.type === "Operator") {
         const operator = formatText(node.operator);
         const glyph = new Glyph(operator, fontSize);
+        if (node.operator === "-") {
+            glyph.metrics = makeMetricsSquare(glyph.metrics);
+        }
         glyph.id = node.id;
         return glyph;
     } else if (node.type === "Expression") {
@@ -237,6 +260,9 @@ function createLayout(node, fontSize) {
 
         // TODO: update Equation to handle inequalities
         const equal = new Glyph("=", fontSize);
+        equal.metrics = makeMetricsSquare(equal.metrics);
+        // TODO: figure out how to differentiate between layout and equal node
+        equal.id = node.id;
         penX += spaceMetrics.advance;
         equal.x = penX;
         penX += equal.advance + spaceMetrics.advance;

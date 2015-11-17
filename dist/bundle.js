@@ -5727,15 +5727,18 @@
 
 	var Glyph = (function () {
 	    function Glyph(c, fontSize) {
-	        _classCallCheck(this, Glyph);
+	        var metrics = arguments.length <= 2 || arguments[2] === undefined ? getMetrics(c, fontSize) : arguments[2];
+	        return (function () {
+	            _classCallCheck(this, Glyph);
 
-	        this.x = 0;
-	        this.y = 0;
-	        this.text = c;
-	        this.fontSize = fontSize;
+	            this.x = 0;
+	            this.y = 0;
+	            this.text = c;
+	            this.fontSize = fontSize;
 
-	        this.metrics = getMetrics(this.text, fontSize);
-	        this.advance = this.metrics.advance;
+	            this.metrics = metrics;
+	            this.advance = this.metrics.advance;
+	        }).apply(this, arguments);
 	    }
 
 	    _createClass(Glyph, [{
@@ -5803,8 +5806,6 @@
 
 	        Object.assign(this, { x: x, y: y, width: width, height: height });
 	    }
-
-	    // TODO: treat short runs such as "25" and "sin" atomic units
 
 	    _createClass(Box, [{
 	        key: "render",
@@ -5964,6 +5965,26 @@
 	    return identifier;
 	}
 
+	function makeMetricsSquare(metrics) {
+	    if (metrics.width >= metrics.height) {
+	        var vPad = (metrics.width - metrics.height) / 2;
+	        return {
+	            bearingX: metrics.bearingX,
+	            bearingY: metrics.bearingY - vPad,
+	            width: metrics.width,
+	            height: metrics.height + 2 * vPad
+	        };
+	    } else {
+	        var hPad = (metrics.height - metrics.width) / 2;
+	        return {
+	            bearingX: metrics.bearingX - hPad,
+	            bearingY: metrics.bearingY,
+	            width: metrics.width + 2 * hPad,
+	            height: metrics.height
+	        };
+	    }
+	}
+
 	function createLayout(node, fontSize) {
 	    var spaceMetrics = getMetrics(" ", fontSize);
 	    var dashMetrics = getMetrics("-", fontSize);
@@ -6017,6 +6038,9 @@
 	    } else if (node.type === "Operator") {
 	        var operator = formatText(node.operator);
 	        var glyph = new Glyph(operator, fontSize);
+	        if (node.operator === "-") {
+	            glyph.metrics = makeMetricsSquare(glyph.metrics);
+	        }
 	        glyph.id = node.id;
 	        return glyph;
 	    } else if (node.type === "Expression") {
@@ -6072,6 +6096,9 @@
 
 	        // TODO: update Equation to handle inequalities
 	        var equal = new Glyph("=", fontSize);
+	        equal.metrics = makeMetricsSquare(equal.metrics);
+	        // TODO: figure out how to differentiate between layout and equal node
+	        equal.id = node.id;
 	        penX += spaceMetrics.advance;
 	        equal.x = penX;
 	        penX += equal.advance + spaceMetrics.advance;
