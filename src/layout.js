@@ -232,7 +232,7 @@ function createLayout(node, fontSize) {
     } else if (node.type === "Expression") {
         let penX = 0;
         const layouts = [];
-        for (let child of node) {
+        for (const child of node) {
             const childLayout = createLayout(child, fontSize);
 
             if (child.type === "Operator") {

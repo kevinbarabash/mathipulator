@@ -88,9 +88,6 @@
 	    expr2 = undefined,
 	    eqn1 = undefined;
 
-	ctx.save();
-	ctx.translate(100, 100);
-
 	expr1 = add(new Literal(25), new Product(new Literal(42), new Identifier('pi'), new Identifier('r')));
 	expr1 = add(expr1, new Identifier('theta'));
 	expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier('x'))), new Literal(-2));
@@ -98,24 +95,70 @@
 	eqn1 = new Equation(expr1, expr2);
 
 	var newLayout = createLayout(eqn1, 72);
-	newLayout.render(ctx);
-
-	ctx.translate(0, 300);
-
 	var flattenedLayout = flatten(newLayout);
+
+	ctx.save();
+	ctx.translate(100, 200);
+
 	flattenedLayout.render(ctx);
 
 	ctx.restore();
 
+	function findNode(node, id) {
+	    if (node.id === id) {
+	        return node;
+	    } else if (["Expression", "Product"].includes(node.type)) {
+	        var _iteratorNormalCompletion = true;
+	        var _didIteratorError = false;
+	        var _iteratorError = undefined;
+
+	        try {
+	            for (var _iterator = node[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                var child = _step.value;
+
+	                var result = findNode(child, id);
+	                if (result) {
+	                    return result;
+	                }
+	            }
+	        } catch (err) {
+	            _didIteratorError = true;
+	            _iteratorError = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion && _iterator['return']) {
+	                    _iterator['return']();
+	                }
+	            } finally {
+	                if (_didIteratorError) {
+	                    throw _iteratorError;
+	                }
+	            }
+	        }
+	    } else if (node.type === "Equation") {
+	        var lhs = findNode(node.left, id);
+	        if (lhs) return lhs;
+	        var rhs = findNode(node.right, id);
+	        if (rhs) return rhs;
+	    } else if (node.type === "Fraction") {
+	        var num = findNode(node.numerator, id);
+	        if (num) return num;
+	        var den = findNode(node.denominator, id);
+	        if (den) return den;
+	    }
+	}
+
 	document.addEventListener('click', function (e) {
 	    var x = e.pageX - 100;
-	    var y = e.pageY - 400;
+	    var y = e.pageY - 200;
 
 	    var layoutNode = flattenedLayout.hitTest(x, y);
-	    console.log(layoutNode);
+	    if (layoutNode) {
+	        var id = layoutNode.id;
 
-	    // TODO: implement findNode
-	    // const expressionNode = findNode(expression, id);
+	        var selectedNode = findNode(eqn1, id);
+	        console.log(selectedNode);
+	    }
 	});
 
 /***/ },
