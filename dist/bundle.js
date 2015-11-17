@@ -56,188 +56,37 @@
 	var Operator = _require.Operator;
 	var Equation = _require.Equation;
 
-	var _require2 = __webpack_require__(100);
+	var _require2 = __webpack_require__(101);
 
-	var layout = _require2.layout;
-	var render = _require2.render;
-	var lerpLayout = _require2.lerpLayout;
-	var ctx = _require2.ctx;
-	var hitTest = _require2.hitTest;
+	var getMetrics = _require2.getMetrics;
+	var createLayout = _require2.createLayout;
+	var flatten = _require2.flatten;
 
-	var _require3 = __webpack_require__(101);
+	var _require3 = __webpack_require__(103);
 
-	var getMetrics = _require3.getMetrics;
-	var createLayout = _require3.createLayout;
-	var flatten = _require3.flatten;
+	var add = _require3.add;
+	var sub = _require3.sub;
+	var removeExtraParens = _require3.removeExtraParens;
 
-	var _require4 = __webpack_require__(103);
+	var canvas = document.createElement('canvas');
+	var ctx = canvas.getContext('2d');
 
-	var add = _require4.add;
-	var sub = _require4.sub;
-	var removeExtraParens = _require4.removeExtraParens;
+	ctx.fillStyle = 'black';
+	ctx.strokeStyle = 'red';
 
-	var expr1, expr2, expr3, sum, diff;
+	var pixelRatio = window.devicePixelRatio;
 
-	expr1 = add(new Literal(1), new Literal(3));
-	expr2 = sub(new Literal(5), new Literal(-2));
-	expr3 = add(new Literal(7), new Literal(8));
+	canvas.width = 1200 * pixelRatio;
+	canvas.height = 700 * pixelRatio;
+	canvas.style.width = 1200 + "px";
+	canvas.style.height = 700 + "px";
+	ctx.scale(pixelRatio, pixelRatio);
 
-	sum = add(add(expr1, expr2), expr3);
-	console.log('sum = ' + sum.toString());
+	document.body.appendChild(canvas);
 
-	console.log('----------------------');
-
-	expr1 = add(new Literal(1), new Literal(3));
-	expr2 = sub(new Literal(5), new Literal(-2));
-
-	diff = sub(expr1, expr2);
-	console.log('diff = ' + diff.toString());
-
-	console.log('----------------------');
-
-	// reset everything
-	expr1 = add(new Literal(1), new Literal(3));
-	expr2 = sub(new Literal(5), new Literal(-2));
-
-	var eqn1 = new Equation(expr1, expr2);
-	var l1 = layout(eqn1);
-
-	var ids = Object.keys(l1);
-	var id = eqn1.id;
-	eqn1 = add(eqn1, new Literal(25));
-	eqn1.id = id;
-	//eqn1.add(new Literal(25));
-	var l2 = layout(eqn1);
-
-	console.log(eqn1.toString());
-
-	console.log(l1);
-	console.log(l2);
-
-	var diffLayout = layout(diff);
-
-	var equalsWidth = ctx.measureText("=").width;
-
-	var t = 0;
-
-	// TODO: figure out a better way to handle a series of animations
-
-	function easeQuadratic(t) {
-	    return t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-	}
-
-	function easeCubic(t) {
-	    return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-	}
-
-	function easeInCubic(t) {
-	    return t * t * t;
-	}
-
-	function easeOutCubic(t) {
-	    return --t * t * t + 1;
-	}
-
-	function findEquals(layout) {
-	    var result = null;
-	    Object.keys(layout).forEach(function (id) {
-	        var leaf = layout[id];
-	        if (leaf.text === '=') {
-	            result = leaf;
-	        }
-	    });
-	    return result;
-	}
-
-	function drawAxes(ctx) {
-	    var width = 1200;
-	    var height = 700;
-	    ctx.strokeStyle = 'red';
-	    ctx.beginPath();
-	    ctx.moveTo(width / 2, 0);
-	    ctx.lineTo(width / 2, height);
-	    ctx.moveTo(0, height / 2);
-	    ctx.lineTo(width, height / 2);
-	    ctx.stroke();
-	}
-
-	function draw1() {
-	    ctx.clearRect(0, 0, 1200, 700);
-	    drawAxes(ctx);
-
-	    var l3 = lerpLayout(l1, l2, ids, easeCubic(t));
-	    var equals = findEquals(l3);
-
-	    ctx.save();
-	    ctx.translate(600 - equals.x - equalsWidth / 2, 366);
-	    render(l3, ids);
-	    ctx.restore();
-
-	    ctx.save();
-	    ctx.translate(0, 200);
-	    render(diffLayout);
-	    ctx.restore();
-
-	    if (t < 1) {
-	        t += 0.03;
-	        requestAnimationFrame(draw1);
-	    } else {
-	        t = 0;
-	        requestAnimationFrame(draw2);
-	    }
-	}
-
-	function draw2() {
-	    ctx.clearRect(0, 0, 1200, 700);
-	    drawAxes(ctx);
-
-	    var equals = findEquals(l2);
-
-	    ctx.save();
-	    ctx.translate(600 - equals.x - equalsWidth / 2, 366);
-	    render(l2, ids, easeOutCubic(t));
-	    ctx.restore();
-
-	    ctx.save();
-	    ctx.translate(0, 200);
-	    render(diffLayout);
-	    ctx.restore();
-
-	    if (t < 1) {
-	        t += 0.03;
-	        requestAnimationFrame(draw2);
-	    } else {}
-	}
-
-	//document.addEventListener('click', function(e) {
-	//    var {pageX:x, pageY:y} = e;
-	//
-	//    let equals = findEquals(l2);
-	//
-	//    x -= 600 - equals.x - equalsWidth / 2;
-	//    y -= 366;
-	//
-	//    let leaf = hitTest(l2, x, y);
-	//
-	//    ctx.clearRect(0, 0, 1200, 700);
-	//    drawAxes(ctx);
-	//
-	//    ctx.save();
-	//    ctx.translate(600 - equals.x - equalsWidth / 2, 366);
-	//    if (leaf) {
-	//        ctx.fillStyle = 'rgba(255,255,0,0.5)';
-	//        ctx.fillRect(leaf.x, leaf.y - leaf.height, leaf.width, leaf.height);
-	//    }
-	//    render(l2, ids, easeOutCubic(t));
-	//    ctx.restore();
-	//
-	//    ctx.save();
-	//    ctx.translate(0, 200);
-	//    render(diffLayout);
-	//    ctx.restore();
-	//});
-
-	//draw1();
+	var expr1 = undefined,
+	    expr2 = undefined,
+	    eqn1 = undefined;
 
 	ctx.save();
 	ctx.translate(100, 100);
@@ -268,8 +117,6 @@
 	    // TODO: implement findNode
 	    // const expressionNode = findNode(expression, id);
 	});
-
-	//console.log(getMetrics("a", fontSize));
 
 /***/ },
 /* 1 */
@@ -5409,265 +5256,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 100 */
-/***/ function(module, exports) {
-
-	/**
-	 * Functions for creating and rendering math layouts
-	 */
-
-	'use strict';
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var canvas = document.createElement('canvas');
-	var ctx = canvas.getContext('2d');
-
-	ctx.fillStyle = 'black';
-	ctx.strokeStyle = 'red';
-
-	var pixelRatio = window.devicePixelRatio;
-
-	canvas.width = 1200 * pixelRatio;
-	canvas.height = 700 * pixelRatio;
-	canvas.style.width = 1200 + "px";
-	canvas.style.height = 700 + "px";
-	ctx.scale(pixelRatio, pixelRatio);
-
-	document.body.appendChild(canvas);
-
-	var fontSize = 64;
-	ctx.font = '100 ' + fontSize + 'px sans-serif';
-
-	var space = ctx.measureText(" ").width;
-	var paren = ctx.measureText("(").width;
-
-	// TODO: layout objects should know about their parent as well
-
-	/**
-	 * Creates a layout
-	 *
-	 * @param {Object} node A Math AST node.
-	 * @param {Object} result The object to store the layout in.
-	 * @param {Object?} p A point specifying where to render the layout.
-	 * @returns {Object} The layout object.
-	 */
-	// TODO: use objects that have handy methods for getting bounds
-	// TODO: use a two pass process, 1st pass is nested layout, 2nd pass flattens everything
-	function layout(node) {
-	    var result = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-	    var p = arguments.length <= 2 || arguments[2] === undefined ? { x: 0, y: 0 } : arguments[2];
-
-	    var height = fontSize,
-	        id = node.id;
-
-	    if (node.type === 'Literal') {
-	        console.log(node.toString());
-	        var text = String(node.value).replace(/\-/g, '−');
-	        if (parseFloat(node.value) < 0) {
-	            text = '(' + text + ')';
-	        }
-	        var width = ctx.measureText(text).width;
-	        result[id] = _extends({ id: id, height: height, width: width, text: text }, p);
-	        p.x += width;
-	    } else if (node.type === 'Operator') {
-	        var text = String(node.operator).replace(/\-/g, '−');
-	        var width = ctx.measureText(text).width;
-	        result[id] = _extends({ id: id, width: width, height: height, text: text }, p);
-	        p.x += width;
-	    } else if (node.type === 'Expression') {
-	        var _iteratorNormalCompletion = true;
-	        var _didIteratorError = false;
-	        var _iteratorError = undefined;
-
-	        try {
-	            for (var _iterator = node[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                var child = _step.value;
-
-	                console.log(child.toString());
-	                console.log(child);
-	                if (child.type === 'Operator') {
-	                    p.x += space;
-	                }
-	                if (child.type === 'Expression') {
-	                    var key = id + ':leftParen';
-	                    result[key] = _extends({ id: key, width: paren, height: height, text: '(' }, p);
-	                    p.x += paren;
-	                }
-	                layout(child, result, p);
-	                if (child.type === 'Expression') {
-	                    var key = id + ':rightParen';
-	                    result[key] = _extends({ id: key, width: paren, height: height, text: ')' }, p);
-	                    p.x += paren;
-	                }
-	                if (child.type === 'Operator') {
-	                    p.x += space;
-	                }
-	            }
-	        } catch (err) {
-	            _didIteratorError = true;
-	            _iteratorError = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion && _iterator['return']) {
-	                    _iterator['return']();
-	                }
-	            } finally {
-	                if (_didIteratorError) {
-	                    throw _iteratorError;
-	                }
-	            }
-	        }
-	    } else if (node.type === 'Product') {
-	        var _iteratorNormalCompletion2 = true;
-	        var _didIteratorError2 = false;
-	        var _iteratorError2 = undefined;
-
-	        try {
-	            for (var _iterator2 = node[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                var child = _step2.value;
-
-	                // TODO: option to use cdot for multiplication instead
-	                if (child.type === 'Operator') {
-	                    continue;
-	                }
-	                var key = id + ':leftParen';
-	                result[key] = _extends({ id: key, width: paren, height: height, text: '(' }, p);
-	                p.x += paren;
-	                layout(child, result, p);
-	                key = id + ':rightParen';
-	                result[key] = _extends({ id: key, width: paren, height: height, text: ')' }, p);
-	                p.x += paren;
-	            }
-	        } catch (err) {
-	            _didIteratorError2 = true;
-	            _iteratorError2 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-	                    _iterator2['return']();
-	                }
-	            } finally {
-	                if (_didIteratorError2) {
-	                    throw _iteratorError2;
-	                }
-	            }
-	        }
-	    } else if (node.type === 'Equation') {
-	        layout(node.left, result, p);
-	        p.x += space;
-
-	        var width = ctx.measureText("=").width;
-	        result[id] = _extends({ id: id, width: width, height: height, text: '=' }, p);
-
-	        p.x += width + space;
-
-	        layout(node.right, result, p);
-	    } else if (node.type === 'Fraction') {
-	        (function () {
-	            var leftLayout = layout(node.left);
-	            var rightLayout = layout(node.right);
-
-	            var left = Infinity;
-	            var right = -Infinity;
-	            Object.values(leftLayout).forEach(function (value) {
-	                left = Math.min(left, value.x);
-	                right = Math.max(right, value.x + value.width);
-	            });
-	        })();
-	    }
-	    return result;
-	}
-
-	/**
-	 * Render a layout.
-	 *
-	 * @param {Object} layout The layout to render.
-	 * @param {Array} ids An array of ids specifying which parts of the expression
-	 *        to render.
-	 * @param {Number} t A number between 0 and 1, used for fading in new parts
-	 *        of the expression.
-	 */
-	function render(layout, ids, t) {
-	    Object.keys(layout).forEach(function (id) {
-	        var leaf = layout[id];
-	        var text = String(leaf.text).replace(/\-/g, '−');
-	        if (!ids) {
-	            ctx.fillStyle = 'rgb(0,0,0)';
-	            ctx.fillText(text, leaf.x, leaf.y);
-	        } else if (ids.indexOf(leaf.id.toString()) !== -1) {
-	            // always visible
-	            ctx.fillStyle = 'rgb(0,0,0)';
-	            ctx.fillText(text, leaf.x, leaf.y);
-	        } else {
-	            // fade in
-	            var gray = (1 - t) * 255 | 0;
-	            ctx.fillStyle = 'rgb(' + gray + ',' + gray + ',255)';
-	            ctx.fillText(text, leaf.x, leaf.y);
-	        }
-	    });
-	}
-
-	/**
-	 * Interpolates between two values.
-	 *
-	 * @param val1
-	 * @param val2
-	 * @param t
-	 * @returns {number}
-	 */
-	function lerp(val1, val2, t) {
-	    return (1 - t) * val1 + t * val2;
-	}
-
-	/**
-	 * Interpolates between two layouts.
-	 *
-	 * @param {Object} layout1
-	 * @param {Object} layout2
-	 * @param {Array} ids
-	 * @param {Number} t A number between 0 and 1
-	 */
-	function lerpLayout(layout1, layout2, ids, t) {
-	    var layout = {};
-	    ids.forEach(function (id) {
-	        var l1 = layout1[id];
-	        var l2 = layout2[id];
-
-	        layout[id] = {
-	            id: id,
-	            x: lerp(l1.x, l2.x, t),
-	            y: 0,
-	            width: lerp(l1.width, l2.width, t),
-	            height: lerp(l1.height, l2.height, 2),
-	            text: l1.text
-	        };
-	    });
-
-	    return layout;
-	}
-
-	function hitTest(layout, x, y) {
-	    var result = null;
-	    Object.keys(layout).forEach(function (id) {
-	        var leaf = layout[id];
-	        if (x > leaf.x && x < leaf.x + leaf.width && y > leaf.y - leaf.height && y < leaf.y) {
-	            console.log(leaf);
-	            result = leaf;
-	        }
-	    });
-	    return result;
-	}
-
-	module.exports = {
-	    layout: layout,
-	    render: render,
-	    lerpLayout: lerpLayout,
-	    ctx: ctx,
-	    hitTest: hitTest
-	};
-
-/***/ },
+/* 100 */,
 /* 101 */
 /***/ function(module, exports, __webpack_require__) {
 
