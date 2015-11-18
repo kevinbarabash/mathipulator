@@ -3,6 +3,10 @@ const fontMetrics = require("../metrics/helvetica-light.json");
 // TODO: handle fonts with different unitsPerEm
 const {unitsPerEm, glyphMetrics} = fontMetrics;
 
+const RenderOptions = {
+    bounds: false
+};
+
 function formatText(text) {
     if (parseFloat(text) < 0) {
         text = `(${text})`;
@@ -31,7 +35,7 @@ class Glyph {
 
     render(ctx) {
         // TODO when we flatten group all of the items with the same fontSize
-        if (this.id) {
+        if (this.id && RenderOptions.bounds) {
             ctx.strokeStyle = 'red';
             const bounds = this.bounds;
             ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
@@ -96,7 +100,7 @@ class Layout {
     render(ctx) {
         ctx.save();
         ctx.translate(this.x, this.y);
-        if (this.atomic) {
+        if (this.atomic && RenderOptions.bounds) {
             ctx.strokeStyle = 'red';
             const bounds = this.bounds;
             ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
@@ -352,5 +356,6 @@ function flatten(layout) {
 module.exports = {
     getMetrics,
     createLayout,
-    flatten
+    flatten,
+    RenderOptions
 };

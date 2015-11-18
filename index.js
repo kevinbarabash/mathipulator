@@ -8,7 +8,12 @@ let {
     Equation
 } = require('./src/ast.js');
 
-const {getMetrics, createLayout, flatten} = require("./src/layout.js");
+const {
+    getMetrics,
+    createLayout,
+    flatten,
+    RenderOptions
+} = require("./src/layout.js");
 
 let { add, sub, removeExtraParens } = require('./src/operations.js');
 
@@ -82,11 +87,15 @@ function drawAxes(ctx) {
 }
 
 let selection = null;
+RenderOptions.bounds = false;
+RenderOptions.axes = false;
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawAxes(ctx);
+    if (RenderOptions.axes) {
+        drawAxes(ctx);
+    }
 
     if (selection) {
         ctx.fillStyle = 'rgba(255,255,0,0.25)';

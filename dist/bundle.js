@@ -61,6 +61,7 @@
 	var getMetrics = _require2.getMetrics;
 	var createLayout = _require2.createLayout;
 	var flatten = _require2.flatten;
+	var RenderOptions = _require2.RenderOptions;
 
 	var _require3 = __webpack_require__(103);
 
@@ -182,11 +183,15 @@
 	}
 
 	var selection = null;
+	RenderOptions.bounds = false;
+	RenderOptions.axes = false;
 
 	function draw() {
 	    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	    drawAxes(ctx);
+	    if (RenderOptions.axes) {
+	        drawAxes(ctx);
+	    }
 
 	    if (selection) {
 	        ctx.fillStyle = 'rgba(255,255,0,0.25)';
@@ -5434,6 +5439,10 @@
 	var unitsPerEm = fontMetrics.unitsPerEm;
 	var glyphMetrics = fontMetrics.glyphMetrics;
 
+	var RenderOptions = {
+	    bounds: false
+	};
+
 	function formatText(text) {
 	    if (parseFloat(text) < 0) {
 	        text = "(" + text + ")";
@@ -5494,7 +5503,7 @@
 	        key: "render",
 	        value: function render(ctx) {
 	            // TODO when we flatten group all of the items with the same fontSize
-	            if (this.id) {
+	            if (this.id && RenderOptions.bounds) {
 	                ctx.strokeStyle = 'red';
 	                var bounds = this.bounds;
 	                ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
@@ -5590,7 +5599,7 @@
 	        value: function render(ctx) {
 	            ctx.save();
 	            ctx.translate(this.x, this.y);
-	            if (this.atomic) {
+	            if (this.atomic && RenderOptions.bounds) {
 	                ctx.strokeStyle = 'red';
 	                var bounds = this.bounds;
 	                ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
@@ -5984,7 +5993,8 @@
 	module.exports = {
 	    getMetrics: getMetrics,
 	    createLayout: createLayout,
-	    flatten: flatten
+	    flatten: flatten,
+	    RenderOptions: RenderOptions
 	};
 
 /***/ },
