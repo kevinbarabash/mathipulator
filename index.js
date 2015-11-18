@@ -39,12 +39,51 @@ eqn1 = new Equation(expr1, expr2);
 let newLayout = createLayout(eqn1, 72);
 let flattenedLayout = flatten(newLayout);
 
-ctx.save();
-ctx.translate(100,200);
+function findEqual(flatLayout) {
+    for (const child of flatLayout.children) {
+        if (child.text === "=") {
+            return child;
+        }
+    }
+}
+
+const equalNode = findEqual(flattenedLayout);
+const bounds = equalNode.bounds;
+const equalX = (bounds.left + bounds.right) / 2;
+const equalY = (bounds.top + bounds.bottom) / 2;
+
+console.log(`(${equalX}, ${equalY})`);
+
+const centerX = canvas.width / 2;
+const centerY = canvas.height / 2;
+
+const dx = centerX - equalX;
+const dy = centerY - equalY;
+
+function translateLayout(flatLayout, dx, dy) {
+    for (const child of flatLayout.children) {
+        child.x += dx;
+        child.y += dy;
+    }
+}
+
+translateLayout(flattenedLayout, dx, dy);
+
+function drawAxes(ctx) {
+    let width = canvas.width;
+    let height = canvas.height;
+    ctx.strokeStyle = 'red';
+    ctx.beginPath();
+    ctx.moveTo(width / 2, 0);
+    ctx.lineTo(width / 2, height);
+    ctx.moveTo(0, height / 2);
+    ctx.lineTo(width, height / 2);
+    ctx.stroke();
+}
+
+drawAxes(ctx);
 
 flattenedLayout.render(ctx);
-
-ctx.restore();
 
 function findNode(node, id) {
     if (node.id === id) {
