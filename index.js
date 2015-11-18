@@ -81,9 +81,41 @@ function drawAxes(ctx) {
     ctx.stroke();
 }
 
-drawAxes(ctx);
+let selection = null;
 
-flattenedLayout.render(ctx);
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawAxes(ctx);
+
+    if (selection) {
+        ctx.fillStyle = 'rgba(255,255,0,0.25)';
+        console.log(selection);
+
+        if (selection.metrics) {
+            const width = selection.metrics.width;
+            const height = selection.metrics.height;
+            const x = selection.x + selection.metrics.bearingX;
+            const y = selection.y - selection.metrics.bearingY - height;
+
+            ctx.fillRect(x, y, width, height);
+        } else {
+            const bounds = selection.bounds;
+
+            const width = bounds.right - bounds.left;
+            const height = bounds.bottom - bounds.top;
+            const x = selection.x + bounds.left;
+            const y = selection.y + bounds.top;
+
+            ctx.fillRect(x, y, width, height);
+        }
+    }
+
+    ctx.fillStyle = 'black';
+    flattenedLayout.render(ctx);
+}
+
+draw();
 
 function findNode(node, id) {
     if (node.id === id) {
@@ -109,13 +141,17 @@ function findNode(node, id) {
 }
 
 document.addEventListener('click', function(e) {
-    var x = e.pageX - 100;
-    var y = e.pageY - 200;
+    var x = e.pageX;
+    var y = e.pageY;
 
     const layoutNode = flattenedLayout.hitTest(x, y);
     if (layoutNode) {
         const {id} = layoutNode;
         const selectedNode = findNode(eqn1, id);
         console.log(selectedNode);
+        selection = layoutNode;
+    } else {
+        selection = null;
     }
+    draw();
 });

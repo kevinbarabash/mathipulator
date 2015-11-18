@@ -181,9 +181,41 @@
 	    ctx.stroke();
 	}
 
-	drawAxes(ctx);
+	var selection = null;
 
-	flattenedLayout.render(ctx);
+	function draw() {
+	    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	    drawAxes(ctx);
+
+	    if (selection) {
+	        ctx.fillStyle = 'rgba(255,255,0,0.25)';
+	        console.log(selection);
+
+	        if (selection.metrics) {
+	            var width = selection.metrics.width;
+	            var height = selection.metrics.height;
+	            var x = selection.x + selection.metrics.bearingX;
+	            var y = selection.y - selection.metrics.bearingY - height;
+
+	            ctx.fillRect(x, y, width, height);
+	        } else {
+	            var _bounds = selection.bounds;
+
+	            var width = _bounds.right - _bounds.left;
+	            var height = _bounds.bottom - _bounds.top;
+	            var x = selection.x + _bounds.left;
+	            var y = selection.y + _bounds.top;
+
+	            ctx.fillRect(x, y, width, height);
+	        }
+	    }
+
+	    ctx.fillStyle = 'black';
+	    flattenedLayout.render(ctx);
+	}
+
+	draw();
 
 	function findNode(node, id) {
 	    if (node.id === id) {
@@ -230,8 +262,8 @@
 	}
 
 	document.addEventListener('click', function (e) {
-	    var x = e.pageX - 100;
-	    var y = e.pageY - 200;
+	    var x = e.pageX;
+	    var y = e.pageY;
 
 	    var layoutNode = flattenedLayout.hitTest(x, y);
 	    if (layoutNode) {
@@ -239,7 +271,11 @@
 
 	        var selectedNode = findNode(eqn1, id);
 	        console.log(selectedNode);
+	        selection = layoutNode;
+	    } else {
+	        selection = null;
 	    }
+	    draw();
 	});
 
 /***/ },
