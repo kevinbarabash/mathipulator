@@ -194,7 +194,7 @@
 	    }
 
 	    if (selection) {
-	        ctx.fillStyle = 'rgba(255,255,0,0.25)';
+	        ctx.fillStyle = 'rgba(255,255,0,0.5)';
 	        console.log(selection);
 
 	        if (selection.metrics) {
@@ -209,8 +209,8 @@
 
 	            var width = _bounds.right - _bounds.left;
 	            var height = _bounds.bottom - _bounds.top;
-	            var x = selection.x + _bounds.left;
-	            var y = selection.y + _bounds.top;
+	            var x = _bounds.left;
+	            var y = _bounds.top;
 
 	            ctx.fillRect(x, y, width, height);
 	        }
@@ -267,21 +267,133 @@
 	}
 
 	document.addEventListener('click', function (e) {
-	    var x = e.pageX;
-	    var y = e.pageY;
-
-	    var layoutNode = flattenedLayout.hitTest(x, y);
+	    var layoutNode = flattenedLayout.hitTest(e.pageX, e.pageY);
 	    if (layoutNode) {
 	        var id = layoutNode.id;
 
 	        var selectedNode = findNode(eqn1, id);
-	        console.log(selectedNode);
-	        selection = layoutNode;
+
+	        if (layoutNode !== selection) {
+	            selection = layoutNode;
+	            var _bounds2 = layoutNode.bounds;
+	            showMenu(['apple', 'banana', 'cupcake'], (_bounds2.left + _bounds2.right) / 2, _bounds2.top - 10);
+	        } else {
+	            selection = null;
+	            if (menu) {
+	                document.body.removeChild(menu);
+	                menu = null;
+	            }
+	        }
 	    } else {
 	        selection = null;
+	        if (menu) {
+	            document.body.removeChild(menu);
+	            menu = null;
+	        }
 	    }
+
 	    draw();
 	});
+
+	var menu = null;
+
+	function showMenu(items, x, y) {
+	    if (menu) {
+	        document.body.removeChild(menu);
+	    }
+	    menu = document.createElement('div');
+	    var k = 160;
+	    var a = 0.95;
+
+	    var container = document.createElement('div');
+	    Object.assign(container.style, {
+	        display: 'inline-block',
+	        backgroundColor: 'rgba(' + k + ',' + k + ',' + k + ',' + a + ')',
+	        color: 'white',
+	        fontSize: '36px',
+	        fontFamily: 'Helvetica',
+	        fontWeight: '100',
+	        padding: '10px',
+	        borderRadius: '10px'
+	    });
+
+	    Object.assign(menu.style, {
+	        display: 'inline-block',
+	        position: 'absolute',
+	        left: x + 'px',
+	        top: y + 'px',
+	        transform: 'translate(-50%, -100%)'
+	    });
+
+	    var ul = document.createElement('ul');
+	    Object.assign(ul.style, {
+	        listStyleType: 'none',
+	        padding: 0,
+	        margin: 0
+	    });
+
+	    var _iteratorNormalCompletion4 = true;
+	    var _didIteratorError4 = false;
+	    var _iteratorError4 = undefined;
+
+	    try {
+	        var _loop = function () {
+	            var item = _step4.value;
+
+	            var li = document.createElement('li');
+	            Object.assign(li.style, {
+	                cursor: 'pointer'
+	            });
+	            li.onmouseover = function () {
+	                return li.style.color = 'rgb(255,255,128)';
+	            };
+	            li.onmouseout = function () {
+	                return li.style.color = 'white';
+	            };
+	            li.innerText = item;
+	            ul.appendChild(li);
+	        };
+
+	        for (var _iterator4 = items[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	            _loop();
+	        }
+	    } catch (err) {
+	        _didIteratorError4 = true;
+	        _iteratorError4 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+	                _iterator4['return']();
+	            }
+	        } finally {
+	            if (_didIteratorError4) {
+	                throw _iteratorError4;
+	            }
+	        }
+	    }
+
+	    container.appendChild(ul);
+	    menu.appendChild(container);
+
+	    var triangle = document.createElement('div');
+	    Object.assign(triangle.style, {
+	        width: 0,
+	        height: 0,
+	        borderStyle: 'solid',
+	        borderWidth: '10px 10px 0 10px',
+	        borderColor: 'rgba(' + k + ',' + k + ',' + k + ',' + a + ') transparent transparent transparent',
+	        margin: 'auto'
+	    });
+
+	    menu.appendChild(triangle);
+
+	    // TODO: cleanup event listeners when removing menu
+	    container.addEventListener('click', function (e) {
+	        e.stopPropagation();
+	    });
+
+	    document.body.appendChild(menu);
+	}
 
 /***/ },
 /* 1 */
@@ -5524,16 +5636,12 @@
 	    }, {
 	        key: "hitTest",
 	        value: function hitTest(x, y) {
-	            var _metrics = this.metrics;
-	            var bearingX = _metrics.bearingX;
-	            var bearingY = _metrics.bearingY;
-	            var width = _metrics.width;
-	            var height = _metrics.height;
+	            var _bounds = this.bounds;
+	            var left = _bounds.left;
+	            var right = _bounds.right;
+	            var top = _bounds.top;
+	            var bottom = _bounds.bottom;
 
-	            var left = bearingX + this.x;
-	            var right = left + width;
-	            var top = this.y - bearingY - height;
-	            var bottom = top + height;
 	            if (x >= left && x <= right && y >= top && y <= bottom) {
 	                return this;
 	            }
@@ -5541,11 +5649,11 @@
 	    }, {
 	        key: "bounds",
 	        get: function get() {
-	            var _metrics2 = this.metrics;
-	            var bearingX = _metrics2.bearingX;
-	            var bearingY = _metrics2.bearingY;
-	            var width = _metrics2.width;
-	            var height = _metrics2.height;
+	            var _metrics = this.metrics;
+	            var bearingX = _metrics.bearingX;
+	            var bearingY = _metrics.bearingY;
+	            var width = _metrics.width;
+	            var height = _metrics.height;
 
 	            var left = this.x + bearingX;
 	            var right = left + width;
@@ -5646,10 +5754,6 @@
 	    }, {
 	        key: "hitTest",
 	        value: function hitTest(x, y) {
-	            // correct for the offset of the layout
-	            x = x - this.x;
-	            y = y - this.y;
-
 	            if (this.atomic) {
 	                var bounds = this.bounds;
 	                if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) {
@@ -5664,7 +5768,7 @@
 	                for (var _iterator3 = this.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
 	                    var child = _step3.value;
 
-	                    var result = child.hitTest(x, y);
+	                    var result = child.hitTest(x - this.x, y - this.y);
 	                    if (result) {
 	                        return result;
 	                    }
@@ -5703,6 +5807,11 @@
 	                    bottom: Math.max(bounds.bottom, childBounds.bottom)
 	                };
 	            }, initialBounds);
+
+	            bounds.left += this.x;
+	            bounds.right += this.x;
+	            bounds.top += this.y;
+	            bounds.bottom += this.y;
 
 	            return bounds;
 	        }

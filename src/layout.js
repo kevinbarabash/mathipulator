@@ -63,11 +63,7 @@ class Glyph {
     }
 
     hitTest(x, y) {
-        const {bearingX, bearingY, width, height} = this.metrics;
-        const left = bearingX + this.x;
-        const right = left + width;
-        const top = this.y - bearingY - height;
-        const bottom = top + height;
+        const { left, right, top, bottom } = this.bounds;
         if (x >= left && x <= right && y >= top && y <= bottom) {
             return this;
         }
@@ -130,6 +126,11 @@ class Layout {
             }
         }, initialBounds);
 
+        bounds.left += this.x;
+        bounds.right += this.x;
+        bounds.top += this.y;
+        bounds.bottom += this.y;
+
         return bounds;
     }
 
@@ -142,10 +143,6 @@ class Layout {
     }
 
     hitTest(x, y) {
-        // correct for the offset of the layout
-        x = x - this.x;
-        y = y - this.y;
-
         if (this.atomic) {
             const bounds = this.bounds;
             if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) {
@@ -153,7 +150,7 @@ class Layout {
             }
         }
         for (const child of this.children) {
-            const result = child.hitTest(x, y);
+            const result = child.hitTest(x - this.x, y - this.y);
             if (result) {
                 return result;
             }

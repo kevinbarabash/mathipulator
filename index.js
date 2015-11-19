@@ -98,7 +98,7 @@ function draw() {
     }
 
     if (selection) {
-        ctx.fillStyle = 'rgba(255,255,0,0.25)';
+        ctx.fillStyle = 'rgba(255,255,0,0.5)';
         console.log(selection);
 
         if (selection.metrics) {
@@ -113,8 +113,8 @@ function draw() {
 
             const width = bounds.right - bounds.left;
             const height = bounds.bottom - bounds.top;
-            const x = selection.x + bounds.left;
-            const y = selection.y + bounds.top;
+            const x = bounds.left;
+            const y = bounds.top;
 
             ctx.fillRect(x, y, width, height);
         }
@@ -150,17 +150,99 @@ function findNode(node, id) {
 }
 
 document.addEventListener('click', function(e) {
-    var x = e.pageX;
-    var y = e.pageY;
-
-    const layoutNode = flattenedLayout.hitTest(x, y);
+    const layoutNode = flattenedLayout.hitTest(e.pageX, e.pageY);
     if (layoutNode) {
         const {id} = layoutNode;
         const selectedNode = findNode(eqn1, id);
-        console.log(selectedNode);
-        selection = layoutNode;
+
+        if (layoutNode !== selection) {
+            selection = layoutNode;
+            const bounds = layoutNode.bounds;
+            showMenu(['apple', 'banana', 'cupcake'], (bounds.left + bounds.right) / 2, bounds.top - 10);
+        } else {
+            selection = null;
+            if (menu) {
+                document.body.removeChild(menu);
+                menu = null;
+            }
+        }
     } else {
         selection = null;
+        if (menu) {
+            document.body.removeChild(menu);
+            menu = null;
+        }
     }
+
     draw();
 });
+
+let menu = null;
+
+function showMenu(items, x, y) {
+    if (menu) {
+        document.body.removeChild(menu);
+    }
+    menu = document.createElement('div');
+    const k = 160;
+    const a = 0.95;
+
+    const container = document.createElement('div');
+    Object.assign(container.style, {
+        display: 'inline-block',
+        backgroundColor: `rgba(${k},${k},${k},${a})`,
+        color: 'white',
+        fontSize: '36px',
+        fontFamily: 'Helvetica',
+        fontWeight: '100',
+        padding: '10px',
+        borderRadius: '10px',
+    });
+
+    Object.assign(menu.style, {
+        display: 'inline-block',
+        position: 'absolute',
+        left: `${x}px`,
+        top: `${y}px`,
+        transform: 'translate(-50%, -100%)',
+    });
+
+    const ul = document.createElement('ul');
+    Object.assign(ul.style, {
+        listStyleType: 'none',
+        padding: 0,
+        margin: 0
+    });
+
+    for (const item of items) {
+        const li = document.createElement('li');
+        Object.assign(li.style, {
+            cursor: 'pointer',
+        });
+        li.onmouseover = () => li.style.color = 'rgb(255,255,128)';
+        li.onmouseout = () => li.style.color = 'white';
+        li.innerText = item;
+        ul.appendChild(li);
+    }
+    container.appendChild(ul);
+    menu.appendChild(container);
+
+    const triangle = document.createElement('div');
+    Object.assign(triangle.style, {
+        width: 0,
+        height: 0,
+        borderStyle: 'solid',
+        borderWidth: '10px 10px 0 10px',
+        borderColor: `rgba(${k},${k},${k},${a}) transparent transparent transparent`,
+        margin: 'auto'
+    });
+
+    menu.appendChild(triangle);
+
+    // TODO: cleanup event listeners when removing menu
+    container.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    document.body.appendChild(menu);
+}
