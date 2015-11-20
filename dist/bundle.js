@@ -68,6 +68,7 @@
 	var add = _require3.add;
 	var sub = _require3.sub;
 	var mul = _require3.mul;
+	var div = _require3.div;
 	var removeExtraParens = _require3.removeExtraParens;
 
 	var canvas = document.createElement('canvas');
@@ -90,9 +91,12 @@
 	    expr2 = undefined,
 	    eqn1 = undefined;
 
-	expr1 = add(new Literal(25), mul(new Literal(42), mul(new Identifier('pi'), new Identifier('r'))));
-	expr1 = add(expr1, new Identifier('theta'));
-	expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier('x'))), new Literal(-2));
+	//expr1 = add(new Literal(25), mul(new Literal(42), mul(new Identifier('pi'), new Identifier('r'))));
+	//expr1 = add(expr1, new Identifier('theta'));
+	//expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier('x'))), new Literal(-2));
+
+	expr1 = mul(new Literal(2), add(new Literal(3), mul(new Literal(5), new Literal(-4))));
+	expr2 = div(sub(mul(new Literal(-1), new Literal(-3)), new Literal(12)), new Literal(3));
 
 	eqn1 = new Equation(expr1, expr2);
 
@@ -6052,11 +6056,22 @@
 	                var child = _step6.value;
 
 	                // TODO: handle multiple numbers and numbers that come in the middle
-	                console.log(child);
+	                if (child.type === "Expression") {
+	                    var lParen = new Glyph("(", fontSize);
+	                    lParen.x = penX;
+	                    penX += lParen.advance;
+	                    layouts.push(lParen);
+	                }
 	                var childLayout = createLayout(child, fontSize);
 	                childLayout.x = penX;
 	                penX += childLayout.advance;
 	                layouts.push(childLayout);
+	                if (child.type === "Expression") {
+	                    var rParen = new Glyph(")", fontSize);
+	                    rParen.x = penX;
+	                    penX += rParen.advance;
+	                    layouts.push(rParen);
+	                }
 	            }
 	        } catch (err) {
 	            _didIteratorError6 = true;

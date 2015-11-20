@@ -15,7 +15,7 @@ const {
     RenderOptions
 } = require("./src/layout.js");
 
-let { add, sub, mul, removeExtraParens } = require('./src/operations.js');
+let { add, sub, mul, div, removeExtraParens } = require('./src/operations.js');
 
 let canvas = document.createElement('canvas');
 let ctx = canvas.getContext('2d');
@@ -35,9 +35,12 @@ document.body.appendChild(canvas);
 
 let expr1, expr2, eqn1;
 
-expr1 = add(new Literal(25), mul(new Literal(42), mul(new Identifier('pi'), new Identifier('r'))));
-expr1 = add(expr1, new Identifier('theta'));
-expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier('x'))), new Literal(-2));
+//expr1 = add(new Literal(25), mul(new Literal(42), mul(new Identifier('pi'), new Identifier('r'))));
+//expr1 = add(expr1, new Identifier('theta'));
+//expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier('x'))), new Literal(-2));
+
+expr1 = mul(new Literal(2), add(new Literal(3), mul(new Literal(5), new Literal(-4))));
+expr2 = div(sub(mul(new Literal(-1), new Literal(-3)), new Literal(12)), new Literal(3));
 
 eqn1 = new Equation(expr1, expr2);
 

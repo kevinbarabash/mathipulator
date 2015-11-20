@@ -326,11 +326,22 @@ function createLayout(node, fontSize) {
         const layouts = [];
         for (let child of node) {
             // TODO: handle multiple numbers and numbers that come in the middle
-            console.log(child);
+            if (child.type === "Expression") {
+                const lParen = new Glyph("(", fontSize);
+                lParen.x = penX;
+                penX += lParen.advance;
+                layouts.push(lParen);
+            }
             const childLayout = createLayout(child, fontSize);
             childLayout.x = penX;
             penX += childLayout.advance;
             layouts.push(childLayout);
+            if (child.type === "Expression") {
+                const rParen = new Glyph(")", fontSize);
+                rParen.x = penX;
+                penX += rParen.advance;
+                layouts.push(rParen);
+            }
         }
         const layout = new Layout(layouts);
         layout.advance = penX;
