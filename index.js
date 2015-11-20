@@ -15,7 +15,7 @@ const {
     RenderOptions
 } = require("./src/layout.js");
 
-let { add, sub, removeExtraParens } = require('./src/operations.js');
+let { add, sub, mul, removeExtraParens } = require('./src/operations.js');
 
 let canvas = document.createElement('canvas');
 let ctx = canvas.getContext('2d');
@@ -35,7 +35,7 @@ document.body.appendChild(canvas);
 
 let expr1, expr2, eqn1;
 
-expr1 = add(new Literal(25), new Product(new Literal(42), new Identifier('pi'), new Identifier('r')));
+expr1 = add(new Literal(25), mul(new Literal(42), mul(new Identifier('pi'), new Identifier('r'))));
 expr1 = add(expr1, new Identifier('theta'));
 expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier('x'))), new Literal(-2));
 
@@ -101,21 +101,21 @@ function draw() {
         ctx.fillStyle = 'rgba(255,255,0,0.5)';
         console.log(selection);
 
-        if (selection.metrics) {
-            const width = selection.metrics.width;
-            const height = selection.metrics.height;
-            const x = selection.x + selection.metrics.bearingX;
-            const y = selection.y - selection.metrics.bearingY - height;
+        const bounds = selection.bounds;
 
-            ctx.fillRect(x, y, width, height);
+        const width = bounds.right - bounds.left;
+        const height = bounds.bottom - bounds.top;
+        const x = bounds.left;
+        const y = bounds.top;
+        const padding = 8;
+        const radius = width/2 + padding;
+
+        if (selection.circle) {
+            ctx.beginPath();
+            ctx.arc(x + width/2, y + height/2, radius, 0, 2 * Math.PI, false);
+            ctx.closePath();
+            ctx.fill();
         } else {
-            const bounds = selection.bounds;
-
-            const width = bounds.right - bounds.left;
-            const height = bounds.bottom - bounds.top;
-            const x = bounds.left;
-            const y = bounds.top;
-
             ctx.fillRect(x, y, width, height);
         }
     }

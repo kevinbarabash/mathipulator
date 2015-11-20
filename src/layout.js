@@ -11,7 +11,7 @@ function formatText(text) {
     if (parseFloat(text) < 0) {
         text = `(${text})`;
     }
-    return String(text).replace(/\-/g, "\u2212");
+    return String(text).replace(/\-/g, "\u2212").replace(/\*/g, "\u00B7");
 }
 
 function getMetrics(c, fontSize) {
@@ -195,7 +195,7 @@ function makeMetricsSquare(metrics) {
 
 function createLayout(node, fontSize) {
     const spaceMetrics = getMetrics(" ", fontSize);
-    const dashMetrics = getMetrics("-", fontSize);
+    const dashMetrics = getMetrics("\u2212", fontSize);
 
     if (node.type === "Literal") {
         const text = formatText(String(node.value));
@@ -228,7 +228,19 @@ function createLayout(node, fontSize) {
         if (node.operator === "-") {
             glyph.metrics = makeMetricsSquare(glyph.metrics);
         }
+        if (node.operator === "*") {
+            // TODO: make some methods for center bounds and getting their centers
+            const centerX = glyph.metrics.bearingX + glyph.metrics.width / 2;
+            const centerY = glyph.metrics.bearingY + glyph.metrics.height / 2;
+            const radius = glyph.metrics.width;
+            glyph.metrics.bearingX = centerX - radius;
+            glyph.metrics.bearingY = centerY - radius;
+            glyph.metrics.width = 2 * radius;
+            glyph.metrics.height = 2 * radius;
+            console.log(radius * 2)
+        }
         glyph.id = node.id;
+        glyph.circle = true;
         return glyph;
     } else if (node.type === "Expression") {
         let penX = 0;
@@ -261,6 +273,7 @@ function createLayout(node, fontSize) {
 
         // TODO: update Equation to handle inequalities
         const equal = new Glyph("=", fontSize);
+        equal.circle = true;
         equal.metrics = makeMetricsSquare(equal.metrics);
         // TODO: figure out how to differentiate between layout and equal node
         equal.id = node.id;
@@ -313,6 +326,7 @@ function createLayout(node, fontSize) {
         const layouts = [];
         for (let child of node) {
             // TODO: handle multiple numbers and numbers that come in the middle
+            console.log(child);
             const childLayout = createLayout(child, fontSize);
             childLayout.x = penX;
             penX += childLayout.advance;

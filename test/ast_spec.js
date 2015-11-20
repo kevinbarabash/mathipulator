@@ -19,16 +19,24 @@ const assert = require('assert');
 
 function processExpression(expr) {
     return [...expr].map(node => {
-        if (node.type === 'Literal') {
-            return node.value;
-        } else if (node.type === 'Operator') {
-            return node.operator;
-        } else if (node.type === 'Expression') {
-            return processExpression(node);
-        } else {
-            console.log(`${node.type} unexpected`);
-        }
+        return {
+            'Literal': node.value,
+            'Operator': node.operator,
+            'Product': processProduct(node),
+            'Expression': processExpression(node)
+        }[node.type] || console.log(`${node.type} unexpected`);
     });
+}
+
+function processProduct(prod) {
+    return [...prod].map(node => {
+        return {
+            'Literal': node.value,
+            'Operator': node.operator,
+            'Product': processProduct(node),
+            'Expression': processExpression(node)
+        }[node.type] || console.log(`${node.type} unexpected`);
+    })
 }
 
 function assertExpression(expr, array) {
@@ -38,7 +46,7 @@ function assertExpression(expr, array) {
 
 function assertProduct(prod, array) {
     assert.equal(prod.type, 'Product');
-    assert.deepEqual([...prod].map(node => node.value), array);
+    assert.deepEqual(processProduct(prod), array);
 }
 
 function assertFraction(frac, array) {
@@ -87,7 +95,7 @@ describe("subtracting", () => {
 describe("multiplying", () => {
     it("should produce a product", () => {
         const prod = mul(new Literal(1), new Literal(2));
-        assertProduct(prod, [1, 2]);
+        assertProduct(prod, [1, "*", 2]);
     });
 
     it("should simplify products when multiplying by a product", () => {
@@ -95,11 +103,11 @@ describe("multiplying", () => {
 
         prod = mul(new Literal(1), new Literal(2));
         prod = mul(prod, new Literal(3));
-        assertProduct(prod, [1, 2, 3]);
+        assertProduct(prod, [1, "*", 2, "*", 3]);
 
         prod = mul(new Literal(1), new Literal(2));
         prod = mul(new Literal(3), prod);
-        assertProduct(prod, [3, 1, 2]);
+        assertProduct(prod, [3, "*", 1, "*", 2]);
     });
 });
 

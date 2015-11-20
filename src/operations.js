@@ -104,7 +104,7 @@ export function mul(a, b) {
     } else if (a.type !== 'Equation' && b.type === 'Equation') {
         return new Equation(mul(a, b.left), mul(a, b.right));
     } else {
-        return removeExtraProductParens(new Product(a, b));
+        return removeExtraProductParens(new Product(a, new Operator('*'), b));
     }
 }
 

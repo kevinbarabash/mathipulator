@@ -67,6 +67,7 @@
 
 	var add = _require3.add;
 	var sub = _require3.sub;
+	var mul = _require3.mul;
 	var removeExtraParens = _require3.removeExtraParens;
 
 	var canvas = document.createElement('canvas');
@@ -89,7 +90,7 @@
 	    expr2 = undefined,
 	    eqn1 = undefined;
 
-	expr1 = add(new Literal(25), new Product(new Literal(42), new Identifier('pi'), new Identifier('r')));
+	expr1 = add(new Literal(25), mul(new Literal(42), mul(new Identifier('pi'), new Identifier('r'))));
 	expr1 = add(expr1, new Identifier('theta'));
 	expr2 = sub(new Fraction(new Identifier('y'), add(new Literal(5), new Identifier('x'))), new Literal(-2));
 
@@ -197,21 +198,21 @@
 	        ctx.fillStyle = 'rgba(255,255,0,0.5)';
 	        console.log(selection);
 
-	        if (selection.metrics) {
-	            var width = selection.metrics.width;
-	            var height = selection.metrics.height;
-	            var x = selection.x + selection.metrics.bearingX;
-	            var y = selection.y - selection.metrics.bearingY - height;
+	        var _bounds = selection.bounds;
 
-	            ctx.fillRect(x, y, width, height);
+	        var width = _bounds.right - _bounds.left;
+	        var height = _bounds.bottom - _bounds.top;
+	        var x = _bounds.left;
+	        var y = _bounds.top;
+	        var padding = 8;
+	        var radius = width / 2 + padding;
+
+	        if (selection.circle) {
+	            ctx.beginPath();
+	            ctx.arc(x + width / 2, y + height / 2, radius, 0, 2 * Math.PI, false);
+	            ctx.closePath();
+	            ctx.fill();
 	        } else {
-	            var _bounds = selection.bounds;
-
-	            var width = _bounds.right - _bounds.left;
-	            var height = _bounds.bottom - _bounds.top;
-	            var x = _bounds.left;
-	            var y = _bounds.top;
-
 	            ctx.fillRect(x, y, width, height);
 	        }
 	    }
@@ -5559,7 +5560,7 @@
 	    if (parseFloat(text) < 0) {
 	        text = "(" + text + ")";
 	    }
-	    return String(text).replace(/\-/g, "−");
+	    return String(text).replace(/\-/g, "−").replace(/\*/g, "·");
 	}
 
 	function getMetrics(c, fontSize) {
@@ -5854,7 +5855,7 @@
 
 	function createLayout(node, fontSize) {
 	    var spaceMetrics = getMetrics(" ", fontSize);
-	    var dashMetrics = getMetrics("-", fontSize);
+	    var dashMetrics = getMetrics("−", fontSize);
 
 	    if (node.type === "Literal") {
 	        var text = formatText(String(node.value));
@@ -5908,7 +5909,19 @@
 	        if (node.operator === "-") {
 	            glyph.metrics = makeMetricsSquare(glyph.metrics);
 	        }
+	        if (node.operator === "*") {
+	            // TODO: make some methods for center bounds and getting their centers
+	            var centerX = glyph.metrics.bearingX + glyph.metrics.width / 2;
+	            var centerY = glyph.metrics.bearingY + glyph.metrics.height / 2;
+	            var radius = glyph.metrics.width;
+	            glyph.metrics.bearingX = centerX - radius;
+	            glyph.metrics.bearingY = centerY - radius;
+	            glyph.metrics.width = 2 * radius;
+	            glyph.metrics.height = 2 * radius;
+	            console.log(radius * 2);
+	        }
 	        glyph.id = node.id;
+	        glyph.circle = true;
 	        return glyph;
 	    } else if (node.type === "Expression") {
 	        var penX = 0;
@@ -5963,6 +5976,7 @@
 
 	        // TODO: update Equation to handle inequalities
 	        var equal = new Glyph("=", fontSize);
+	        equal.circle = true;
 	        equal.metrics = makeMetricsSquare(equal.metrics);
 	        // TODO: figure out how to differentiate between layout and equal node
 	        equal.id = node.id;
@@ -6022,6 +6036,7 @@
 	                var child = _step6.value;
 
 	                // TODO: handle multiple numbers and numbers that come in the middle
+	                console.log(child);
 	                var childLayout = createLayout(child, fontSize);
 	                childLayout.x = penX;
 	                penX += childLayout.advance;
@@ -8540,7 +8555,7 @@
 	    } else if (a.type !== 'Equation' && b.type === 'Equation') {
 	        return new Equation(mul(a, b.left), mul(a, b.right));
 	    } else {
-	        return removeExtraProductParens(new Product(a, b));
+	        return removeExtraProductParens(new Product(a, new Operator('*'), b));
 	    }
 	}
 
