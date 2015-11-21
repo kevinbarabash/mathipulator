@@ -10,12 +10,13 @@ let {
 
 const {
     getMetrics,
-    createLayout,
-    flatten,
+    createFlatLayout,
     RenderOptions
 } = require("./src/layout.js");
 
-let { add, sub, mul, div, removeExtraParens } = require('./src/operations.js');
+const { add, sub, mul, div, removeExtraParens } = require('./src/operations.js');
+
+const { evaluate } = require('./src/transforms.js');
 
 let canvas = document.createElement('canvas');
 let ctx = canvas.getContext('2d');
@@ -44,38 +45,7 @@ expr2 = div(sub(mul(new Literal(-1), new Literal(-3)), new Literal(12)), new Lit
 
 eqn1 = new Equation(expr1, expr2);
 
-let newLayout = createLayout(eqn1, 72);
-let flattenedLayout = flatten(newLayout);
-
-function findEqual(flatLayout) {
-    for (const child of flatLayout.children) {
-        if (child.text === "=") {
-            return child;
-        }
-    }
-}
-
-const equalNode = findEqual(flattenedLayout);
-const bounds = equalNode.bounds;
-const equalX = (bounds.left + bounds.right) / 2;
-const equalY = (bounds.top + bounds.bottom) / 2;
-
-console.log(`(${equalX}, ${equalY})`);
-
-const centerX = canvas.width / 2;
-const centerY = canvas.height / 2;
-
-const dx = centerX - equalX;
-const dy = centerY - equalY;
-
-function translateLayout(flatLayout, dx, dy) {
-    for (const child of flatLayout.children) {
-        child.x += dx;
-        child.y += dy;
-    }
-}
-
-translateLayout(flattenedLayout, dx, dy);
+let flattenedLayout = createFlatLayout(eqn1, 72, canvas.width, canvas.height);
 
 function drawAxes(ctx) {
     let width = canvas.width;
@@ -117,7 +87,6 @@ function draw() {
 
     if (selection) {
         ctx.fillStyle = 'rgba(255,255,0,0.5)';
-        console.log(selection);
 
         const bounds = selection.bounds;
 
@@ -174,29 +143,67 @@ document.addEventListener('click', function(e) {
         const {id} = layoutNode;
         const selectedNode = findNode(eqn1, id);
 
+        if (selectedNode) {
+            if (evaluate.canTransform(selectedNode)) {
+                console.log(eqn1.toString());
+                evaluate.doTransform(selectedNode);
+                console.log(eqn1.toString());
+
+                flattenedLayout = createFlatLayout(eqn1, 72, canvas.width, canvas.height);
+            }
+        }
+
         if (layoutNode !== selection) {
             selection = layoutNode;
             const bounds = layoutNode.bounds;
-            showMenu(['apple', 'banana', 'cupcake'], (bounds.left + bounds.right) / 2, bounds.top - 10);
+            const items = [{
+                label: 'apple',
+                action: function() {
+                    console.log('apple');
+                    selection = null;
+                    menu = null;
+                    hideMenu(menu);
+                },
+            }, {
+                label: 'banana',
+                action: function() {
+                    console.log('banana');
+                    selection = null;
+                    menu = null;
+                    hideMenu(menu);
+                }
+            }, {
+                label: 'cupcake',
+                action: function() {
+                    console.log('cupcake');
+                    selection = null;
+                    menu = null;
+                    hideMenu(menu);
+                    draw();
+                }
+            }];
+
+            showMenu(items, (bounds.left + bounds.right) / 2, bounds.top - 10);
         } else {
             selection = null;
-            if (menu) {
-                document.body.removeChild(menu);
-                menu = null;
-            }
+            hideMenu(menu);
         }
     } else {
         selection = null;
-        if (menu) {
-            document.body.removeChild(menu);
-            menu = null;
-        }
+        hideMenu(menu);
     }
 
     draw();
 });
 
 let menu = null;
+
+function hideMenu(menu) {
+    if (menu) {
+        document.body.removeChild(menu);
+        menu = null;
+    }
+}
 
 function showMenu(items, x, y) {
     if (menu) {
@@ -240,7 +247,8 @@ function showMenu(items, x, y) {
         });
         li.onmouseover = () => li.style.color = 'rgb(255,255,128)';
         li.onmouseout = () => li.style.color = 'white';
-        li.innerText = item;
+        li.innerText = item.label;
+        li.onclick = item.action;
         ul.appendChild(li);
     }
     container.appendChild(ul);

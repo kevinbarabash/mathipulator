@@ -59,8 +59,7 @@
 	var _require2 = __webpack_require__(101);
 
 	var getMetrics = _require2.getMetrics;
-	var createLayout = _require2.createLayout;
-	var flatten = _require2.flatten;
+	var createFlatLayout = _require2.createFlatLayout;
 	var RenderOptions = _require2.RenderOptions;
 
 	var _require3 = __webpack_require__(103);
@@ -70,6 +69,10 @@
 	var mul = _require3.mul;
 	var div = _require3.div;
 	var removeExtraParens = _require3.removeExtraParens;
+
+	var _require4 = __webpack_require__(105);
+
+	var evaluate = _require4.evaluate;
 
 	var canvas = document.createElement('canvas');
 	var ctx = canvas.getContext('2d');
@@ -100,80 +103,7 @@
 
 	eqn1 = new Equation(expr1, expr2);
 
-	var newLayout = createLayout(eqn1, 72);
-	var flattenedLayout = flatten(newLayout);
-
-	function findEqual(flatLayout) {
-	    var _iteratorNormalCompletion = true;
-	    var _didIteratorError = false;
-	    var _iteratorError = undefined;
-
-	    try {
-	        for (var _iterator = flatLayout.children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	            var child = _step.value;
-
-	            if (child.text === "=") {
-	                return child;
-	            }
-	        }
-	    } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	    } finally {
-	        try {
-	            if (!_iteratorNormalCompletion && _iterator['return']) {
-	                _iterator['return']();
-	            }
-	        } finally {
-	            if (_didIteratorError) {
-	                throw _iteratorError;
-	            }
-	        }
-	    }
-	}
-
-	var equalNode = findEqual(flattenedLayout);
-	var bounds = equalNode.bounds;
-	var equalX = (bounds.left + bounds.right) / 2;
-	var equalY = (bounds.top + bounds.bottom) / 2;
-
-	console.log('(' + equalX + ', ' + equalY + ')');
-
-	var centerX = canvas.width / 2;
-	var centerY = canvas.height / 2;
-
-	var dx = centerX - equalX;
-	var dy = centerY - equalY;
-
-	function translateLayout(flatLayout, dx, dy) {
-	    var _iteratorNormalCompletion2 = true;
-	    var _didIteratorError2 = false;
-	    var _iteratorError2 = undefined;
-
-	    try {
-	        for (var _iterator2 = flatLayout.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	            var child = _step2.value;
-
-	            child.x += dx;
-	            child.y += dy;
-	        }
-	    } catch (err) {
-	        _didIteratorError2 = true;
-	        _iteratorError2 = err;
-	    } finally {
-	        try {
-	            if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-	                _iterator2['return']();
-	            }
-	        } finally {
-	            if (_didIteratorError2) {
-	                throw _iteratorError2;
-	            }
-	        }
-	    }
-	}
-
-	translateLayout(flattenedLayout, dx, dy);
+	var flattenedLayout = createFlatLayout(eqn1, 72, canvas.width, canvas.height);
 
 	function drawAxes(ctx) {
 	    var width = canvas.width;
@@ -215,14 +145,13 @@
 
 	    if (selection) {
 	        ctx.fillStyle = 'rgba(255,255,0,0.5)';
-	        console.log(selection);
 
-	        var _bounds = selection.bounds;
+	        var bounds = selection.bounds;
 
-	        var width = _bounds.right - _bounds.left;
-	        var height = _bounds.bottom - _bounds.top;
-	        var x = _bounds.left;
-	        var y = _bounds.top;
+	        var width = bounds.right - bounds.left;
+	        var height = bounds.bottom - bounds.top;
+	        var x = bounds.left;
+	        var y = bounds.top;
 	        var padding = 8;
 	        var radius = width / 2 + padding;
 
@@ -247,13 +176,13 @@
 	    if (node.id === id) {
 	        return node;
 	    } else if (["Expression", "Product"].includes(node.type)) {
-	        var _iteratorNormalCompletion3 = true;
-	        var _didIteratorError3 = false;
-	        var _iteratorError3 = undefined;
+	        var _iteratorNormalCompletion = true;
+	        var _didIteratorError = false;
+	        var _iteratorError = undefined;
 
 	        try {
-	            for (var _iterator3 = node[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	                var child = _step3.value;
+	            for (var _iterator = node[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                var child = _step.value;
 
 	                var result = findNode(child, id);
 	                if (result) {
@@ -261,16 +190,16 @@
 	                }
 	            }
 	        } catch (err) {
-	            _didIteratorError3 = true;
-	            _iteratorError3 = err;
+	            _didIteratorError = true;
+	            _iteratorError = err;
 	        } finally {
 	            try {
-	                if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-	                    _iterator3['return']();
+	                if (!_iteratorNormalCompletion && _iterator['return']) {
+	                    _iterator['return']();
 	                }
 	            } finally {
-	                if (_didIteratorError3) {
-	                    throw _iteratorError3;
+	                if (_didIteratorError) {
+	                    throw _iteratorError;
 	                }
 	            }
 	        }
@@ -294,29 +223,67 @@
 
 	        var selectedNode = findNode(eqn1, id);
 
+	        if (selectedNode) {
+	            if (evaluate.canTransform(selectedNode)) {
+	                console.log(eqn1.toString());
+	                evaluate.doTransform(selectedNode);
+	                console.log(eqn1.toString());
+
+	                flattenedLayout = createFlatLayout(eqn1, 72, canvas.width, canvas.height);
+	            }
+	        }
+
 	        if (layoutNode !== selection) {
 	            selection = layoutNode;
-	            var _bounds2 = layoutNode.bounds;
-	            showMenu(['apple', 'banana', 'cupcake'], (_bounds2.left + _bounds2.right) / 2, _bounds2.top - 10);
+	            var bounds = layoutNode.bounds;
+	            var items = [{
+	                label: 'apple',
+	                action: function action() {
+	                    console.log('apple');
+	                    selection = null;
+	                    menu = null;
+	                    hideMenu(menu);
+	                }
+	            }, {
+	                label: 'banana',
+	                action: function action() {
+	                    console.log('banana');
+	                    selection = null;
+	                    menu = null;
+	                    hideMenu(menu);
+	                }
+	            }, {
+	                label: 'cupcake',
+	                action: function action() {
+	                    console.log('cupcake');
+	                    selection = null;
+	                    menu = null;
+	                    hideMenu(menu);
+	                    draw();
+	                }
+	            }];
+
+	            showMenu(items, (bounds.left + bounds.right) / 2, bounds.top - 10);
 	        } else {
 	            selection = null;
-	            if (menu) {
-	                document.body.removeChild(menu);
-	                menu = null;
-	            }
+	            hideMenu(menu);
 	        }
 	    } else {
 	        selection = null;
-	        if (menu) {
-	            document.body.removeChild(menu);
-	            menu = null;
-	        }
+	        hideMenu(menu);
 	    }
 
 	    draw();
 	});
 
 	var menu = null;
+
+	function hideMenu(menu) {
+	    if (menu) {
+	        document.body.removeChild(menu);
+	        menu = null;
+	    }
+	}
 
 	function showMenu(items, x, y) {
 	    if (menu) {
@@ -353,13 +320,13 @@
 	        margin: 0
 	    });
 
-	    var _iteratorNormalCompletion4 = true;
-	    var _didIteratorError4 = false;
-	    var _iteratorError4 = undefined;
+	    var _iteratorNormalCompletion2 = true;
+	    var _didIteratorError2 = false;
+	    var _iteratorError2 = undefined;
 
 	    try {
 	        var _loop = function () {
-	            var item = _step4.value;
+	            var item = _step2.value;
 
 	            var li = document.createElement('li');
 	            Object.assign(li.style, {
@@ -371,24 +338,25 @@
 	            li.onmouseout = function () {
 	                return li.style.color = 'white';
 	            };
-	            li.innerText = item;
+	            li.innerText = item.label;
+	            li.onclick = item.action;
 	            ul.appendChild(li);
 	        };
 
-	        for (var _iterator4 = items[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	        for (var _iterator2 = items[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
 	            _loop();
 	        }
 	    } catch (err) {
-	        _didIteratorError4 = true;
-	        _iteratorError4 = err;
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
 	    } finally {
 	        try {
-	            if (!_iteratorNormalCompletion4 && _iterator4['return']) {
-	                _iterator4['return']();
+	            if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+	                _iterator2['return']();
 	            }
 	        } finally {
-	            if (_didIteratorError4) {
-	                throw _iteratorError4;
+	            if (_didIteratorError2) {
+	                throw _iteratorError2;
 	            }
 	        }
 	    }
@@ -6145,10 +6113,86 @@
 	    return new Layout(_flatten(layout));
 	}
 
+	function createFlatLayout(node, fontSize, width, height) {
+	    var newLayout = createLayout(node, 72);
+	    var flattenedLayout = flatten(newLayout);
+
+	    function findEqual(flatLayout) {
+	        var _iteratorNormalCompletion8 = true;
+	        var _didIteratorError8 = false;
+	        var _iteratorError8 = undefined;
+
+	        try {
+	            for (var _iterator8 = flatLayout.children[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+	                var child = _step8.value;
+
+	                if (child.text === "=") {
+	                    return child;
+	                }
+	            }
+	        } catch (err) {
+	            _didIteratorError8 = true;
+	            _iteratorError8 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion8 && _iterator8["return"]) {
+	                    _iterator8["return"]();
+	                }
+	            } finally {
+	                if (_didIteratorError8) {
+	                    throw _iteratorError8;
+	                }
+	            }
+	        }
+	    }
+
+	    function translateLayout(flatLayout, dx, dy) {
+	        var _iteratorNormalCompletion9 = true;
+	        var _didIteratorError9 = false;
+	        var _iteratorError9 = undefined;
+
+	        try {
+	            for (var _iterator9 = flatLayout.children[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+	                var child = _step9.value;
+
+	                child.x += dx;
+	                child.y += dy;
+	            }
+	        } catch (err) {
+	            _didIteratorError9 = true;
+	            _iteratorError9 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion9 && _iterator9["return"]) {
+	                    _iterator9["return"]();
+	                }
+	            } finally {
+	                if (_didIteratorError9) {
+	                    throw _iteratorError9;
+	                }
+	            }
+	        }
+	    }
+
+	    var equalNode = findEqual(flattenedLayout);
+	    var bounds = equalNode.bounds;
+	    var equalX = (bounds.left + bounds.right) / 2;
+	    var equalY = (bounds.top + bounds.bottom) / 2;
+
+	    var centerX = width / 2;
+	    var centerY = height / 2;
+
+	    var dx = centerX - equalX;
+	    var dy = centerY - equalY;
+
+	    translateLayout(flattenedLayout, dx, dy);
+
+	    return flattenedLayout;
+	}
+
 	module.exports = {
 	    getMetrics: getMetrics,
-	    createLayout: createLayout,
-	    flatten: flatten,
+	    createFlatLayout: createFlatLayout,
 	    RenderOptions: RenderOptions
 	};
 
@@ -8601,6 +8645,82 @@
 	        return new Fraction(a, b);
 	    }
 	}
+
+/***/ },
+/* 104 */,
+/* 105 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var evaluate = __webpack_require__(106);
+
+	module.exports = {
+	    evaluate: evaluate
+	};
+
+/***/ },
+/* 106 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Literal = __webpack_require__(98);
+
+	var operations = {
+	    '+': function _(a, b) {
+	        return a + b;
+	    },
+	    '-': function _(a, b) {
+	        return a - b;
+	    },
+	    '*': function _(a, b) {
+	        return a * b;
+	    },
+	    '/': function _(a, b) {
+	        return a / b;
+	    }
+	};
+
+	function canTransform(node) {
+	    var prev = node.prev;
+	    var next = node.next;
+
+	    if (prev && next) {
+	        return prev.type === "Literal" && next.type === "Literal";
+	    }
+	}
+
+	function doTransform(node) {
+	    if (canTransform(node)) {
+	        var prev = node.prev;
+	        var next = node.next;
+
+	        var left = prev.value;
+	        var right = next.value;
+	        var result = operations[node.operator](left, right);
+	        var _parent = node.parent;
+
+	        var replacement = new Literal(result);
+
+	        _parent.remove(prev);
+	        _parent.remove(next);
+	        _parent.replace(node, replacement);
+
+	        if (replacement.prev == null && replacement.next == null) {
+	            if (_parent.parent) {
+	                _parent.parent.replace(_parent, replacement);
+	            }
+	        }
+
+	        // TODO: check if the product only has a single factor, collapse if it does
+	    }
+	}
+
+	module.exports = {
+	    canTransform: canTransform,
+	    doTransform: doTransform
+	};
 
 /***/ }
 /******/ ]);

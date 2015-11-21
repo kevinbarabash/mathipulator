@@ -375,9 +375,43 @@ function flatten(layout) {
     return new Layout(_flatten(layout));
 }
 
+function createFlatLayout(node, fontSize, width, height) {
+    let newLayout = createLayout(node, 72);
+    let flattenedLayout = flatten(newLayout);
+
+    function findEqual(flatLayout) {
+        for (const child of flatLayout.children) {
+            if (child.text === "=") {
+                return child;
+            }
+        }
+    }
+
+    function translateLayout(flatLayout, dx, dy) {
+        for (const child of flatLayout.children) {
+            child.x += dx;
+            child.y += dy;
+        }
+    }
+
+    const equalNode = findEqual(flattenedLayout);
+    const bounds = equalNode.bounds;
+    const equalX = (bounds.left + bounds.right) / 2;
+    const equalY = (bounds.top + bounds.bottom) / 2;
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    const dx = centerX - equalX;
+    const dy = centerY - equalY;
+
+    translateLayout(flattenedLayout, dx, dy);
+
+    return flattenedLayout;
+}
+
 module.exports = {
     getMetrics,
-    createLayout,
-    flatten,
+    createFlatLayout,
     RenderOptions
 };
