@@ -3,29 +3,6 @@ const React = require('react');
 const { Component } = React;
 
 class Menu extends Component {
-    static propTypes = {
-        items: React.PropTypes.arrayOf(React.PropTypes.shape({
-            label: React.PropTypes.string
-        })),
-        position: React.PropTypes.shape({
-            x: React.PropTypes.number,
-            y: React.PropTypes.number
-        })
-    };
-
-    static defaultProps = {
-        items: [
-            {
-                label: 'item 1'
-            },
-            {
-                label: 'item 2'
-            },
-            {
-                label: 'item 3'
-            }
-        ]
-    };
 
     render() {
         const { position } = this.props;
@@ -33,27 +10,58 @@ class Menu extends Component {
         const menuStyle = {
             ...styles.menu,
             left: position.x,
-            top: position.y
+            top: position.y,
+            color: 'black',
         };
 
         return <div style={menuStyle}>
             <ul style={styles.ul}>
                 {this.props.items.map(item => {
-                    return <li style={styles.li} key={item.label}>
+                    return <li
+                        style={styles.li}
+                        key={item.label}
+                        onClick={item.action}
+                    >
                         {item.label}
                     </li>;
                 })}
             </ul>
-            <div style={styles.triangle} />
+            <div style={styles.triangle}></div>
         </div>;
     }
 }
+
+Menu.propTypes = {
+    items: React.PropTypes.arrayOf(React.PropTypes.shape({
+        label: React.PropTypes.string
+    })),
+    position: React.PropTypes.shape({
+        x: React.PropTypes.number,
+        y: React.PropTypes.number
+    })
+};
+
+Menu.defaultProps = {
+    items: [
+        {
+            label: 'item 1'
+        },
+        {
+            label: 'item 2'
+        },
+        {
+            label: 'item 3'
+        }
+    ]
+};
+
 
 const styles = {
     menu: {
         display: 'inline-block',
         fontFamily: 'helvetica',
         fontSize: 20,
+        color: 'black',
         position: 'absolute',
         transform: 'translate(-50%, -100%)',
         left: 0,

@@ -1,16 +1,21 @@
 const React = require('react');
-const ReactDOM = require('react-dom');
 
 const { Component } = React;
 
 const Menu = require('./menu.js');
 
-class TestApp extends Component {
-    state = {
-        menu: null
-    };
+class App extends Component {
+    constructor() {
+        super();
 
-    handleClick = (e) => {
+        this.state = {
+            menu: null
+        };
+
+        this.handleClick = this.handleClick.bind(this);
+    }
+
+    handleClick(e) {
         if (this.state.menu) {
             this.setState({menu: null});
         } else {
@@ -32,16 +37,18 @@ class TestApp extends Component {
             const menu = <Menu position={position} items={items}/>;
             this.setState({menu});
         }
-    };
+    }
 
     render() {
         const {menu} = this.state;
 
         return <div style={styles.app} onClick={this.handleClick}>
+            <h1>Hello,world!</h1>
             {menu}
         </div>;
     }
 }
+
 
 const styles = {
     app: {
@@ -50,5 +57,4 @@ const styles = {
     }
 };
 
-const container = document.getElementById('app-container');
-ReactDOM.render(<TestApp/>, container);
+module.exports = App;
