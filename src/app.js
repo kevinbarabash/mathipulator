@@ -43,7 +43,7 @@ class App extends Component {
         const {menu} = this.state;
 
         return <div style={styles.app} onClick={this.handleClick}>
-            <h1>Hello,world!</h1>
+            <h1>Hello, world!</h1>
             {menu}
         </div>;
     }

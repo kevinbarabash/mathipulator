@@ -21,6 +21,7 @@
     "webpack-dev-server": "^1.12.1"
   },
   "scripts": {
+    "start": "node server.js",
     "test": "mocha -w --compilers js:babel-core/register test",
     "build": "webpack",
     "watch": "webpack -w"

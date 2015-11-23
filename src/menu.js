@@ -3,6 +3,29 @@ const React = require('react');
 const { Component } = React;
 
 class Menu extends Component {
+    static propTypes = {
+        items: React.PropTypes.arrayOf(React.PropTypes.shape({
+            label: React.PropTypes.string
+        })),
+        position: React.PropTypes.shape({
+            x: React.PropTypes.number,
+            y: React.PropTypes.number
+        })
+    };
+
+    static defaultProps = {
+        items: [
+            {
+                label: 'item 1'
+            },
+            {
+                label: 'item 2'
+            },
+            {
+                label: 'item 3'
+            }
+        ]
+    };
 
     render() {
         const { position } = this.props;
@@ -11,7 +34,6 @@ class Menu extends Component {
             ...styles.menu,
             left: position.x,
             top: position.y,
-            color: 'black',
         };
 
         return <div style={menuStyle}>
@@ -31,37 +53,13 @@ class Menu extends Component {
     }
 }
 
-Menu.propTypes = {
-    items: React.PropTypes.arrayOf(React.PropTypes.shape({
-        label: React.PropTypes.string
-    })),
-    position: React.PropTypes.shape({
-        x: React.PropTypes.number,
-        y: React.PropTypes.number
-    })
-};
-
-Menu.defaultProps = {
-    items: [
-        {
-            label: 'item 1'
-        },
-        {
-            label: 'item 2'
-        },
-        {
-            label: 'item 3'
-        }
-    ]
-};
-
 
 const styles = {
     menu: {
         display: 'inline-block',
         fontFamily: 'helvetica',
         fontSize: 20,
-        color: 'black',
+        color: 'yellow',
         position: 'absolute',
         transform: 'translate(-50%, -100%)',
         left: 0,
