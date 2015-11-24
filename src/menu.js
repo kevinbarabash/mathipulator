@@ -2,6 +2,48 @@ const React = require('react');
 
 const { Component } = React;
 
+class MenuItem extends Component {
+    static propTypes = {
+        label: React.PropTypes.string,
+        action: React.PropTypes.function
+    };
+
+    state = {
+        hover: false
+    };
+
+    handleClick = () => {
+        this.props.action && this.props.action();
+    };
+
+    handleMouseOver = () => {
+        this.setState({hover:true});
+    };
+
+    handleMouseOut = () => {
+        this.setState({hover:false});
+    };
+
+    render () {
+        const style = {
+            cursor: 'pointer'
+        };
+
+        if (this.state.hover) {
+            style.color = 'yellow';
+        }
+
+        return <li
+            style={style}
+            onMouseOver={this.handleMouseOver}
+            onMouseOut={this.handleMouseOut}
+            onClick={this.handleClick}
+        >
+            {this.props.label}
+        </li>;
+    }
+}
+
 class Menu extends Component {
     static propTypes = {
         items: React.PropTypes.arrayOf(React.PropTypes.shape({
@@ -11,20 +53,6 @@ class Menu extends Component {
             x: React.PropTypes.number,
             y: React.PropTypes.number
         })
-    };
-
-    static defaultProps = {
-        items: [
-            {
-                label: 'item 1'
-            },
-            {
-                label: 'item 2'
-            },
-            {
-                label: 'item 3'
-            }
-        ]
     };
 
     render() {
@@ -38,15 +66,7 @@ class Menu extends Component {
 
         return <div style={menuStyle}>
             <ul style={styles.ul}>
-                {this.props.items.map(item => {
-                    return <li
-                        style={styles.li}
-                        key={item.label}
-                        onClick={item.action}
-                    >
-                        {item.label}
-                    </li>;
-                })}
+                {this.props.items.map(item => <MenuItem id={item.label} {...item} />)}
             </ul>
             <div style={styles.triangle}></div>
         </div>;
@@ -59,7 +79,7 @@ const styles = {
         display: 'inline-block',
         fontFamily: 'helvetica',
         fontSize: 20,
-        color: 'yellow',
+        color: 'white',
         position: 'absolute',
         transform: 'translate(-50%, -100%)',
         left: 0,
@@ -72,9 +92,6 @@ const styles = {
         margin: 0,
         padding: 10,
         borderRadius: 10
-    },
-    li: {
-        cursor: 'pointer',
     },
     triangle: {
         width: 0,
