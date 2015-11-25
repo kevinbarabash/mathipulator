@@ -1,7 +1,7 @@
-import ListNode from './list-node'
-import f from 'functify'
+const f = require('functify');
+const ListNode = require('./list-node.js');
 
-export default class Product extends ListNode {
+class Product extends ListNode {
     constructor(...nodes) {
         super();
         this.type = 'Product';
@@ -16,3 +16,5 @@ export default class Product extends ListNode {
         return new Product(...f(this).map(x => x.clone()));
     }
 }
+
+module.exports = Product;

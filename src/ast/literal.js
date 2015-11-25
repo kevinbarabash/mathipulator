@@ -1,6 +1,6 @@
-import Node from './node'
+const Node = require('./node');
 
-export default class Literal extends Node {
+class Literal extends Node {
     constructor(value) {
         super();
         Object.assign(this, { type: 'Literal', value });
@@ -14,3 +14,5 @@ export default class Literal extends Node {
         return new Literal(this.value);
     }
 }
+
+module.exports = Literal;

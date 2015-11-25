@@ -1,8 +1,8 @@
-import f from 'functify'
-import ListNode from './list-node'
-import Operator from './operator'
+const f = require('functify');
+const ListNode = require('./list-node.js');
+const Operator = require('./operator.js');
 
-export default class Expression extends ListNode {
+class Expression extends ListNode {
     constructor(...nodes) {
         super();
         this.type = 'Expression';
@@ -19,3 +19,5 @@ export default class Expression extends ListNode {
 
     // TODO have a validate method
 }
+
+module.exports = Expression;

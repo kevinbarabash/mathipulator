@@ -1,6 +1,6 @@
-import Node from './node'
+var Node = require('./node');
 
-export default class Equation extends Node {
+class Equation extends Node {
     constructor(left, right) {
         super();
         Object.assign(this, { type: 'Equation', left, right });
@@ -9,8 +9,10 @@ export default class Equation extends Node {
     toString() {
         return `${this.type}:[${this.left} = ${this.right}]`;
     }
-    
+
     clone() {
         return new Equation(this.left.clone(), this.right.clone());
     }
 }
+
+module.exports = Equation;

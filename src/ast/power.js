@@ -1,9 +1,6 @@
-import Node from './node'
-import Expression from './expression'
-import Product from './product'
-import Fraction from './fraction'
+const Node = require('./node');
 
-export default class Power extends Node {
+class Power extends Node {
     constructor(base, exponent) {
         super();
         Object.assign(this, { type: 'Power', base, exponent });
@@ -12,8 +9,10 @@ export default class Power extends Node {
     toString() {
         return `[${this.type}:${this.base}^${this.exponent}]`;
     }
-    
+
     clone() {
         return new Power(this.base.clone(), this.exponent.clone());
     }
 }
+
+module.exports = Power;

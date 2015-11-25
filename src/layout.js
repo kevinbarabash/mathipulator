@@ -43,7 +43,6 @@ class Glyph {
 
         const weight = 100;
         ctx.font = `${weight} ${this.fontSize}px Helvetica`;
-        ctx.fillStyle = 'black';
         ctx.fillText(this.text, this.x, this.y);
     }
 
@@ -237,7 +236,6 @@ function createLayout(node, fontSize) {
             glyph.metrics.bearingY = centerY - radius;
             glyph.metrics.width = 2 * radius;
             glyph.metrics.height = 2 * radius;
-            console.log(radius * 2)
         }
         glyph.id = node.id;
         glyph.circle = true;
@@ -376,7 +374,7 @@ function flatten(layout) {
 }
 
 function createFlatLayout(node, fontSize, width, height) {
-    let newLayout = createLayout(node, 72);
+    let newLayout = createLayout(node, fontSize);
     let flattenedLayout = flatten(newLayout);
 
     function findEqual(flatLayout) {

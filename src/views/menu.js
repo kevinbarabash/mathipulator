@@ -5,7 +5,7 @@ const { Component } = React;
 class MenuItem extends Component {
     static propTypes = {
         label: React.PropTypes.string,
-        action: React.PropTypes.function
+        action: React.PropTypes.func
     };
 
     state = {
@@ -46,13 +46,16 @@ class MenuItem extends Component {
 
 class Menu extends Component {
     static propTypes = {
-        items: React.PropTypes.arrayOf(React.PropTypes.shape({
-            label: React.PropTypes.string
-        })),
         position: React.PropTypes.shape({
             x: React.PropTypes.number,
             y: React.PropTypes.number
-        })
+        }),
+        items: React.PropTypes.arrayOf(
+            React.PropTypes.shape({
+                label: React.PropTypes.string,
+                action: React.PropTypes.function
+            })
+        )
     };
 
     render() {
@@ -61,12 +64,12 @@ class Menu extends Component {
         const menuStyle = {
             ...styles.menu,
             left: position.x,
-            top: position.y,
+            top: position.y
         };
 
         return <div style={menuStyle}>
             <ul style={styles.ul}>
-                {this.props.items.map(item => <MenuItem id={item.label} {...item} />)}
+                {this.props.items.map(item => <MenuItem key={item.label} label={item.label} action={item.action} />)}
             </ul>
             <div style={styles.triangle}></div>
         </div>;

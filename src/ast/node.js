@@ -1,6 +1,6 @@
 let _id = 0;
 
-export default class Node {
+class Node {
     constructor() {
         this.id = _id++;
         this.parent = null;
@@ -8,3 +8,5 @@ export default class Node {
         this.prev = null;
     }
 }
+
+module.exports = Node;

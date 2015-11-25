@@ -1,10 +1,10 @@
-import Expression from './ast/expression'
-import Product from './ast/product'
-import Fraction from './ast/fraction'
-import Operator from './ast/operator'
-import Identifier from './ast/identifier'
-import Literal from './ast/literal'
-import Equation from './ast/equation'
+const Expression = require('./ast/expression.js');
+const Product = require('./ast/product');
+const Fraction = require('./ast/fraction');
+const Operator = require('./ast/operator');
+const Identifier = require('./ast/identifier');
+const Literal = require('./ast/literal');
+const Equation = require('./ast/equation');
 
 module.exports = {
     Expression,

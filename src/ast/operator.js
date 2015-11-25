@@ -1,4 +1,4 @@
-import Node from './node'
+const Node = require('./node');
 
 let operations = {
     '+'(a, b) { return a + b; },
@@ -7,7 +7,7 @@ let operations = {
     '/'(a, b) { return a / b; }     // TODO when/how to keep things as fractions
 };
 
-export default class Operator extends Node {
+class Operator extends Node {
     constructor(operator) {
         super();
         Object.assign(this, { type: 'Operator', operator });
@@ -37,3 +37,5 @@ export default class Operator extends Node {
         }
     }
 }
+
+module.exports = Operator;

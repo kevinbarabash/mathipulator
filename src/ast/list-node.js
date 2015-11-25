@@ -1,6 +1,6 @@
-import Node from './node'
+const Node = require('./node');
 
-export default class ListNode extends Node {
+class ListNode extends Node {
     constructor(...nodes) {
         super();
         this.first = null;
@@ -25,7 +25,7 @@ export default class ListNode extends Node {
     }
 
     prepend(...nodes) {
-        // TODO: determine if nodes should be reversed or not 
+        // TODO: determine if nodes should be reversed or not
         for (let node of nodes) {
             node.prev = null;
             node.parent = this;
@@ -113,3 +113,5 @@ export default class ListNode extends Node {
         return result;
     }
 }
+
+module.exports = ListNode;

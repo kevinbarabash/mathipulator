@@ -1,8 +1,10 @@
-import Node from './node'
+const Node = require('./node');
 
-export default class Negation extends Node {
+class Negation extends Node {
     constructor(value) {
         super();
         Object.assign(this, { type: 'Negation', value });
     }
 }
+
+module.exports = Negation;

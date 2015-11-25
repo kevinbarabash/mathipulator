@@ -1,7 +1,6 @@
-import Node from './node';
-import Expression from './expression';
+const Node = require('./node');
 
-export default class Fraction extends Node {
+class Fraction extends Node {
     constructor(numerator, denominator) {
         super();
         Object.assign(this, { type: 'Fraction', numerator, denominator });
@@ -15,3 +14,5 @@ export default class Fraction extends Node {
         return new Fraction(this.numerator.clone(), this.denominator.clone());
     }
 }
+
+module.exports = Fraction;

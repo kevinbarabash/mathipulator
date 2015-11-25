@@ -1,6 +1,6 @@
-import Node from './node'
+const Node = require('./node.js');
 
-export default class Identifier extends Node {
+class Identifier extends Node {
     constructor(name, options = {}) {
         super();
         this.type = 'Identifier';
@@ -17,3 +17,5 @@ export default class Identifier extends Node {
         return new Identifier(this.value);
     }
 }
+
+module.exports = Identifier;

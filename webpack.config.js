@@ -28,6 +28,10 @@ module.exports = {
             test: /\.js$/,
             loader: 'react-hot',
             include: path.join(__dirname, 'src')
+        }, {
+            test: /\.json$/,
+            loader: 'json',
+            include: path.join(__dirname, 'metrics')
         }]
     }
 };

@@ -3,12 +3,10 @@ const {
     Product,
     Fraction,
     Operator,
-    Identifier,
-    Literal,
     Equation
 } = require("./ast.js");
 
-export function removeExtraParens(expr) {
+function removeExtraParens(expr) {
     if (expr.type !== 'Expression') {
         return expr;
     }
@@ -72,7 +70,7 @@ function removeExtraProductParens(prod) {
     return prod;
 }
 
-export function add(a, b) {
+function add(a, b) {
     if (a.type === 'Equation' && b.type === 'Equation') {
         return new Equation(add(a.left, b.left), add(a.right, b.right));
     } else if (a.type === 'Equation' && b.type !== 'Equation') {
@@ -84,7 +82,7 @@ export function add(a, b) {
     }
 }
 
-export function sub(a, b) {
+function sub(a, b) {
     if (a.type === 'Equation' && b.type === 'Equation') {
         return new Equation(sub(a.left, b.left), sub(a.right, b.right));
     } else if (a.type === 'Equation' && b.type !== 'Equation') {
@@ -96,7 +94,7 @@ export function sub(a, b) {
     }
 }
 
-export function mul(a, b) {
+function mul(a, b) {
     if (a.type === 'Equation' && b.type === 'Equation') {
         throw new Error("can't multiply two equations");
     } else if (a.type === 'Equation' && b.type !== 'Equation') {
@@ -108,7 +106,7 @@ export function mul(a, b) {
     }
 }
 
-export function div(a, b) {
+function div(a, b) {
     if (a.type === 'Equation' && b.type === 'Equation') {
         throw new Error("can't divide two equations");
     } else if (a.type === 'Equation' && b.type !== 'Equation') {
@@ -119,3 +117,7 @@ export function div(a, b) {
         return new Fraction(a, b);
     }
 }
+
+module.exports = {
+    add, sub, mul, div, removeExtraParens
+};
