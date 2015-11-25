@@ -81,7 +81,8 @@ const styles = {
     menu: {
         display: 'inline-block',
         fontFamily: 'helvetica',
-        fontSize: 20,
+        fontSize: 22,
+        fontWeight: 100,
         color: 'white',
         position: 'absolute',
         transform: 'translate(-50%, -100%)',
@@ -91,7 +92,7 @@ const styles = {
     ul: {
         display: 'inline-block',
         listStyleType: 'none',
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: '#999',
         margin: 0,
         padding: 10,
         borderRadius: 10
@@ -101,7 +102,7 @@ const styles = {
         height: 0,
         borderStyle: 'solid',
         borderWidth: '10px 10px 0 10px',
-        borderColor: `rgba(0,0,0,0.5) transparent transparent transparent`,
+        borderColor: `#999 transparent transparent transparent`,
         margin: 'auto'
     }
 };

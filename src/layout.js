@@ -247,14 +247,14 @@ function createLayout(node, fontSize) {
             const childLayout = createLayout(child, fontSize);
 
             if (child.type === "Operator") {
-                penX += spaceMetrics.advance;
+                penX += spaceMetrics.advance / 1.5;
             }
 
             childLayout.x = penX;
             penX += childLayout.advance;
 
             if (child.type === "Operator") {
-                penX += spaceMetrics.advance;
+                penX += spaceMetrics.advance / 1.5;
             }
             layouts.push(childLayout);
         }
@@ -331,8 +331,17 @@ function createLayout(node, fontSize) {
                 layouts.push(lParen);
             }
             const childLayout = createLayout(child, fontSize);
+            if (child.type === "Operator") {
+                penX += spaceMetrics.advance / 1.5;
+            }
+
             childLayout.x = penX;
             penX += childLayout.advance;
+
+            if (child.type === "Operator") {
+                penX += spaceMetrics.advance / 1.5;
+            }
+
             layouts.push(childLayout);
             if (child.type === "Expression") {
                 const rParen = new Glyph(")", fontSize);
