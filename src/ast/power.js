@@ -6,6 +6,8 @@ class Power extends Node {
         this.type = 'Power';
         this.base = base;
         this.exponent = exponent;
+        this.base.parent = this;
+        this.exponent.parent = this;
     }
 
     toString() {
@@ -18,6 +20,8 @@ class Power extends Node {
         clone.id = this.id;
         clone.base = this.base.clone();
         clone.exponent = this.exponent.clone();
+        clone.base.parent = clone;
+        clone.exponent.parent = clone;
         return clone;
     }
 }

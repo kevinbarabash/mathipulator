@@ -41,6 +41,30 @@ class ListNode extends Node {
         }
     }
 
+    insertAfter(newNode, referenceNode) {
+        newNode.next = referenceNode.next;
+        newNode.prev = referenceNode;
+        if (referenceNode.next) {
+            referenceNode.next.prev = newNode;
+        }
+        referenceNode.next = newNode;
+        if (referenceNode === this.last) {
+            this.last = newNode;
+        }
+    }
+
+    insertBefore(newNode, referenceNode) {
+        newNode.prev = referenceNode.prev;
+        newNode.next = referenceNode;
+        if (referenceNode.prev) {
+            referenceNode.prev.next = newNode;
+        }
+        referenceNode.prev = newNode;
+        if (referenceNode === this.first) {
+            this.first = newNode;
+        }
+    }
+
     replace(current, replacement) {
         replacement.prev = current.prev;
         replacement.next = current.next;

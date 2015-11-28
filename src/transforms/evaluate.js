@@ -10,8 +10,14 @@ const operations = {
 function canTransform(node) {
     const { prev, next } = node;
     if (prev && next) {
-        return prev.type === "Literal" && next.type === "Literal";
+        if (prev.type === "Literal" && next.type === "Literal") {
+            if (prev.prev && prev.prev.operator === '-') {
+                return false;
+            }
+            return true;
+        }
     }
+    return false;
 }
 
 function doTransform(node) {

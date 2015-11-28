@@ -12,14 +12,15 @@ class App extends Component {
         super();
 
         const expr1 = mul(
-            new Literal(2),
             add(
                 new Literal(3),
-                mul(
-                    new Literal(5),
-                    new Literal(-4)
-                )
-            )
+                new Literal(5)
+                //mul(
+                //    new Literal(5),
+                //    new Literal(-4)
+                //)
+            ),
+            new Literal(2)
         );
 
         const expr2 = div(

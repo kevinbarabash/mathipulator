@@ -6,6 +6,8 @@ class Fraction extends Node {
         this.type = 'Fraction';
         this.numerator = numerator;
         this.denominator = denominator;
+        this.numerator.parent = this;
+        this.denominator.parent = this;
     }
 
     toString() {
@@ -18,6 +20,8 @@ class Fraction extends Node {
         clone.id = this.id;
         clone.numerator = this.numerator.clone();
         clone.denominator = this.denominator.clone();
+        clone.numerator.parent = clone;
+        clone.denominator.parent = clone;
         return clone;
     }
 }
