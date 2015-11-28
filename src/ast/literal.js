@@ -3,7 +3,8 @@ const Node = require('./node');
 class Literal extends Node {
     constructor(value) {
         super();
-        Object.assign(this, { type: 'Literal', value });
+        this.type = 'Literal';
+        this.value = value;
     }
 
     toString() {
@@ -11,7 +12,11 @@ class Literal extends Node {
     }
 
     clone() {
-        return new Literal(this.value);
+        var clone = Object.create(Literal.prototype);
+        clone.type = this.type;
+        clone.id = this.id;
+        clone.value = this.value;
+        return clone;
     }
 }
 

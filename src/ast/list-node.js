@@ -12,7 +12,7 @@ class ListNode extends Node {
         for (let node of nodes) {
             node.next = null;
             node.parent = this;
-            if (this.first === null && this.last === null) {
+            if (this.first == null && this.last == null) {
                 this.first = node;
                 this.last = node;
                 node.prev = null;
@@ -29,7 +29,7 @@ class ListNode extends Node {
         for (let node of nodes) {
             node.prev = null;
             node.parent = this;
-            if (this.first === null && this.last === null) {
+            if (this.first == null && this.last == null) {
                 this.first = node;
                 this.last = node;
                 node.next = null;
@@ -44,10 +44,10 @@ class ListNode extends Node {
     replace(current, replacement) {
         replacement.prev = current.prev;
         replacement.next = current.next;
-        if (current.prev !== null) {
+        if (current.prev != null) {
             current.prev.next = replacement;
         }
-        if (current.next !== null) {
+        if (current.next != null) {
             current.next.prev = replacement;
         }
         current.prev = null;
@@ -81,7 +81,7 @@ class ListNode extends Node {
 
     *[Symbol.iterator]() {
         let node = this.first;
-        while (node !== null) {
+        while (node != null) {
             // grab the current node so that we can do replacements while
             // iterating
             let current = node;

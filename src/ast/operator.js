@@ -1,16 +1,10 @@
 const Node = require('./node');
 
-let operations = {
-    '+'(a, b) { return a + b; },
-    '-'(a, b) { return a - b; },
-    '*'(a, b) { return a * b; },
-    '/'(a, b) { return a / b; }     // TODO when/how to keep things as fractions
-};
-
 class Operator extends Node {
     constructor(operator) {
         super();
-        Object.assign(this, { type: 'Operator', operator });
+        this.type = 'Operator';
+        this.operator = operator;
     }
 
     toString() {
@@ -18,23 +12,11 @@ class Operator extends Node {
     }
 
     clone() {
-        return new Operator(this.operator);
-    }
-
-    evaluate() {
-        let prev = this.prev;
-        let next = this.next;
-
-        if (prev !== null && next !== null) {
-            if (prev.type === 'Literal' && next.next === 'Literal') {
-                let result = new Literal(operations[this.operator](prev, next));
-
-                let parent = this.parent;
-                parent.remove(prev);
-                parent.remove(next);
-                parent.replace(this, result);
-            }
-        }
+        const clone = Object.create(Operator.prototype);
+        clone.type = this.type;
+        clone.id = this.id;
+        clone.operator = this.operator;
+        return clone;
     }
 }
 

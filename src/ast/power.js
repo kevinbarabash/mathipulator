@@ -3,7 +3,9 @@ const Node = require('./node');
 class Power extends Node {
     constructor(base, exponent) {
         super();
-        Object.assign(this, { type: 'Power', base, exponent });
+        this.type = 'Power';
+        this.base = base;
+        this.exponent = exponent;
     }
 
     toString() {
@@ -11,7 +13,12 @@ class Power extends Node {
     }
 
     clone() {
-        return new Power(this.base.clone(), this.exponent.clone());
+        const clone = Object.create(Power.prototype);
+        clone.type = this.type;
+        clone.id = this.id;
+        clone.base = this.base.clone();
+        clone.exponent = this.exponent.clone();
+        return clone;
     }
 }
 

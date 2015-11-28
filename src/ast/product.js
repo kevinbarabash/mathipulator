@@ -13,7 +13,11 @@ class Product extends ListNode {
     }
 
     clone() {
-        return new Product(...f(this).map(x => x.clone()));
+        const clone = Object.create(Product.prototype);
+        clone.type = this.type;
+        clone.id = this.id;
+        clone.append(...f(this).map(x => x.clone()));
+        return clone;
     }
 }
 

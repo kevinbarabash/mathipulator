@@ -14,7 +14,13 @@ class Identifier extends Node {
     }
 
     clone() {
-        return new Identifier(this.value);
+        const clone = Object.create(Identifier.prototype);
+        clone.type = this.type;
+        clone.id = this.id;
+        clone.name = this.name;
+        clone.subscript = this.subscript;
+        clone.accent = this.accent;
+        return clone;
     }
 }
 

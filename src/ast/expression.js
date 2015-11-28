@@ -1,6 +1,5 @@
 const f = require('functify');
 const ListNode = require('./list-node.js');
-const Operator = require('./operator.js');
 
 class Expression extends ListNode {
     constructor(...nodes) {
@@ -14,7 +13,11 @@ class Expression extends ListNode {
     }
 
     clone() {
-        return new Expression(...f(this).map(x => x.clone()));
+        const clone = Object.create(Expression.prototype);
+        clone.type = this.type;
+        clone.id = this.id;
+        clone.append(...f(this).map(x => x.clone()));
+        return clone;
     }
 
     // TODO have a validate method

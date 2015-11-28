@@ -3,7 +3,9 @@ var Node = require('./node');
 class Equation extends Node {
     constructor(left, right) {
         super();
-        Object.assign(this, { type: 'Equation', left, right });
+        this.type = 'Equation';
+        this.left = left;
+        this.right = right;
     }
 
     toString() {
@@ -11,7 +13,12 @@ class Equation extends Node {
     }
 
     clone() {
-        return new Equation(this.left.clone(), this.right.clone());
+        var clone = Object.create(Equation.prototype);
+        clone.type = this.type;
+        clone.id = this.id;
+        clone.left = this.left.clone();
+        clone.right = this.right.clone();
+        return clone;
     }
 }
 

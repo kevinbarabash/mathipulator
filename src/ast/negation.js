@@ -5,6 +5,8 @@ class Negation extends Node {
         super();
         Object.assign(this, { type: 'Negation', value });
     }
+
+    // TODO: add clone() method
 }
 
 module.exports = Negation;

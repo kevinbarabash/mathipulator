@@ -3,7 +3,9 @@ const Node = require('./node');
 class Fraction extends Node {
     constructor(numerator, denominator) {
         super();
-        Object.assign(this, { type: 'Fraction', numerator, denominator });
+        this.type = 'Fraction';
+        this.numerator = numerator;
+        this.denominator = denominator;
     }
 
     toString() {
@@ -11,7 +13,12 @@ class Fraction extends Node {
     }
 
     clone() {
-        return new Fraction(this.numerator.clone(), this.denominator.clone());
+        const clone = Object.create(Fraction.prototype);
+        clone.type = this.type;
+        clone.id = this.id;
+        clone.numerator = this.numerator.clone();
+        clone.denominator = this.denominator.clone();
+        return clone;
     }
 }
 

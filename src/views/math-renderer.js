@@ -2,8 +2,8 @@ const React = require('react');
 
 const { Component } = React;
 
-const { createFlatLayout } = require('../layout.js');
 const Menu = require('./menu.js');
+const { createFlatLayout } = require('../layout.js');
 
 class MathRenderer extends Component {
     constructor() {
@@ -31,9 +31,9 @@ class MathRenderer extends Component {
         canvas.width = this.props.width;
         canvas.height = this.props.height;
 
-        const {expression, color, fontSize} = this.props;
+        const { math, color, fontSize } = this.props;
         const layout = createFlatLayout(
-            expression, fontSize, window.innerWidth, window.innerHeight);
+            math, fontSize, window.innerWidth, window.innerHeight);
 
         const context = canvas.getContext('2d');
         context.fillStyle = color;
@@ -45,8 +45,8 @@ class MathRenderer extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {expression, fontSize} = nextProps;
-        const layout = createFlatLayout(expression, fontSize, window.innerWidth, window.innerHeight);
+        const { math, fontSize } = nextProps;
+        const layout = createFlatLayout(math, fontSize, window.innerWidth, window.innerHeight);
         this.setState({layout});
     }
 
@@ -72,10 +72,8 @@ class MathRenderer extends Component {
     }
 
     handleClick(e) {
-        const { pageX:x, pageY:y } = e;
         const { layout } = this.state;
-
-        const layoutNode = layout.hitTest(x, y);
+        const layoutNode = layout.hitTest(e.pageX, e.pageY);
 
         if (layoutNode) {
             const bounds = layoutNode.bounds;
@@ -86,31 +84,32 @@ class MathRenderer extends Component {
             const items = [{
                 label: 'commute',
                 action: () => {
-                    console.log('commute');
+                    this.props.onClick(layoutNode.id, 'commute');
                     this.setState({menu: null, selectedNode: null});
                 }
             }, {
                 label: 'eval',
                 action: () => {
-                    console.log('eval');
+                    this.props.onClick(layoutNode.id, 'eval');
                     this.setState({menu: null, selectedNode: null});
                 }
             }];
             const menu = <Menu position={{x, y}} items={items}/>;
+
             this.setState({menu, selectedNode: layoutNode});
         } else {
             this.setState({menu: null, selectedNode: null});
         }
-    };
+    }
 
     render() {
         const {menu} = this.state;
 
         return <div>
             <div
+                ref="container"
                 style={styles.container}
                 onClick={this.handleClick}
-                ref="container"
             ></div>
             {menu}
         </div>;
