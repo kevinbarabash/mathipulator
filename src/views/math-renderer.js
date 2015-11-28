@@ -4,6 +4,8 @@ const { Component } = React;
 
 const Menu = require('./menu.js');
 const { createFlatLayout } = require('../layout.js');
+const transforms = require('../transforms.js');
+const { findNode } = require('../util/node_utils.js');
 
 class MathRenderer extends Component {
     constructor() {
@@ -72,6 +74,7 @@ class MathRenderer extends Component {
     }
 
     handleClick(e) {
+        const { math } = this.props;
         const { layout } = this.state;
         const layoutNode = layout.hitTest(e.pageX, e.pageY);
 
@@ -81,20 +84,22 @@ class MathRenderer extends Component {
             const x = (bounds.left + bounds.right) / 2;
             const y = bounds.top - 10;
 
-            const items = [{
-                label: 'commute',
-                action: () => {
-                    this.props.onClick(layoutNode.id, 'commute');
-                    this.setState({menu: null, selectedNode: null});
-                }
-            }, {
-                label: 'eval',
-                action: () => {
-                    this.props.onClick(layoutNode.id, 'eval');
-                    this.setState({menu: null, selectedNode: null});
-                }
-            }];
-            const menu = <Menu position={{x, y}} items={items}/>;
+            const mathNode = findNode(math, layoutNode.id);
+
+            const items = Object.values(transforms)
+                .filter(transform => transform.canTransform(mathNode))
+                .map(transform => {
+                    return {
+                        label: transform.label,
+                        action: () => {
+                            this.props.onClick(layoutNode.id, transform);
+                            this.setState({menu: null, selectedNode: null});
+                        }
+                    }
+                });
+
+            const menu = items.length > 0 ?
+                <Menu position={{x, y}} items={items}/> : null;
 
             this.setState({menu, selectedNode: layoutNode});
         } else {

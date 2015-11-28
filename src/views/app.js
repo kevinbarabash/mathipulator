@@ -5,30 +5,7 @@ const { Component } = React;
 const MathRenderer = require('./math-renderer.js');
 const { Literal, Equation, Identifier } = require('../ast.js');
 const { add, sub, mul, div } = require('../operations.js');
-const { evaluate } = require('../transforms.js');
-
-function findNode(node, id) {
-    if (node.id === id) {
-        return node;
-    } else if (["Expression", "Product"].includes(node.type)) {
-        for (const child of node) {
-            const result = findNode(child, id);
-            if (result) {
-                return result;
-            }
-        }
-    } else if (node.type === "Equation") {
-        const lhs = findNode(node.left, id);
-        if (lhs) return lhs;
-        const rhs = findNode(node.right, id);
-        if (rhs) return rhs;
-    } else if (node.type === "Fraction") {
-        const num = findNode(node.numerator, id);
-        if (num) return num;
-        const den = findNode(node.denominator, id);
-        if (den) return den;
-    }
-}
+const { findNode } = require('../util/node_utils.js');
 
 class App extends Component {
     constructor() {
@@ -66,18 +43,14 @@ class App extends Component {
         this.handleClick = this.handleClick.bind(this);
     }
 
-    handleClick(id, action) {
+    handleClick(id, transform) {
         const {math} = this.state;
         const nextMath = math.clone();
         const node = findNode(nextMath, id);
 
-        if (node) {
-            if (action === 'eval') {
-                if (evaluate.canTransform(node)) {
-                    evaluate.doTransform(node);
-                    this.setState({math: nextMath});
-                }
-            }
+        if (node && transform && transform.canTransform(node)) {
+            transform.doTransform(node);
+            this.setState({math: nextMath});
         }
     }
 

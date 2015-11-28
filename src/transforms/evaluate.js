@@ -29,17 +29,17 @@ function doTransform(node) {
         parent.remove(next);
         parent.replace(node, replacement);
 
+        // collapse if there is only one node in the expression
         if (replacement.prev == null && replacement.next == null) {
             if (parent.parent) {
                 parent.parent.replace(parent, replacement);
             }
         }
-
-        // TODO: check if the product only has a single factor, collapse if it does
     }
 }
 
 module.exports = {
+    label: 'evaluate',
     canTransform,
     doTransform
 };
