@@ -18,6 +18,9 @@ function findNode(node, id) {
         if (num) return num;
         const den = findNode(node.denominator, id);
         if (den) return den;
+    } else if (node.type === "Negation") {
+        const num = findNode(node.value, id);
+        if (num) return num;
     }
 }
 

@@ -1,17 +1,21 @@
+const Negation = require('../ast/negation.js');
+
 function canTransform(node) {
     if (node.type === 'Operator' && node.operator === '-') {
-        if (node.next && node.next.type === 'Literal') {
-            return true;
-        }
+        return true;
     }
 }
 
 function doTransform(node) {
     if (canTransform(node)) {
+        // TODO: create new nodes and replace the existing nodes
         node.operator = '+';
 
-        // TODO: handle negation
-        node.next.value = -node.next.value;
+        if (node.next.type === 'Literal') {
+            node.next.value = -node.next.value;
+        } else {
+            node.parent.replace(node.next, new Negation(node.next));
+        }
     }
 }
 

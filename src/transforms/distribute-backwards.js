@@ -2,11 +2,9 @@ const Literal = require('../ast/literal.js');
 const { mul } = require('../operations.js');
 
 function canTransform(node) {
-    if (node.parent.type === 'Product' && node.prev && node.prev.operator === '*' &&
-        node.prev.prev.type === 'Expression') {
-        return true;
-    }
-    return false;
+    return node.parent && node.parent.type === 'Product' &&
+        node.prev && node.prev.operator === '*' &&
+        node.prev.prev && node.prev.prev.type === 'Expression';
 }
 
 function doTransform(node) {

@@ -221,6 +221,49 @@ function createLayout(node, fontSize) {
         const glyph = new Glyph(name, fontSize);
         glyph.id = node.id;
         return glyph;
+    } else if (node.type === "Negation") {
+        const children = [];
+        let penX = 0;
+
+        const lParen = new Glyph("(", fontSize);
+        lParen.x = penX;
+        penX += lParen.advance;
+        children.push(lParen);
+
+        const negativeSign = new Glyph("\u2212", fontSize);
+        negativeSign.x = penX;
+        penX += negativeSign.advance;
+        children.push(negativeSign);
+
+        if (node.value.type === "Expression") {
+            const lParen2 = new Glyph("(", fontSize);
+            lParen2.x = penX;
+            penX += lParen2.advance;
+            children.push(lParen2);
+        }
+
+        const valueLayout = createLayout(node.value, fontSize);
+        valueLayout.x = penX;
+        penX += valueLayout.advance;
+        children.push(valueLayout);
+
+        if (node.value.type === "Expression") {
+            const rParen2 = new Glyph(")", fontSize);
+            rParen2.x = penX;
+            penX += rParen2.advance;
+            children.push(rParen2);
+        }
+
+        const rParen = new Glyph(")", fontSize);
+        rParen.x = penX;
+        penX += rParen.advance;
+        children.push(rParen);
+
+        const layout = new Layout(children);
+        layout.advance = penX;
+        layout.id = node.id;
+        console.log(node.id);
+        return layout;
     } else if (node.type === "Operator") {
         const operator = formatText(node.operator);
         const glyph = new Glyph(operator, fontSize);
@@ -248,6 +291,11 @@ function createLayout(node, fontSize) {
 
             if (child.type === "Operator") {
                 penX += spaceMetrics.advance / 1.5;
+            } else if (child.type === "Expression") {
+                const lParen = new Glyph("(", fontSize);
+                lParen.x = penX;
+                penX += lParen.advance;
+                layouts.push(lParen);
             }
 
             childLayout.x = penX;
@@ -255,7 +303,13 @@ function createLayout(node, fontSize) {
 
             if (child.type === "Operator") {
                 penX += spaceMetrics.advance / 1.5;
+            } else if (child.type === "Expression") {
+                const rParen = new Glyph(")", fontSize);
+                rParen.x = penX;
+                penX += rParen.advance;
+                layouts.push(rParen);
             }
+
             layouts.push(childLayout);
         }
         const layout = new Layout(layouts);

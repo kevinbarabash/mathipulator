@@ -4,6 +4,7 @@ const rewriteSubtraction = require('./transforms/rewrite-subtraction.js');
 const commute = require('./transforms/commute.js');
 const distributeForwards = require('./transforms/distribute-forwards.js');
 const distributeBackwards = require('./transforms/distribute-backwards.js');
+const eliminateZero = require('./transforms/eliminate-zero.js');
 
 module.exports = {
     commute,
@@ -11,5 +12,6 @@ module.exports = {
     rewriteAddition,
     rewriteSubtraction,
     distributeForwards,
-    distributeBackwards
+    distributeBackwards,
+    eliminateZero,
 };

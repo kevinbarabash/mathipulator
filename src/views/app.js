@@ -3,7 +3,7 @@ const React = require('react');
 const { Component } = React;
 
 const MathRenderer = require('./math-renderer.js');
-const { Literal, Equation, Identifier } = require('../ast.js');
+const { Literal, Equation, Identifier, Negation } = require('../ast.js');
 const { add, sub, mul, div } = require('../operations.js');
 const { findNode } = require('../util/node_utils.js');
 
@@ -11,28 +11,12 @@ class App extends Component {
     constructor() {
         super();
 
-        const expr1 = mul(
-            add(
-                new Literal(3),
-                new Literal(5)
-                //mul(
-                //    new Literal(5),
-                //    new Literal(-4)
-                //)
-            ),
-            new Literal(2)
+        const expr1 = sub(
+            new Identifier('x'),
+            new Literal(0)
         );
 
-        const expr2 = div(
-            sub(
-                mul(
-                    new Literal(1.5),
-                    new Literal(-3)
-                ),
-                new Identifier('y')
-            ),
-            sub(add(new Literal(1), new Literal(2)), new Literal(3))
-        );
+        const expr2 = new Literal(5);
 
         const math = new Equation(expr1, expr2);
 
@@ -51,6 +35,7 @@ class App extends Component {
 
         if (node && transform && transform.canTransform(node)) {
             transform.doTransform(node);
+            console.log(nextMath);
             this.setState({math: nextMath});
         }
     }
