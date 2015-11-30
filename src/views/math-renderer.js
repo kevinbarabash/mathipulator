@@ -3,9 +3,10 @@ const React = require('react');
 const { Component } = React;
 
 const Menu = require('./menu.js');
-const { createFlatLayout } = require('../layout.js');
+const { createFlatLayout } = require('./layout.js');
 const transforms = require('../transforms.js');
 const { findNode } = require('../util/node_utils.js');
+const { AnimatedLayout } = require('./animation.js');
 
 class MathRenderer extends Component {
     constructor() {
@@ -59,17 +60,29 @@ class MathRenderer extends Component {
             const canvas = context.canvas;
             context.clearRect(0, 0, canvas.width, canvas.height);
 
-            const {selectedNode, layout} = nextState;
+            const {selectedNode} = nextState;
 
             if (selectedNode) {
-                const bounds = selectedNode.bounds;
+                const bounds = selectedNode.getBounds();
 
                 context.fillStyle = 'rgba(255,255,0,0.5)';
                 context.fillRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
             }
 
             context.fillStyle = nextProps.color;
-            layout.render(context);
+
+            if (this.state.layout !== nextState.layout) {
+                const layout = new AnimatedLayout(this.state.layout, nextState.layout);
+
+                layout.callback = () => {
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    layout.render(context);
+                };
+
+                layout.start();
+            } else {
+                nextState.layout.render(context);
+            }
         }
     }
 
@@ -79,7 +92,7 @@ class MathRenderer extends Component {
         const layoutNode = layout.hitTest(e.pageX, e.pageY);
 
         if (layoutNode) {
-            const bounds = layoutNode.bounds;
+            const bounds = layoutNode.getBounds();
 
             const x = (bounds.left + bounds.right) / 2;
             const y = bounds.top - 10;

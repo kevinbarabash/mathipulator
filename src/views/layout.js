@@ -1,4 +1,4 @@
-const fontMetrics = require("../metrics/helvetica-light.json");
+const fontMetrics = require("../../metrics/helvetica-light.json");
 
 // TODO: handle fonts with different unitsPerEm
 const {unitsPerEm, glyphMetrics} = fontMetrics;
@@ -37,7 +37,7 @@ class Glyph {
         // TODO when we flatten group all of the items with the same fontSize
         if (this.id && RenderOptions.bounds) {
             ctx.strokeStyle = 'red';
-            const bounds = this.bounds;
+            const bounds = this.getBounds();
             ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
         }
 
@@ -46,7 +46,7 @@ class Glyph {
         ctx.fillText(this.text, this.x, this.y);
     }
 
-    get bounds() {
+    getBounds() {
         const {bearingX, bearingY, width, height} = this.metrics;
         const left = this.x + bearingX;
         const right = left + width;
@@ -62,7 +62,7 @@ class Glyph {
     }
 
     hitTest(x, y) {
-        const { left, right, top, bottom } = this.bounds;
+        const { left, right, top, bottom } = this.getBounds();
         if (x >= left && x <= right && y >= top && y <= bottom) {
             return this;
         }
@@ -97,7 +97,7 @@ class Layout {
         ctx.translate(this.x, this.y);
         if (this.atomic && RenderOptions.bounds) {
             ctx.strokeStyle = 'red';
-            const bounds = this.bounds;
+            const bounds = this.getBounds();
             ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
         }
 
@@ -107,7 +107,7 @@ class Layout {
         ctx.restore();
     }
 
-    get bounds() {
+    getBounds() {
         let initialBounds = {
             left: Infinity,
             right: -Infinity,
@@ -116,7 +116,7 @@ class Layout {
         };
 
         const bounds = this.children.reduce((bounds, child) => {
-            const childBounds = child.bounds;
+            const childBounds = child.getBounds();
             return {
                 left: Math.min(bounds.left, childBounds.left),
                 right: Math.max(bounds.right, childBounds.right),
@@ -143,7 +143,7 @@ class Layout {
 
     hitTest(x, y) {
         if (this.atomic) {
-            const bounds = this.bounds;
+            const bounds = this.getBounds();
             if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) {
                 return this;
             }
@@ -456,7 +456,7 @@ function createFlatLayout(node, fontSize, width, height) {
     }
 
     const equalNode = findEqual(flattenedLayout);
-    const bounds = equalNode.bounds;
+    const bounds = equalNode.getBounds();
     const equalX = (bounds.left + bounds.right) / 2;
     const equalY = (bounds.top + bounds.bottom) / 2;
 
@@ -474,5 +474,6 @@ function createFlatLayout(node, fontSize, width, height) {
 module.exports = {
     getMetrics,
     createFlatLayout,
-    RenderOptions
+    RenderOptions,
+    Layout,
 };
