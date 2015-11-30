@@ -1,3 +1,5 @@
+const Literal = require('../ast/literal.js');
+const Operator = require('../ast/operator.js');
 const Negation = require('../ast/negation.js');
 
 function canTransform(node) {
@@ -8,14 +10,16 @@ function canTransform(node) {
 
 function doTransform(node) {
     if (canTransform(node)) {
-        // TODO: create new nodes and replace the existing nodes
-        node.operator = '+';
+        const next = node.next;
+        const parent = node.parent;
 
-        if (node.next.type === 'Literal') {
-            node.next.value = -node.next.value;
+        if (next.type === 'Literal' && next.value > 0) {
+            parent.replace(next, new Literal(-next.value));
         } else {
-            node.parent.replace(node.next, new Negation(node.next));
+            parent.replace(next, new Negation(next));
         }
+
+        parent.replace(node, new Operator('+'));
     }
 }
 

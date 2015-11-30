@@ -227,11 +227,13 @@ function createLayout(node, fontSize) {
 
         const lParen = new Glyph("(", fontSize);
         lParen.x = penX;
+        lParen.id = node.id;
         penX += lParen.advance;
         children.push(lParen);
 
         const negativeSign = new Glyph("\u2212", fontSize);
         negativeSign.x = penX;
+        negativeSign.id = node.id;
         penX += negativeSign.advance;
         children.push(negativeSign);
 
@@ -256,13 +258,13 @@ function createLayout(node, fontSize) {
 
         const rParen = new Glyph(")", fontSize);
         rParen.x = penX;
+        //rParen.id = node.id;
         penX += rParen.advance;
         children.push(rParen);
 
         const layout = new Layout(children);
         layout.advance = penX;
         layout.id = node.id;
-        console.log(node.id);
         return layout;
     } else if (node.type === "Operator") {
         const operator = formatText(node.operator);

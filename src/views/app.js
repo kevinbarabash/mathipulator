@@ -16,6 +16,11 @@ class App extends Component {
             new Literal(0)
         );
 
+        //const expr1 = add(
+        //    mul(new Literal(2), add(new Identifier('x'), new Literal(1))),
+        //    mul(new Literal(2), add(new Identifier('x'), new Literal(1)))
+        //);
+
         const expr2 = new Literal(5);
 
         const math = new Equation(expr1, expr2);
@@ -46,7 +51,7 @@ class App extends Component {
         return <div style={styles.app}>
             <MathRenderer
                 color={'black'}
-                fontSize={48}
+                fontSize={60}
                 math={this.state.math}
                 width={window.innerWidth}
                 height={window.innerHeight}
