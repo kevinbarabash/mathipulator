@@ -227,13 +227,13 @@ function createLayout(node, fontSize) {
 
         const lParen = new Glyph("(", fontSize);
         lParen.x = penX;
-        lParen.id = node.id;
+        lParen.id = node.id + ":(";
         penX += lParen.advance;
         children.push(lParen);
 
         const negativeSign = new Glyph("\u2212", fontSize);
         negativeSign.x = penX;
-        negativeSign.id = node.id;
+        negativeSign.id = node.id + ":-";
         penX += negativeSign.advance;
         children.push(negativeSign);
 
@@ -258,7 +258,7 @@ function createLayout(node, fontSize) {
 
         const rParen = new Glyph(")", fontSize);
         rParen.x = penX;
-        //rParen.id = node.id;
+        rParen.id = node.id + ":)";
         penX += rParen.advance;
         children.push(rParen);
 
@@ -296,6 +296,7 @@ function createLayout(node, fontSize) {
             } else if (child.type === "Expression") {
                 const lParen = new Glyph("(", fontSize);
                 lParen.x = penX;
+                lParen.id = node.id + ":(";
                 penX += lParen.advance;
                 layouts.push(lParen);
             }
@@ -308,6 +309,7 @@ function createLayout(node, fontSize) {
             } else if (child.type === "Expression") {
                 const rParen = new Glyph(")", fontSize);
                 rParen.x = penX;
+                rParen.id = node.id + ":)";
                 penX += rParen.advance;
                 layouts.push(rParen);
             }
@@ -383,6 +385,7 @@ function createLayout(node, fontSize) {
             if (child.type === "Expression") {
                 const lParen = new Glyph("(", fontSize);
                 lParen.x = penX;
+                lParen.id = node.id + ":(";
                 penX += lParen.advance;
                 layouts.push(lParen);
             }
@@ -402,6 +405,7 @@ function createLayout(node, fontSize) {
             if (child.type === "Expression") {
                 const rParen = new Glyph(")", fontSize);
                 rParen.x = penX;
+                rParen.id = node.id + ":)";
                 penX += rParen.advance;
                 layouts.push(rParen);
             }

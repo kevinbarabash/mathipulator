@@ -43,6 +43,7 @@ function lerpLayout(layout1, layout2, ids, t) {
     layout1.children.forEach(child => children1[child.id] = child);
     layout2.children.forEach(child => children2[child.id] = child);
 
+    // TODO: lerp all glyphs/sublayouts with the same id
     let layout = new Layout(ids.map(id => {
         const child1 = children1[id];
         const child2 = children2[id];
