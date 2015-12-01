@@ -11,15 +11,22 @@ class App extends Component {
     constructor() {
         super();
 
-        const expr1 = sub(
-            new Identifier('x'),
-            new Literal(0)
-        );
+        //const expr1 = sub(
+        //    new Identifier('x'),
+        //    new Literal(0)
+        //);
 
         //const expr1 = add(
         //    mul(new Literal(2), add(new Identifier('x'), new Literal(1))),
-        //    mul(new Literal(2), add(new Identifier('x'), new Literal(1)))
+        //    div(new Literal(1), sub(new Identifier('x'), new Literal(2)))
         //);
+
+        const expr1 = add(
+            new Literal(1),
+            mul(new Literal(2), add(new Identifier('x'), new Literal(1)))
+        );
+
+        //const expr1 = mul(new Literal(2), add(new Identifier('x'), new Literal(1)));
 
         const expr2 = new Literal(5);
 

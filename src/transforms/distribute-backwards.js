@@ -1,5 +1,5 @@
 const Literal = require('../ast/literal.js');
-const { mul } = require('../operations.js');
+const { mul, removeExtraParens } = require('../operations.js');
 
 function canTransform(node) {
     return node.parent && node.parent.type === 'Product' &&
@@ -23,13 +23,10 @@ function doTransform(node) {
         }
         const parent = node.parent;
 
-        // remove unnecessary parentheses
-        // TODO: check if there's an addition sign infront if parent.prev isn't null
-        // TODO: think about having this be an explicit step
-        if (parent.prev == null && parent.next == null) {
-            if (parent.parent) {
-                parent.parent.replace(parent, expr);
-            }
+        parent.parent.replace(parent, expr);
+
+        if (parent.parent && parent.parent.type === 'Expression') {
+            removeExtraParens(parent.parent);
         }
     }
 }
