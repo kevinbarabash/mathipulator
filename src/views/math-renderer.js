@@ -60,6 +60,9 @@ class MathRenderer extends Component {
                     history[i], fontSize, window.innerWidth, window.innerHeight));
             }
         }
+        if (history.length === 0) {
+            layoutHistory = [];
+        }
 
         const layout = createFlatLayout(math, fontSize, window.innerWidth, window.innerHeight);
         this.setState({ layout, layoutHistory });

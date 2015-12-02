@@ -3,6 +3,7 @@ const React = require('react');
 const { Component } = React;
 
 const MathRenderer = require('./math-renderer.js');
+const Parser = require('../parser.js');
 const { Literal, Equation, Identifier, Negation } = require('../ast.js');
 const { add, sub, mul, div } = require('../operations.js');
 const { findNode } = require('../util/node_utils.js');
@@ -38,7 +39,10 @@ class App extends Component {
             history: [],
         };
 
+        this.parser = new Parser();
+
         this.handleClick = this.handleClick.bind(this);
+        this.handleReplace = this.handleReplace.bind(this);
     }
 
     handleClick(id, transform) {
@@ -53,8 +57,22 @@ class App extends Component {
         }
     }
 
+    handleReplace() {
+        const text = this.refs.replaceText.value;
+        const math = this.parser.parse(text);
+        this.setState({ math, history: [] });
+    }
+
     render() {
         const { menu, math, history } = this.state;
+
+        const buttonStyle = {
+            marginLeft: 10,
+            fontSize: 20,
+            borderRadius: 5,
+            border: 'solid 1px #999',
+            backgroundColor: '#CCC',
+        };
 
         return <div style={styles.app}>
             <MathRenderer
@@ -67,6 +85,12 @@ class App extends Component {
                 onClick={this.handleClick}
             />
             {menu}
+            <div style={{position:'absolute',left:20,top:20}}>
+                <input type="text" style={{fontSize:20}} ref="replaceText"/>
+                <button onClick={this.handleReplace} style={buttonStyle}>
+                    Replace
+                </button>
+            </div>
         </div>;
     }
 }
