@@ -1,4 +1,3 @@
-const f = require('functify');
 const React = require('react');
 
 const { Component } = React;
@@ -8,6 +7,7 @@ const { createFlatLayout } = require('./layout.js');
 const transforms = require('../transforms.js');
 const { findNode } = require('../util/node_utils.js');
 const { AnimatedLayout } = require('./animation.js');
+const { roundRect, fillCircle } = require('./canvas-util.js');
 
 class MathRenderer extends Component {
     constructor() {
@@ -76,9 +76,23 @@ class MathRenderer extends Component {
 
             if (selectedNode) {
                 const bounds = selectedNode.getBounds();
-
+                const padding = 8;
+                
                 context.fillStyle = 'rgba(255,255,0,0.5)';
-                context.fillRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
+
+                if (selectedNode.circle) {
+                    const x = (bounds.left + bounds.right) / 2;
+                    const y = (bounds.top + bounds.bottom) / 2;
+                    const radius = (bounds.right - bounds.left) / 2 + padding;
+                    fillCircle(context, x, y, radius);
+                } else {
+                    const radius = padding;
+                    const x = bounds.left - radius;
+                    const y = bounds.top - radius;
+                    const width = bounds.right - bounds.left + 2 * radius;
+                    const height = bounds.bottom - bounds.top + 2 * radius;
+                    roundRect(context, x, y, width, height, radius);
+                }
             }
 
             context.fillStyle = nextProps.color;
