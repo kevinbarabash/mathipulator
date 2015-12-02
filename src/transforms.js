@@ -5,6 +5,7 @@ const commute = require('./transforms/commute.js');
 const distributeForwards = require('./transforms/distribute-forwards.js');
 const distributeBackwards = require('./transforms/distribute-backwards.js');
 const eliminateZero = require('./transforms/eliminate-zero.js');
+const swapSides = require('./transforms/swap-sides.js');
 
 module.exports = {
     commute,
@@ -14,4 +15,5 @@ module.exports = {
     distributeForwards,
     distributeBackwards,
     eliminateZero,
+    swapSides,
 };

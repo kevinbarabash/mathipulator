@@ -77,7 +77,7 @@ class MathRenderer extends Component {
             if (selectedNode) {
                 const bounds = selectedNode.getBounds();
                 const padding = 8;
-                
+
                 context.fillStyle = 'rgba(255,255,0,0.5)';
 
                 if (selectedNode.circle) {
