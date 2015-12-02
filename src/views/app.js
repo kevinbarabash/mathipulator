@@ -34,32 +34,34 @@ class App extends Component {
 
         this.state = {
             menu: null,
-            math: math
+            math: math,
+            history: [],
         };
 
         this.handleClick = this.handleClick.bind(this);
     }
 
     handleClick(id, transform) {
-        const {math} = this.state;
+        const { math, history } = this.state;
         const nextMath = math.clone();
         const node = findNode(nextMath, id);
 
         if (node && transform && transform.canTransform(node)) {
             transform.doTransform(node);
-            console.log(nextMath);
-            this.setState({math: nextMath});
+            history.push(math);
+            this.setState({ math: nextMath, history });
         }
     }
 
     render() {
-        const {menu} = this.state;
+        const { menu, math, history } = this.state;
 
         return <div style={styles.app}>
             <MathRenderer
                 color={'black'}
                 fontSize={60}
-                math={this.state.math}
+                math={math}
+                history={history}
                 width={window.innerWidth}
                 height={window.innerHeight}
                 onClick={this.handleClick}

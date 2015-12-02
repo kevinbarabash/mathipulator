@@ -1,3 +1,4 @@
+const f = require('functify');
 const React = require('react');
 
 const { Component } = React;
@@ -15,7 +16,9 @@ class MathRenderer extends Component {
         this.state = {
             context: null,
             menu: null,
-            selectedNode: null
+            selectedNode: null,
+            layout: null,
+            layoutHistory: [],
         };
 
         this.handleClick = this.handleClick.bind(this);
@@ -34,33 +37,42 @@ class MathRenderer extends Component {
         canvas.width = this.props.width;
         canvas.height = this.props.height;
 
-        const { math, color, fontSize } = this.props;
+        const { math, fontSize } = this.props;
         const layout = createFlatLayout(
             math, fontSize, window.innerWidth, window.innerHeight);
 
         const context = canvas.getContext('2d');
-        context.fillStyle = color;
         layout.render(context);
 
         container.appendChild(canvas);
 
-        this.setState({context, layout});
+        this.setState({ context, layout });
     }
 
     componentWillReceiveProps(nextProps) {
-        const { math, fontSize } = nextProps;
+        const { math, fontSize, history } = nextProps;
+
+        let layoutHistory = [...this.state.layoutHistory];
+
+        if (history.length > layoutHistory.length) {
+            for (let i = layoutHistory.length; i < history.length; i++) {
+                layoutHistory.push(createFlatLayout(
+                    history[i], fontSize, window.innerWidth, window.innerHeight));
+            }
+        }
+
         const layout = createFlatLayout(math, fontSize, window.innerWidth, window.innerHeight);
-        this.setState({layout});
+        this.setState({ layout, layoutHistory });
     }
 
     componentWillUpdate(nextProps, nextState) {
-        const {context} = this.state;
+        const { context } = this.state;
 
         if (context) {
             const canvas = context.canvas;
             context.clearRect(0, 0, canvas.width, canvas.height);
 
-            const {selectedNode} = nextState;
+            const { selectedNode } = nextState;
 
             if (selectedNode) {
                 const bounds = selectedNode.getBounds();
@@ -70,17 +82,49 @@ class MathRenderer extends Component {
             }
 
             context.fillStyle = nextProps.color;
+            const kStart = 192;
 
             if (this.state.layout !== nextState.layout) {
                 const layout = new AnimatedLayout(this.state.layout, nextState.layout);
+                const layoutHistory = nextState.layoutHistory;
 
+                let t = 0;
                 layout.callback = () => {
                     context.clearRect(0, 0, canvas.width, canvas.height);
+
+                    let k = kStart;
+                    context.save();
+                    for (let i = layoutHistory.length - 1; i > -1; i--) {
+                        if (i === layoutHistory.length - 1) {
+                            context.translate(0,-70 * Math.min(t, 1.0));
+                        } else {
+                            context.translate(0,-70);
+                        }
+                        context.fillStyle = `rgb(${k}, ${k}, ${k})`;
+                        layoutHistory[i].render(context);
+                    }
+                    context.restore();
+
+                    context.fillStyle = 'rgb(0, 0, 0)';
                     layout.render(context);
+
+                    t += 0.035;
                 };
 
                 layout.start();
             } else {
+                const layoutHistory = this.state.layoutHistory;
+
+                let k = kStart;
+                context.save();
+                for (let i = layoutHistory.length - 1; i > -1; i--) {
+                    context.translate(0,-70);
+                    context.fillStyle = `rgb(${k}, ${k}, ${k})`;
+                    layoutHistory[i].render(context);
+                }
+                context.restore();
+
+                context.fillStyle = 'rgb(0, 0, 0)';
                 nextState.layout.render(context);
             }
         }
@@ -106,7 +150,7 @@ class MathRenderer extends Component {
                         label: transform.label,
                         action: () => {
                             this.props.onClick(layoutNode.id, transform);
-                            this.setState({menu: null, selectedNode: null});
+                            this.setState({ menu: null, selectedNode: null });
                         }
                     }
                 });
@@ -114,14 +158,14 @@ class MathRenderer extends Component {
             const menu = items.length > 0 ?
                 <Menu position={{x, y}} items={items}/> : null;
 
-            this.setState({menu, selectedNode: layoutNode});
+            this.setState({ menu, selectedNode: layoutNode });
         } else {
-            this.setState({menu: null, selectedNode: null});
+            this.setState({ menu: null, selectedNode: null });
         }
     }
 
     render() {
-        const {menu} = this.state;
+        const { menu, history } = this.state;
 
         return <div>
             <div
