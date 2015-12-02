@@ -157,20 +157,25 @@ class MathRenderer extends Component {
 
             const mathNode = findNode(math, layoutNode.id);
 
-            const items = Object.values(transforms)
-                .filter(transform => transform.canTransform(mathNode))
-                .map(transform => {
-                    return {
-                        label: transform.label,
-                        action: () => {
-                            this.props.onClick(layoutNode.id, transform);
-                            this.setState({ menu: null, selectedNode: null });
-                        }
-                    }
-                });
+            let menu = null;
 
-            const menu = items.length > 0 ?
-                <Menu position={{x, y}} items={items}/> : null;
+            if (mathNode) {
+                const items = Object.values(transforms)
+                    .filter(transform => transform.canTransform(mathNode))
+                    .map(transform => {
+                        return {
+                            label: transform.label,
+                            action: () => {
+                                this.props.onClick(layoutNode.id, transform);
+                                this.setState({ menu: null, selectedNode: null });
+                            }
+                        }
+                    });
+
+                if (items.length > 0) {
+                    menu = <Menu position={{x, y}} items={items}/>;
+                }
+            }
 
             this.setState({ menu, selectedNode: layoutNode });
         } else {
