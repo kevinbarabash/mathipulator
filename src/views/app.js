@@ -43,6 +43,7 @@ class App extends Component {
 
         this.handleClick = this.handleClick.bind(this);
         this.handleReplace = this.handleReplace.bind(this);
+        this.handlePerform = this.handlePerform.bind(this);
     }
 
     handleClick(id, transform) {
@@ -63,6 +64,37 @@ class App extends Component {
         this.setState({ math, history: [] });
     }
 
+    handlePerform() {
+        const text = this.refs.performText.value;
+
+        if (['+', '-', '*', '/'].includes(text[0])) {
+            // TODO: check that it isn't an equation
+            const expr = this.parser.parse(text.substring(1));
+            const op = text[0];
+            const math = this.state.math.clone();
+
+            // TODO: check that `math` isn't an equation
+
+            if (op === '+') {
+                math.left = add(math.left, expr);
+                math.right = add(math.right, expr);
+                this.setState({ math });
+            } else if (op === '-') {
+                math.left = sub(math.left, expr);
+                math.right = sub(math.right, expr);
+                this.setState({ math });
+            } else if (op === '*') {
+                math.left = mul(math.left, expr);
+                math.right = mul(math.right, expr);
+                this.setState({ math });
+            } else if (op === '/') {
+                math.left = div(math.left, expr);
+                math.right = div(math.right, expr);
+                this.setState({ math });
+            }
+        }
+    }
+
     render() {
         const { menu, math, history } = this.state;
 
@@ -72,6 +104,14 @@ class App extends Component {
             borderRadius: 5,
             border: 'solid 1px #999',
             backgroundColor: '#CCC',
+        };
+
+        const containerStyle = {
+            position:'absolute',
+            padding:20,
+            bottom:20,
+            width:'100%',
+            boxSizing:'border-box'
         };
 
         return <div style={styles.app}>
@@ -85,11 +125,19 @@ class App extends Component {
                 onClick={this.handleClick}
             />
             {menu}
-            <div style={{position:'absolute',left:20,top:20}}>
-                <input type="text" style={{fontSize:20}} ref="replaceText"/>
-                <button onClick={this.handleReplace} style={buttonStyle}>
-                    Replace
-                </button>
+            <div style={containerStyle}>
+                <div style={{float:'left'}}>
+                    <input type="text" style={{fontSize:20}} ref="replaceText"/>
+                    <button onClick={this.handleReplace} style={buttonStyle}>
+                        Replace
+                    </button>
+                </div>
+                <div style={{float:'right'}}>
+                    <input type="text" style={{fontSize:20}} ref="performText"/>
+                    <button onClick={this.handlePerform} style={buttonStyle}>
+                        Perform
+                    </button>
+                </div>
             </div>
         </div>;
     }

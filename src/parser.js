@@ -31,6 +31,7 @@ class Parser {
     equation() {
         var lhs = this.expression();
         var token = this.tokens[this.i++];
+        console.log(token);
         if (token === '=') {
             var rhs = this.expression();
 
@@ -80,7 +81,7 @@ class Parser {
                     throw 'expected )';
                 }
                 children.push(expr);
-
+                this.i++;
             } else if (isAlpha(token)) {  // TODO: figure out why we can't let factor() handle this
                 children.push(new Operator('*'));
                 this.i--; // put the alpha back on so factor() can deal with it
