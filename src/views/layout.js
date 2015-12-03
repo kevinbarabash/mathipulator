@@ -79,7 +79,9 @@ class Box {
     }
 
     clone() {
-        return new Box(this.x, this.y, this.width, this.height);
+        const result = new Box(this.x, this.y, this.width, this.height);
+        Object.assign(result, this);
+        return result;
     }
 
     hitTest(x, y) { }
@@ -372,6 +374,7 @@ function createLayout(node, fontSize) {
         const thickness = dashMetrics.height;
         const y = -dashMetrics.bearingY - thickness;
         const bar = new Box(0, y, width, thickness);
+        bar.id = node.id + ":line";
 
         const layout = new Layout([num, den, bar]);
         layout.advance = width;
