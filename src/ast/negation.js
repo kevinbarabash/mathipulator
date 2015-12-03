@@ -8,6 +8,10 @@ class Negation extends Node {
         this.value.parent = this;
     }
 
+    toString() {
+        return `[${this.type}:${this.value}]`;
+    }
+
     clone() {
         const clone = Object.create(Negation.prototype);
         clone.id = this.id;

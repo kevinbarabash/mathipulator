@@ -5,7 +5,8 @@ const {
     Operator,
     Identifier,
     Literal,
-    Power
+    Power,
+    Negation
 } = require('./ast.js');
 
 function isAlpha(token) {
@@ -124,15 +125,23 @@ class Parser {
         if (isAlpha(token)) {
             base = new Identifier(token);
         } else if (isNumber(token)) {
-            base = new Literal(parseFloat(token));
+            if (sign === '-') {
+                base = new Literal(-parseFloat(token));
+            } else {
+                base = new Literal(parseFloat(token));
+            }
         } else if (token === '(') {
             base = this.expression();
+            if (sign === '-') {
+                base = new Negation(base);
+            }
             token = tokens[this.i++];
             if (token !== ')') {
                 throw 'expected )';
             }
         }
 
+        // TODO: differentiate -2^x vs. (-2)^x
         if (tokens[this.i++] === '^') {
             exp = this.factor();
             return new Power(base, exp);
