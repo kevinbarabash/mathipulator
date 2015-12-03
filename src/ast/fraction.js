@@ -24,6 +24,18 @@ class Fraction extends Node {
         clone.denominator.parent = clone;
         return clone;
     }
+
+    replace(current, replacement) {
+        if (this.numerator === current) {
+            this.numerator = replacement;
+            replacement.parent = this;
+            current.parent = null;
+        } else if (this.denominator === current) {
+            this.denominator = replacement;
+            replacement.parent = this;
+            current.parent = null;
+        }
+    }
 }
 
 module.exports = Fraction;

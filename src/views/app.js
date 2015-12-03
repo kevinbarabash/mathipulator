@@ -22,9 +22,9 @@ class App extends Component {
         //    div(new Literal(1), sub(new Identifier('x'), new Literal(2)))
         //);
 
-        const expr1 = sub(
-            new Literal(0),
-            mul(new Literal(2), add(new Identifier('x'), new Literal(1)))
+        const expr1 = div(
+            add(new Literal(3), new Literal(5)),
+            new Literal(2)
         );
 
         //const expr1 = mul(new Literal(2), add(new Identifier('x'), new Literal(1)));
