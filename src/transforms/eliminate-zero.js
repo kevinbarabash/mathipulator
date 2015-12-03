@@ -1,3 +1,5 @@
+const { Literal, Negation } = require('../ast.js');
+
 function canTransform(node) {
     if (node.type === 'Literal' && node.value === 0) {
         if (node.next && node.prev) {
@@ -14,18 +16,27 @@ function canTransform(node) {
 
 function doTransform(node) {
     if (canTransform(node)) {
+        const parent = node.parent;
+
         if (node.next && node.prev) {
-            node.parent.remove(node.prev);
-            node.parent.remove(node);
+            parent.remove(node.prev);
+            parent.remove(node);
         } else if (node.next) {
-            if (node.next.operator === '-') {
+            const operator = node.next.operator;
+            const nextNext = node.next.next;
+            parent.remove(node.next);
+            parent.remove(node);
 
-            } else {
-
+            if (operator === '-') {
+                if (nextNext.type === 'Literal') {
+                    parent.replace(nextNext, new Literal(-nextNext.value));
+                } else {
+                    parent.replace(nextNext, new Negation(nextNext));
+                }
             }
         } else if (node.prev) {
-            node.parent.remove(node.prev);
-            node.parent.remove(node);
+            parent.remove(node.prev);
+            parent.remove(node);
         }
     }
 }
