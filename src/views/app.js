@@ -69,27 +69,28 @@ class App extends Component {
 
         if (['+', '-', '*', '/'].includes(text[0])) {
             // TODO: check that it isn't an equation
-            const expr = this.parser.parse(text.substring(1));
+            const expr1 = this.parser.parse(text.substring(1));
+            const expr2 = this.parser.parse(text.substring(1));
             const op = text[0];
             const math = this.state.math.clone();
 
             // TODO: check that `math` isn't an equation
 
             if (op === '+') {
-                math.left = add(math.left, expr);
-                math.right = add(math.right, expr);
+                math.left = add(math.left, expr1);
+                math.right = add(math.right, expr2);
                 this.setState({ math });
             } else if (op === '-') {
-                math.left = sub(math.left, expr);
-                math.right = sub(math.right, expr);
+                math.left = sub(math.left, expr1);
+                math.right = sub(math.right, expr2);
                 this.setState({ math });
             } else if (op === '*') {
-                math.left = mul(math.left, expr);
-                math.right = mul(math.right, expr);
+                math.left = mul(math.left, expr1);
+                math.right = mul(math.right, expr2);
                 this.setState({ math });
             } else if (op === '/') {
-                math.left = div(math.left, expr);
-                math.right = div(math.right, expr);
+                math.left = div(math.left, expr1);
+                math.right = div(math.right, expr2);
                 this.setState({ math });
             }
         }
