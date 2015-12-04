@@ -6,7 +6,8 @@ const {
     Identifier,
     Literal,
     Power,
-    Negation
+    Negation,
+    Fraction,
 } = require('./ast.js');
 
 function isAlpha(token) {
@@ -32,7 +33,6 @@ class Parser {
     equation() {
         var lhs = this.expression();
         var token = this.tokens[this.i++];
-        console.log(token);
         if (token === '=') {
             var rhs = this.expression();
 
@@ -70,12 +70,14 @@ class Parser {
 
         var token = tokens[this.i++];
 
-        // TODO: handle division separately
-        while (token === '*' || token === '(' || isAlpha(token)) {
-            if (token === '(') {
-
+        while (['*', '(', '/'].includes(token) || isAlpha(token)) {
+            if (token === '/') {
+                const numerator = children.pop();
+                const denominator = this.factor();
+                children.push(new Fraction(numerator, denominator));
+                this.i++;
+            } else if (token === '(') {
                 children.push(new Operator('*'));
-
                 var expr = this.expression();
                 token = tokens[this.i++];
                 if (token !== ')') {
@@ -123,7 +125,11 @@ class Parser {
         var base, exp;
 
         if (isAlpha(token)) {
-            base = new Identifier(token);
+            if (sign === '-') {
+                base = new Negation(new Identifier(token));
+            } else {
+                base = new Identifier(token);
+            }
         } else if (isNumber(token)) {
             if (sign === '-') {
                 base = new Literal(-parseFloat(token));
