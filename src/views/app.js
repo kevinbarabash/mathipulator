@@ -68,6 +68,9 @@ class App extends Component {
         const text = this.refs.performText.value;
 
         if (['+', '-', '*', '/'].includes(text[0])) {
+            const { history } = this.state;
+            history.push(this.state.math);
+
             // TODO: check that it isn't an equation
             const expr1 = this.parser.parse(text.substring(1));
             const expr2 = this.parser.parse(text.substring(1));
@@ -79,19 +82,19 @@ class App extends Component {
             if (op === '+') {
                 math.left = add(math.left, expr1);
                 math.right = add(math.right, expr2);
-                this.setState({ math });
+                this.setState({ math, history });
             } else if (op === '-') {
                 math.left = sub(math.left, expr1);
                 math.right = sub(math.right, expr2);
-                this.setState({ math });
+                this.setState({ math, history });
             } else if (op === '*') {
                 math.left = mul(math.left, expr1);
                 math.right = mul(math.right, expr2);
-                this.setState({ math });
+                this.setState({ math, history });
             } else if (op === '/') {
                 math.left = div(math.left, expr1);
                 math.right = div(math.right, expr2);
-                this.setState({ math });
+                this.setState({ math, history });
             }
         }
     }
