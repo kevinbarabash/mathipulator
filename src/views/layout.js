@@ -72,6 +72,7 @@ class Glyph {
 class Box {
     constructor(x, y, width, height) {
         Object.assign(this, {x, y, width, height});
+        this.type = 'box';
     }
 
     render(ctx) {
@@ -88,6 +89,7 @@ class Box {
 
     clone() {
         const result = new Box(this.x, this.y, this.width, this.height);
+        result.type = 'box';
         Object.assign(result, this);
         return result;
     }

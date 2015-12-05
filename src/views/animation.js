@@ -55,6 +55,14 @@ function lerpLayout(layout1, layout2, ids, t) {
         child.x = x;
         child.y = y;
 
+        if (child1.type === 'box') {
+            const width = lerp(child1.width, child2.width, t);
+            const height = lerp(child1.height, child2.height, t);
+
+            child.width = width;
+            child.height = height;
+        }
+
         return child;
     }));
 
