@@ -8,6 +8,7 @@ var processNode = function(node) {
         case 'Product': return processProduct(node); break;
         case 'Expression': return processExpression(node); break;
         case 'Negation': return processNegation(node); break;
+        case 'Fraction': return processFraction(node); break;
         default: console.log(`${node.type} unexpected`);
     }
 };
@@ -47,4 +48,5 @@ module.exports = {
     assertExpression,
     assertProduct,
     assertFraction,
+    processNode,
 };

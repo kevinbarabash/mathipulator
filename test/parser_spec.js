@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-const { assertExpression, assertProduct, assertFraction, } = require('./test_util.js');
+const { assertExpression, assertProduct, assertFraction } = require('./test_util.js');
 
 const Parser = require('../src/parser.js');
 
@@ -16,16 +16,19 @@ describe('Parser', () => {
         parser = new Parser();
     });
 
-    it('should parse expressions', () => {
-        const expr = parser.parse('1+2-3*4/5');
-        assert.ok(expr);
+    describe('Expressions', () => {
+        it('should parse 1+2-3-4', () => {
+            const expr = parser.parse('1+2-3-4');
+            assertExpression(expr, [1, '+', 2, '-', 3, '-', 4]);
+        });
+
+        it('should parse x+y-z', () => {
+            const expr = parser.parse('x+y-z');
+            assertExpression(expr, ['x', '+', 'y', '-', 'z']);
+        });
     });
 
-    describe('addition/subtraction', () => {
-        // TODO: write these tests
-    });
-
-    describe('multiplication', () => {
+    describe('Products', () => {
         it('should parse 2x as a product of 2 and x', () => {
             const prod = parser.parse('2x');
             assertProduct(prod, [2, '*', 'x']);
@@ -44,10 +47,20 @@ describe('Parser', () => {
         it('should parse -ab as a product of -a and b', () => {
             const prod = parser.parse('-ab');
             assertProduct(prod, [['-', 'a'], '*', 'b']);
-        })
+        });
+
+        it('should parse (2)(3) as a product of 2 and 3', () => {
+            const prod = parser.parse('(2)(3)');
+            assertProduct(prod, [2, '*', 3]);
+        });
+
+        it('should parse 2(3) as a product of 2 and 3', () => {
+            const prod = parser.parse('2(3)');
+            assertProduct(prod, [2, '*', 3]);
+        });
     });
 
-    describe('division', () => {
+    describe('Fractions', () => {
         it('should parse division as a fraction', () => {
             const frac = parser.parse('4/5');
             assert.equal(frac.type, 'Fraction');
@@ -63,6 +76,11 @@ describe('Parser', () => {
             assert.equal(frac.numerator.type, 'Fraction');
             assertLiteral(frac.numerator.numerator, 1);
             assertLiteral(frac.numerator.denominator, 2);
+        });
+
+        it('should parse addition/subtraction of fractions', () => {
+            const expr = parser.parse('1/2+3/4-5/6');
+            assertExpression(expr, [[1, '/', 2], '+', [3, '/', 4], '-', [5, '/', 6]]);
         });
 
         it('should parse rational expressions', () => {

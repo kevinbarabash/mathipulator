@@ -75,7 +75,7 @@ class Parser {
                 const numerator = children.pop();
                 const denominator = this.factor();
                 children.push(new Fraction(numerator, denominator));
-                this.i++;
+                token = tokens[this.i++];
             } else if (token === '(') {
                 children.push(new Operator('*'));
                 var expr = this.expression();
