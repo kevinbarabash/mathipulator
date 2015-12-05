@@ -96,6 +96,32 @@ class App extends Component {
                 math.right = div(math.right, expr2);
                 this.setState({ math, history });
             }
+        } else if  (['+', '-', '*', '/'].includes(text[text.length - 1])) {
+            const { history } = this.state;
+            history.push(this.state.math);
+
+            const expr1 = this.parser.parse(text.substring(0, text.length - 1));
+            const expr2 = this.parser.parse(text.substring(0, text.length - 1));
+            const op = text[text.length - 1];
+            const math = this.state.math.clone();
+
+            if (op === '+') {
+                math.left = add(expr1, math.left);
+                math.right = add(expr2, math.right);
+                this.setState({ math, history });
+            } else if (op === '-') {
+                math.left = sub(expr1, math.left);
+                math.right = sub(expr2, math.right);
+                this.setState({ math, history });
+            } else if (op === '*') {
+                math.left = mul(expr1, math.left);
+                math.right = mul(expr2, math.right);
+                this.setState({ math, history });
+            } else if (op === '/') {
+                math.left = div(expr1, math.left);
+                math.right = div(expr2, math.right);
+                this.setState({ math, history });
+            }
         }
     }
 
