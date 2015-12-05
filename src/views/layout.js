@@ -78,6 +78,14 @@ class Box {
         ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
+    getBounds() {
+        const left = this.x;
+        const right = left + this.width;
+        const top = this.y;
+        const bottom = top + this.height;
+        return { left, right, top, bottom };
+    }
+
     clone() {
         const result = new Box(this.x, this.y, this.width, this.height);
         Object.assign(result, this);

@@ -26,7 +26,8 @@ class MathRenderer extends Component {
 
     static defaultProps = {
         color: 'black',
-        fontSize: 72
+        fontSize: 72,
+        historyGap: 8,
     };
 
     componentDidMount() {
@@ -70,6 +71,7 @@ class MathRenderer extends Component {
 
     componentWillUpdate(nextProps, nextState) {
         const { context } = this.state;
+        const { historyGap } = nextProps;
 
         if (context) {
             const canvas = context.canvas;
@@ -112,10 +114,12 @@ class MathRenderer extends Component {
                     let k = kStart;
                     context.save();
                     for (let i = layoutHistory.length - 1; i > -1; i--) {
+                        const bounds = layoutHistory[i].getBounds();
+                        const height = bounds.bottom - bounds.top + historyGap;
                         if (i === layoutHistory.length - 1) {
-                            context.translate(0,-70 * Math.min(t, 1.0));
+                            context.translate(0,-height * Math.min(t, 1.0));
                         } else {
-                            context.translate(0,-70);
+                            context.translate(0,-height);
                         }
                         context.fillStyle = `rgb(${k}, ${k}, ${k})`;
                         layoutHistory[i].render(context);
@@ -135,7 +139,9 @@ class MathRenderer extends Component {
                 let k = kStart;
                 context.save();
                 for (let i = layoutHistory.length - 1; i > -1; i--) {
-                    context.translate(0,-70);
+                    const bounds = layoutHistory[i].getBounds();
+                    const height = bounds.bottom - bounds.top + historyGap;
+                    context.translate(0,-height);
                     context.fillStyle = `rgb(${k}, ${k}, ${k})`;
                     layoutHistory[i].render(context);
                 }
