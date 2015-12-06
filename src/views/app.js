@@ -23,7 +23,7 @@ class App extends Component {
 
         this.state = {
             menu: null,
-            math: math,
+            math: expr2,
             history: [],
         };
 
@@ -54,6 +54,11 @@ class App extends Component {
 
     handlePerform() {
         const text = this.refs.performText.value;
+
+        // TODO: handle performing operations on selections
+        if (this.state.math.type !== 'Equation') {
+            return;
+        }
 
         if (['+', '-', '*', '/'].includes(text[0])) {
             const { history } = this.state;

@@ -542,16 +542,23 @@ function createFlatLayout(node, fontSize, width, height) {
         }
     }
 
-    const equalNode = findEqual(flattenedLayout);
-    const bounds = equalNode.getBounds();
-    const equalX = (bounds.left + bounds.right) / 2;
-    const equalY = (bounds.top + bounds.bottom) / 2;
+    let dx = 0;
+    let dy = 0;
 
     const centerX = width / 2;
     const centerY = height / 2;
 
-    const dx = centerX - equalX;
-    const dy = centerY - equalY;
+    const equalNode = findEqual(flattenedLayout);
+
+    if (equalNode) {
+        const bounds = equalNode.getBounds();
+        dx = centerX - (bounds.left + bounds.right) / 2;
+        dy = centerY - (bounds.top + bounds.bottom) / 2;
+    } else {
+        const bounds = flattenedLayout.getBounds();
+        dx = centerX - (bounds.left + bounds.right) / 2;
+        dy = centerY - (bounds.top + bounds.bottom) / 2;
+    }
 
     translateLayout(flattenedLayout, dx, dy);
 
