@@ -12,24 +12,12 @@ class App extends Component {
     constructor() {
         super();
 
-        //const expr1 = sub(
-        //    new Identifier('x'),
-        //    new Literal(0)
-        //);
+        const expr1 = div(
+            div(new Identifier('x'), sub(new Identifier('y'), new Literal(1))),
+            div(mul(new Identifier('a'), div(new Literal(1), new Identifier('b'))), new Negation(new Identifier('c')))
+        );
 
-        //const expr1 = add(
-        //    mul(new Literal(2), add(new Identifier('x'), new Literal(1))),
-        //    div(new Literal(1), sub(new Identifier('x'), new Literal(2)))
-        //);
-
-        //const expr1 = div(
-        //    add(new Literal(3), new Literal(5)),
-        //    new Literal(2)
-        //);
-
-        const expr1 = mul(new Literal(2), add(new Identifier('x'), new Literal(1)));
-
-        const expr2 = new Literal(5);
+        const expr2 = div(add(new Literal(5), new Identifier('x')), new Literal(6));
 
         const math = new Equation(expr1, expr2);
 

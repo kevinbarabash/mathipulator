@@ -22,6 +22,17 @@ function getMetrics(c, fontSize) {
     return result;
 }
 
+function getAscent(fontSize) {
+    const TMetrics = getMetrics('T', fontSize);
+    const descent = getDescent(fontSize);
+    return -TMetrics.height - descent; // negative y values are above the baseline
+}
+
+function getDescent(fontSize) {
+    const yMetrics = getMetrics('y', fontSize);
+    return -yMetrics.bearingY;
+}
+
 class Glyph {
     constructor(c, fontSize, metrics = getMetrics(c, fontSize)) {
         this.x = 0;
@@ -29,6 +40,8 @@ class Glyph {
         this.text = c;
         this.fontSize = fontSize;
         this.selectable = true;
+        this.ascent = getAscent(fontSize);
+        this.descent = getDescent(fontSize);
 
         this.metrics = metrics;
         this.advance = this.metrics.advance;
@@ -229,6 +242,13 @@ function createLayout(node, fontSize) {
         const layout = new Layout(layouts, true);
         layout.advance = penX;
         layout.id = node.id;
+
+        const ascent = getAscent(fontSize);
+        const descent = getDescent(fontSize);
+
+        layout.ascent = ascent;
+        layout.descent = descent;
+
         return layout;
     } else if (node.type === "Identifier") {
         const name = formatIdentifier(node.name);
@@ -278,8 +298,12 @@ function createLayout(node, fontSize) {
         children.push(rParen);
 
         const layout = new Layout(children);
+
         layout.advance = penX;
         layout.id = node.id;
+        layout.ascent = valueLayout.ascent;
+        layout.descent = valueLayout.descent;
+
         return layout;
     } else if (node.type === "Operator") {
         const operator = formatText(node.operator);
@@ -302,7 +326,11 @@ function createLayout(node, fontSize) {
         return glyph;
     } else if (node.type === "Expression") {
         let penX = 0;
+        let ascent = 0;
+        let descent = 0;
+
         const layouts = [];
+
         for (const child of node) {
             const childLayout = createLayout(child, fontSize);
 
@@ -331,11 +359,24 @@ function createLayout(node, fontSize) {
                 layouts.push(rParen);
             }
 
+            if (childLayout.hasOwnProperty('ascent')) {
+                ascent = Math.min(childLayout.ascent, ascent);
+            }
+            if (childLayout.hasOwnProperty('descent')) {
+                descent = Math.max(childLayout.descent, descent);
+            }
+
             layouts.push(childLayout);
         }
+
         const layout = new Layout(layouts);
+
         layout.advance = penX;
         layout.id = node.id;
+
+        layout.ascent = ascent;
+        layout.descent = descent;
+
         return layout;
     } else if (node.type === "Equation") {
         let penX = 0;
@@ -366,12 +407,13 @@ function createLayout(node, fontSize) {
         const num = createLayout(node.numerator, fontSize);
         const den = createLayout(node.denominator, fontSize);
 
-        // TODO: add Box class to actual render divisior bar
-        // TODO: use x-height / 2 to determine divisor bar position
-        // TODO: use ascender/descender + gap to determine y-shift
-        // TODO: use height of numerator/denominator too
-        num.y -= fontSize / 2 + 0.05 * fontSize;
-        den.y += fontSize / 2 + 0.20 * fontSize;
+        const thickness = dashMetrics.height;
+        const y = -dashMetrics.bearingY - thickness;
+
+        const gap = 3;
+        // y is the top of the fraction bar
+        num.y = y + num.y - num.descent - gap;
+        den.y = -dashMetrics.bearingY + den.y - den.ascent;
 
         // TODO: calc width so that we can use width where it makes sense
         if (den.advance > num.advance) {
@@ -386,18 +428,24 @@ function createLayout(node, fontSize) {
         den.x += padding;
 
         const width = Math.max(num.advance, den.advance) + 2 * padding;
-        const thickness = dashMetrics.height;
-        const y = -dashMetrics.bearingY - thickness;
         const bar = new Box(0, y, width, thickness);
         bar.id = node.id + ":line";
 
         const layout = new Layout([num, den, bar]);
         layout.advance = width;
         layout.id = node.id;
+
+        layout.ascent = num.y + num.ascent;
+        layout.descent = den.y + den.descent;
+
         return layout;
     } else if (node.type === "Product") {
         let penX = 0;
+        let ascent = 0;
+        let descent = 0;
+
         const layouts = [];
+
         for (let child of node) {
             // TODO: handle multiple numbers and numbers that come in the middle
             if (child.type === "Expression") {
@@ -409,6 +457,14 @@ function createLayout(node, fontSize) {
                 layouts.push(lParen);
             }
             const childLayout = createLayout(child, fontSize);
+
+            if (childLayout.hasOwnProperty('ascent')) {
+                ascent = Math.min(childLayout.ascent, ascent);
+            }
+            if (childLayout.hasOwnProperty('descent')) {
+                descent = Math.max(childLayout.descent, descent);
+            }
+
             if (child.type === "Operator") {
                 penX += spaceMetrics.advance / 1.5;
             }
@@ -431,8 +487,13 @@ function createLayout(node, fontSize) {
             }
         }
         const layout = new Layout(layouts);
+
         layout.advance = penX;
         layout.id = node.id;
+
+        layout.ascent = ascent;
+        layout.descent = descent;
+
         return layout;
     }
 }
