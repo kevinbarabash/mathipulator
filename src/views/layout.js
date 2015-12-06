@@ -263,6 +263,7 @@ function createLayout(node, fontSize) {
         const lParen = new Glyph("(", fontSize);
         lParen.x = penX;
         lParen.id = node.id + ":(";
+        lParen.selectable = false;
         penX += lParen.advance;
         children.push(lParen);
 
@@ -294,6 +295,7 @@ function createLayout(node, fontSize) {
         const rParen = new Glyph(")", fontSize);
         rParen.x = penX;
         rParen.id = node.id + ":)";
+        rParen.selectable = false;
         penX += rParen.advance;
         children.push(rParen);
 

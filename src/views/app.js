@@ -12,22 +12,15 @@ class App extends Component {
     constructor() {
         super();
 
-        const expr1 = div(
-            div(new Identifier('x'), sub(new Identifier('y'), new Literal(1))),
-            div(mul(new Identifier('a'), div(new Literal(1), new Identifier('b'))), new Negation(new Identifier('c')))
-        );
+        this.parser = new Parser();
 
-        const expr2 = div(add(new Literal(5), new Identifier('x')), new Literal(6));
-
-        const math = new Equation(expr1, expr2);
+        const math = this.parser.parse('1+2-3/(4+5)');
 
         this.state = {
             menu: null,
-            math: expr2,
+            math: math,
             history: [],
         };
-
-        this.parser = new Parser();
 
         this.handleClick = this.handleClick.bind(this);
         this.handleReplace = this.handleReplace.bind(this);
@@ -165,7 +158,6 @@ class App extends Component {
         </div>;
     }
 }
-
 
 const styles = {
     app: {
