@@ -28,6 +28,7 @@ class Glyph {
         this.y = 0;
         this.text = c;
         this.fontSize = fontSize;
+        this.selectable = true;
 
         this.metrics = metrics;
         this.advance = this.metrics.advance;
@@ -73,6 +74,7 @@ class Box {
     constructor(x, y, width, height) {
         Object.assign(this, {x, y, width, height});
         this.type = 'box';
+        this.selectable = true;
     }
 
     render(ctx) {
@@ -101,6 +103,7 @@ class Layout {
     constructor(children, atomic = false) {
         this.x = 0;
         this.y = 0;
+        this.selectable = true;
         Object.assign(this, {children, atomic});
     }
 
@@ -308,6 +311,8 @@ function createLayout(node, fontSize) {
             } else if (child.type === "Expression") {
                 const lParen = new Glyph("(", fontSize);
                 lParen.x = penX;
+                lParen.id = node.id + ":(";
+                lParen.selectable = false;
                 penX += lParen.advance;
                 layouts.push(lParen);
             }
@@ -320,6 +325,8 @@ function createLayout(node, fontSize) {
             } else if (child.type === "Expression") {
                 const rParen = new Glyph(")", fontSize);
                 rParen.x = penX;
+                rParen.id = node.id + ":)";
+                rParen.selectable = false;
                 penX += rParen.advance;
                 layouts.push(rParen);
             }
@@ -396,6 +403,8 @@ function createLayout(node, fontSize) {
             if (child.type === "Expression") {
                 const lParen = new Glyph("(", fontSize);
                 lParen.x = penX;
+                lParen.id = node.id + ":(";
+                lParen.selectable = false;
                 penX += lParen.advance;
                 layouts.push(lParen);
             }
@@ -415,6 +424,8 @@ function createLayout(node, fontSize) {
             if (child.type === "Expression") {
                 const rParen = new Glyph(")", fontSize);
                 rParen.x = penX;
+                rParen.id = node.id + ":)";
+                rParen.selectable = false;
                 penX += rParen.advance;
                 layouts.push(rParen);
             }
