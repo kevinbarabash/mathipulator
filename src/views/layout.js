@@ -42,7 +42,7 @@ class Glyph {
         this.selectable = true;
         this.ascent = getAscent(fontSize);
         this.descent = getDescent(fontSize);
-
+        this.atomic = true;
         this.metrics = metrics;
         this.advance = this.metrics.advance;
     }
@@ -297,7 +297,7 @@ function createLayout(node, fontSize) {
         penX += rParen.advance;
         children.push(rParen);
 
-        const layout = new Layout(children);
+        const layout = new Layout(children, valueLayout.atomic);
 
         layout.advance = penX;
         layout.id = node.id;
