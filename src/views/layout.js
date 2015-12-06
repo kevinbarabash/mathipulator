@@ -308,7 +308,6 @@ function createLayout(node, fontSize) {
             } else if (child.type === "Expression") {
                 const lParen = new Glyph("(", fontSize);
                 lParen.x = penX;
-                lParen.id = node.id + ":(";
                 penX += lParen.advance;
                 layouts.push(lParen);
             }
@@ -321,7 +320,6 @@ function createLayout(node, fontSize) {
             } else if (child.type === "Expression") {
                 const rParen = new Glyph(")", fontSize);
                 rParen.x = penX;
-                rParen.id = node.id + ":)";
                 penX += rParen.advance;
                 layouts.push(rParen);
             }
@@ -398,7 +396,6 @@ function createLayout(node, fontSize) {
             if (child.type === "Expression") {
                 const lParen = new Glyph("(", fontSize);
                 lParen.x = penX;
-                lParen.id = node.id + ":(";
                 penX += lParen.advance;
                 layouts.push(lParen);
             }
@@ -418,7 +415,6 @@ function createLayout(node, fontSize) {
             if (child.type === "Expression") {
                 const rParen = new Glyph(")", fontSize);
                 rParen.x = penX;
-                rParen.id = node.id + ":)";
                 penX += rParen.advance;
                 layouts.push(rParen);
             }

@@ -158,7 +158,7 @@ class MathRenderer extends Component {
         const { layout } = this.state;
         const layoutNode = layout.hitTest(e.pageX, e.pageY);
 
-        if (layoutNode) {
+        if (layoutNode && layoutNode.id) {
             const bounds = layoutNode.getBounds();
 
             const x = (bounds.left + bounds.right) / 2;
