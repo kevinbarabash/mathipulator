@@ -1,6 +1,5 @@
 const Literal = require('../ast/literal.js');
 const Operator = require('../ast/operator.js');
-const Negation = require('../ast/negation.js');
 const Product = require('../ast/product.js');
 
 function canTransform(node) {
