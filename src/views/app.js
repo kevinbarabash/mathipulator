@@ -4,7 +4,6 @@ const { Component } = React;
 
 const MathRenderer = require('./math-renderer.js');
 const Parser = require('../parser.js');
-const { Literal, Equation, Identifier, Negation } = require('../ast.js');
 const { add, sub, mul, div } = require('../operations.js');
 const { findNode } = require('../util/node_utils.js');
 

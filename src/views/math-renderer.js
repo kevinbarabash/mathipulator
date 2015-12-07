@@ -5,7 +5,7 @@ const { Component } = React;
 const Menu = require('./menu.js');
 const { createFlatLayout } = require('./layout.js');
 const transforms = require('../transforms.js');
-const { findNode } = require('../util/node_utils.js');
+const { findNode, traverseNode } = require('../util/node_utils.js');
 const { AnimatedLayout } = require('./animation.js');
 const { roundRect, fillCircle } = require('./canvas-util.js');
 
@@ -78,25 +78,59 @@ class MathRenderer extends Component {
             context.clearRect(0, 0, canvas.width, canvas.height);
 
             const { selectedNode } = nextState;
+            const layoutDict = {};
+            nextState.layout.children.forEach(child => {
+                layoutDict[child.id] = child;
+            });
 
             if (selectedNode) {
-                const bounds = selectedNode.getBounds();
-                const padding = 8;
+                const selectedLayouts = [];
+                traverseNode(selectedNode, (node) => {
+                    if (layoutDict.hasOwnProperty(node.id)) {
+                        selectedLayouts.push(layoutDict[node.id]);
+                    }
+                });
 
-                context.fillStyle = 'rgba(255,255,0,0.5)';
+                let bounds = null;  // selection bounds
+                let circle = false;
 
-                if (selectedNode.circle) {
-                    const x = (bounds.left + bounds.right) / 2;
-                    const y = (bounds.top + bounds.bottom) / 2;
-                    const radius = (bounds.right - bounds.left) / 2 + padding;
-                    fillCircle(context, x, y, radius);
+                if (selectedLayouts.length === 1) {
+                    bounds = selectedLayouts[0].getBounds();
+                    circle = !!selectedLayouts[0].circle;
                 } else {
-                    const radius = padding;
-                    const x = bounds.left - radius;
-                    const y = bounds.top - radius;
-                    const width = bounds.right - bounds.left + 2 * radius;
-                    const height = bounds.bottom - bounds.top + 2 * radius;
-                    roundRect(context, x, y, width, height, radius);
+                    bounds = {
+                        left: Infinity,
+                        right: -Infinity,
+                        top: Infinity,
+                        bottom: -Infinity
+                    };
+                    selectedLayouts.forEach(layout => {
+                        const layoutBounds = layout.getBounds();
+                        bounds.left = Math.min(bounds.left, layoutBounds.left);
+                        bounds.right = Math.max(bounds.right, layoutBounds.right);
+                        bounds.top = Math.min(bounds.top, layoutBounds.top);
+                        bounds.bottom = Math.max(bounds.bottom, layoutBounds.bottom);
+                    });
+                }
+
+                if (bounds) {
+                    const padding = 8;
+
+                    context.fillStyle = 'rgba(255,255,0,0.5)';
+
+                    if (circle) {
+                        const x = (bounds.left + bounds.right) / 2;
+                        const y = (bounds.top + bounds.bottom) / 2;
+                        const radius = (bounds.right - bounds.left) / 2 + padding;
+                        fillCircle(context, x, y, radius);
+                    } else {
+                        const radius = padding;
+                        const x = bounds.left - radius;
+                        const y = bounds.top - radius;
+                        const width = bounds.right - bounds.left + 2 * radius;
+                        const height = bounds.bottom - bounds.top + 2 * radius;
+                        roundRect(context, x, y, width, height, radius);
+                    }
                 }
             }
 
@@ -155,16 +189,54 @@ class MathRenderer extends Component {
 
     handleClick(e) {
         const { math } = this.props;
-        const { layout } = this.state;
-        const layoutNode = layout.hitTest(e.pageX, e.pageY);
+        const { layout, selectedNode } = this.state;
+        const hitNode = layout.hitTest(e.pageX, e.pageY);
 
-        if (layoutNode && layoutNode.selectable) {
-            const bounds = layoutNode.getBounds();
+        if (hitNode && hitNode.selectable) {
+            let mathNode = findNode(math, hitNode.id);
+            if (selectedNode && findNode(selectedNode, hitNode.id)) {
+                mathNode = selectedNode.parent;
+            }
+
+            if (!mathNode) {
+                this.setState({ menu: null, selectedNode: null });
+                return;
+            }
+
+            const layoutDict = {};
+            layout.children.forEach(child => {
+                layoutDict[child.id] = child;
+            });
+
+            const selectedLayouts = [];
+            traverseNode(mathNode, (node) => {
+                if (layoutDict.hasOwnProperty(node.id)) {
+                    selectedLayouts.push(layoutDict[node.id]);
+                }
+            });
+
+            let bounds = null;  // selection bounds
+
+            if (selectedLayouts.length === 1) {
+                bounds = selectedLayouts[0].getBounds();
+            } else {
+                bounds = {
+                    left: Infinity,
+                    right: -Infinity,
+                    top: Infinity,
+                    bottom: -Infinity
+                };
+                selectedLayouts.forEach(layout => {
+                    const layoutBounds = layout.getBounds();
+                    bounds.left = Math.min(bounds.left, layoutBounds.left);
+                    bounds.right = Math.max(bounds.right, layoutBounds.right);
+                    bounds.top = Math.min(bounds.top, layoutBounds.top);
+                    bounds.bottom = Math.max(bounds.bottom, layoutBounds.bottom);
+                });
+            }
 
             const x = (bounds.left + bounds.right) / 2;
             const y = bounds.top - 10;
-
-            const mathNode = findNode(math, layoutNode.id);
 
             let menu = null;
 
@@ -175,7 +247,7 @@ class MathRenderer extends Component {
                         return {
                             label: transform.label,
                             action: () => {
-                                this.props.onClick(layoutNode.id, transform);
+                                this.props.onClick(hitNode.id, transform);
                                 this.setState({ menu: null, selectedNode: null });
                             }
                         }
@@ -186,7 +258,7 @@ class MathRenderer extends Component {
                 }
             }
 
-            this.setState({ menu, selectedNode: layoutNode });
+            this.setState({ menu, selectedNode: mathNode });
         } else {
             this.setState({ menu: null, selectedNode: null });
         }

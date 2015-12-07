@@ -24,6 +24,24 @@ function findNode(node, id) {
     }
 }
 
+function traverseNode(node, callback) {
+    callback(node);
+    if (["Expression", "Product"].includes(node.type)) {
+        for (const child of node) {
+            traverseNode(child, callback);
+        }
+    } else if (node.type === "Equation") {
+        traverseNode(node.left, callback);
+        traverseNode(node.right, callback);
+    } else if (node.type === "Fraction") {
+        traverseNode(node.numerator, callback);
+        traverseNode(node.denominator, callback);
+    } else if (node.type === "Negation") {
+        traverseNode(node.value, callback);
+    }
+}
+
 module.exports = {
-    findNode
+    findNode,
+    traverseNode,
 };
