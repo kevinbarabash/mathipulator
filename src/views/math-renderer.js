@@ -22,6 +22,7 @@ class MathRenderer extends Component {
         };
 
         this.handleClick = this.handleClick.bind(this);
+        this.handleMouseDown = this.handleMouseDown.bind(this);
     }
 
     static defaultProps = {
@@ -264,6 +265,10 @@ class MathRenderer extends Component {
         }
     }
 
+    handleMouseDown(e) {
+        e.preventDefault();
+    }
+
     render() {
         const { menu, history } = this.state;
 
@@ -272,6 +277,7 @@ class MathRenderer extends Component {
                 ref="container"
                 style={styles.container}
                 onClick={this.handleClick}
+                onMouseDown={this.handleMouseDown}
             ></div>
             {menu}
         </div>;
