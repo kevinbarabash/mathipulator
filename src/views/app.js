@@ -1,7 +1,7 @@
 const React = require('react');
 
 const { Component } = React;
-
+const { Expression } = require("../ast.js");
 const MathRenderer = require('./math-renderer.js');
 const Parser = require('../parser.js');
 const { add, sub, mul, div } = require('../operations.js');
@@ -40,7 +40,10 @@ class App extends Component {
 
     handleReplace() {
         const text = this.refs.replaceText.value;
-        const math = this.parser.parse(text);
+        let math = this.parser.parse(text);
+        if (math.type !== "Expression" && math.type !== "Equation") {
+            math = new Expression(math);
+        }
         this.setState({ math, history: [] });
     }
 
