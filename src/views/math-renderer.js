@@ -3,7 +3,7 @@ const React = require('react');
 const { Component } = React;
 
 const Menu = require('./menu.js');
-const { createFlatLayout } = require('./layout.js');
+const { createFlatLayout, unionBounds } = require('./layout.js');
 const transforms = require('../transforms.js');
 const { findNode, traverseNode } = require('../util/node_utils.js');
 const { AnimatedLayout } = require('./animation.js');
@@ -79,112 +79,90 @@ class MathRenderer extends Component {
             context.clearRect(0, 0, canvas.width, canvas.height);
 
             const { selectedNode } = nextState;
-            const layoutDict = {};
-            nextState.layout.children.forEach(child => {
-                layoutDict[child.id] = child;
-            });
 
             if (selectedNode) {
-                const selectedLayouts = [];
-                traverseNode(selectedNode, (node) => {
-                    if (layoutDict.hasOwnProperty(node.id)) {
-                        selectedLayouts.push(layoutDict[node.id]);
-                    }
-                });
-
-                let bounds = null;  // selection bounds
-                let circle = false;
-
-                if (selectedLayouts.length === 1) {
-                    bounds = selectedLayouts[0].getBounds();
-                    circle = !!selectedLayouts[0].circle;
-                } else {
-                    bounds = {
-                        left: Infinity,
-                        right: -Infinity,
-                        top: Infinity,
-                        bottom: -Infinity
-                    };
-                    selectedLayouts.forEach(layout => {
-                        const layoutBounds = layout.getBounds();
-                        bounds.left = Math.min(bounds.left, layoutBounds.left);
-                        bounds.right = Math.max(bounds.right, layoutBounds.right);
-                        bounds.top = Math.min(bounds.top, layoutBounds.top);
-                        bounds.bottom = Math.max(bounds.bottom, layoutBounds.bottom);
-                    });
-                }
-
-                if (bounds) {
-                    const padding = 8;
-
-                    context.fillStyle = 'rgba(255,255,0,0.5)';
-
-                    if (circle) {
-                        const x = (bounds.left + bounds.right) / 2;
-                        const y = (bounds.top + bounds.bottom) / 2;
-                        const radius = (bounds.right - bounds.left) / 2 + padding;
-                        fillCircle(context, x, y, radius);
-                    } else {
-                        const radius = padding;
-                        const x = bounds.left - radius;
-                        const y = bounds.top - radius;
-                        const width = bounds.right - bounds.left + 2 * radius;
-                        const height = bounds.bottom - bounds.top + 2 * radius;
-                        roundRect(context, x, y, width, height, radius);
-                    }
-                }
+                this.drawSelection(selectedNode, nextState.layout);
             }
 
             context.fillStyle = nextProps.color;
-            const kStart = 192;
 
             if (this.state.layout !== nextState.layout) {
-                const layout = new AnimatedLayout(this.state.layout, nextState.layout);
+                const animatedLayout = new AnimatedLayout(this.state.layout, nextState.layout);
                 const layoutHistory = nextState.layoutHistory;
 
                 let t = 0;
-                layout.callback = () => {
+                animatedLayout.callback = () => {
                     context.clearRect(0, 0, canvas.width, canvas.height);
-
-                    let k = kStart;
-                    context.save();
-                    for (let i = layoutHistory.length - 1; i > -1; i--) {
-                        const bounds = layoutHistory[i].getBounds();
-                        const height = bounds.bottom - bounds.top + historyGap;
-                        if (i === layoutHistory.length - 1) {
-                            context.translate(0,-height * Math.min(t, 1.0));
-                        } else {
-                            context.translate(0,-height);
-                        }
-                        context.fillStyle = `rgb(${k}, ${k}, ${k})`;
-                        layoutHistory[i].render(context);
-                    }
-                    context.restore();
-
-                    context.fillStyle = 'rgb(0, 0, 0)';
-                    layout.render(context);
-
+                    this.drawLayouts(animatedLayout, layoutHistory, historyGap, t);
                     t += 0.035;
                 };
 
-                layout.start();
+                animatedLayout.start();
             } else {
+                const { layout } = nextState;
                 const layoutHistory = this.state.layoutHistory;
 
-                let k = kStart;
-                context.save();
-                for (let i = layoutHistory.length - 1; i > -1; i--) {
-                    const bounds = layoutHistory[i].getBounds();
-                    const height = bounds.bottom - bounds.top + historyGap;
-                    context.translate(0,-height);
-                    context.fillStyle = `rgb(${k}, ${k}, ${k})`;
-                    layoutHistory[i].render(context);
-                }
-                context.restore();
-
-                context.fillStyle = 'rgb(0, 0, 0)';
-                nextState.layout.render(context);
+                this.drawLayouts(layout, layoutHistory, historyGap, 1.0);
             }
+        }
+    }
+
+    drawLayouts(layout, layoutHistory, historyGap, t) {
+        const { context } = this.state;
+
+        let k = 192;
+        context.save();
+        for (let i = layoutHistory.length - 1; i > -1; i--) {
+            const bounds = layoutHistory[i].getBounds();
+            const height = bounds.bottom - bounds.top + historyGap;
+            if (i === layoutHistory.length - 1) {
+                context.translate(0,-height * Math.min(t, 1.0));
+            } else {
+                context.translate(0,-height);
+            }
+            context.fillStyle = `rgb(${k}, ${k}, ${k})`;
+            layoutHistory[i].render(context);
+        }
+        context.restore();
+
+        context.fillStyle = 'rgb(0, 0, 0)';
+        layout.render(context);
+    }
+
+    drawSelection(selectedNode, layout) {
+        const { context } = this.state;
+
+        const layoutDict = {};
+        layout.children.forEach(child => {
+            layoutDict[child.id] = child;
+        });
+
+        const selectedLayouts = [];
+        traverseNode(selectedNode, (node) => {
+            if (layoutDict.hasOwnProperty(node.id)) {
+                selectedLayouts.push(layoutDict[node.id]);
+            }
+        });
+
+        const bounds = unionBounds(selectedLayouts);
+        const circle = selectedLayouts.length ? !!selectedLayouts[0].circle : false;
+
+        const padding = 8;
+
+        context.fillStyle = 'rgba(255,255,0,0.5)';
+
+        if (circle) {
+            const x = (bounds.left + bounds.right) / 2;
+            const y = (bounds.top + bounds.bottom) / 2;
+            const radius = (bounds.right - bounds.left) / 2 + padding;
+            fillCircle(context, x, y, radius);
+        } else {
+            const radius = padding;
+            const x = bounds.left - radius;
+            const y = bounds.top - radius;
+            const width = bounds.right - bounds.left + 2 * radius;
+            const height = bounds.bottom - bounds.top + 2 * radius;
+            roundRect(context, x, y, width, height, radius);
         }
     }
 
@@ -216,26 +194,7 @@ class MathRenderer extends Component {
                 }
             });
 
-            let bounds = null;  // selection bounds
-
-            if (selectedLayouts.length === 1) {
-                bounds = selectedLayouts[0].getBounds();
-            } else {
-                bounds = {
-                    left: Infinity,
-                    right: -Infinity,
-                    top: Infinity,
-                    bottom: -Infinity
-                };
-                selectedLayouts.forEach(layout => {
-                    const layoutBounds = layout.getBounds();
-                    bounds.left = Math.min(bounds.left, layoutBounds.left);
-                    bounds.right = Math.max(bounds.right, layoutBounds.right);
-                    bounds.top = Math.min(bounds.top, layoutBounds.top);
-                    bounds.bottom = Math.max(bounds.bottom, layoutBounds.bottom);
-                });
-            }
-
+            const bounds = unionBounds(selectedLayouts);
             const x = (bounds.left + bounds.right) / 2;
             const y = bounds.top - 10;
 
@@ -270,7 +229,7 @@ class MathRenderer extends Component {
     }
 
     render() {
-        const { menu, history } = this.state;
+        const { menu } = this.state;
 
         return <div>
             <div

@@ -567,9 +567,27 @@ function createFlatLayout(node, fontSize, width, height) {
     return flattenedLayout;
 }
 
+function unionBounds(layouts) {
+    const bounds = {
+        left: Infinity,
+        right: -Infinity,
+        top: Infinity,
+        bottom: -Infinity
+    };
+    layouts.forEach(layout => {
+        const layoutBounds = layout.getBounds();
+        bounds.left = Math.min(bounds.left, layoutBounds.left);
+        bounds.right = Math.max(bounds.right, layoutBounds.right);
+        bounds.top = Math.min(bounds.top, layoutBounds.top);
+        bounds.bottom = Math.max(bounds.bottom, layoutBounds.bottom);
+    });
+    return bounds;
+}
+
 module.exports = {
     getMetrics,
     createFlatLayout,
     RenderOptions,
     Layout,
+    unionBounds,
 };
