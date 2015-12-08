@@ -107,6 +107,30 @@ class MathRenderer extends Component {
         }
     }
 
+    getSelectedLayouts(layout, selectedNode) {
+        const layoutDict = {};
+
+        // layout node ids start with the math node's id but may contain additional
+        // strings separate by ':' to disambiguate different parts of a layout
+        // that belong to the same math node.
+        layout.children.forEach(child => {
+            const id = child.id.split(':')[0];
+            if (!layoutDict.hasOwnProperty(id)) {
+                layoutDict[id] = [];
+            }
+            layoutDict[id].push(child);
+        });
+
+        const selectedLayouts = [];
+        traverseNode(selectedNode, (node) => {
+            if (layoutDict.hasOwnProperty(node.id)) {
+                selectedLayouts.push(...layoutDict[node.id]);
+            }
+        });
+
+        return selectedLayouts;
+    }
+
     drawLayouts(layout, layoutHistory, historyGap, t) {
         const { context } = this.state;
 
@@ -132,17 +156,7 @@ class MathRenderer extends Component {
     drawSelection(selectedNode, layout) {
         const { context } = this.state;
 
-        const layoutDict = {};
-        layout.children.forEach(child => {
-            layoutDict[child.id] = child;
-        });
-
-        const selectedLayouts = [];
-        traverseNode(selectedNode, (node) => {
-            if (layoutDict.hasOwnProperty(node.id)) {
-                selectedLayouts.push(layoutDict[node.id]);
-            }
-        });
+        const selectedLayouts = this.getSelectedLayouts(layout, selectedNode);
 
         const bounds = unionBounds(selectedLayouts);
         const circle = selectedLayouts.length ? !!selectedLayouts[0].circle : false;
@@ -182,17 +196,7 @@ class MathRenderer extends Component {
                 return;
             }
 
-            const layoutDict = {};
-            layout.children.forEach(child => {
-                layoutDict[child.id] = child;
-            });
-
-            const selectedLayouts = [];
-            traverseNode(mathNode, (node) => {
-                if (layoutDict.hasOwnProperty(node.id)) {
-                    selectedLayouts.push(layoutDict[node.id]);
-                }
-            });
+            const selectedLayouts = this.getSelectedLayouts(layout, mathNode);
 
             const bounds = unionBounds(selectedLayouts);
             const x = (bounds.left + bounds.right) / 2;

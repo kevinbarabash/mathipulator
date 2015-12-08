@@ -2,7 +2,7 @@ let _id = 1;
 
 class Node {
     constructor() {
-        this.id = _id++;
+        this.id = String(_id++);
         this.parent = null;
         this.next = null;
         this.prev = null;

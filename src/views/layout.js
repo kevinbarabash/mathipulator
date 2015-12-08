@@ -341,7 +341,7 @@ function createLayout(node, fontSize) {
             } else if (child.type === "Expression") {
                 const lParen = new Glyph("(", fontSize);
                 lParen.x = penX;
-                lParen.id = node.id + ":(";
+                lParen.id = child.id + ":(";
                 lParen.selectable = false;
                 penX += lParen.advance;
                 layouts.push(lParen);
@@ -355,7 +355,7 @@ function createLayout(node, fontSize) {
             } else if (child.type === "Expression") {
                 const rParen = new Glyph(")", fontSize);
                 rParen.x = penX;
-                rParen.id = node.id + ":)";
+                rParen.id = child.id + ":)";
                 rParen.selectable = false;
                 penX += rParen.advance;
                 layouts.push(rParen);
@@ -453,7 +453,7 @@ function createLayout(node, fontSize) {
             if (child.type === "Expression" || child.type === "Product") {
                 const lParen = new Glyph("(", fontSize);
                 lParen.x = penX;
-                lParen.id = node.id + ":(";
+                lParen.id = child.id + ":(";
                 lParen.selectable = false;
                 penX += lParen.advance;
                 layouts.push(lParen);
@@ -482,7 +482,7 @@ function createLayout(node, fontSize) {
             if (child.type === "Expression" || child.type === "Product") {
                 const rParen = new Glyph(")", fontSize);
                 rParen.x = penX;
-                rParen.id = node.id + ":)";
+                rParen.id = child.id + ":)";
                 rParen.selectable = false;
                 penX += rParen.advance;
                 layouts.push(rParen);
