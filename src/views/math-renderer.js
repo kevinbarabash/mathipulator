@@ -247,7 +247,7 @@ class MathRenderer extends Component {
                         return {
                             label: transform.label,
                             action: () => {
-                                this.props.onClick(hitNode.id, transform);
+                                this.props.onClick(mathNode.id, transform);
                                 this.setState({ menu: null, selectedNode: null });
                             }
                         }

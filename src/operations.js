@@ -119,5 +119,5 @@ function div(a, b) {
 }
 
 module.exports = {
-    add, sub, mul, div, removeExtraParens
+    add, sub, mul, div, removeExtraParens, removeExtraProductParens,
 };
