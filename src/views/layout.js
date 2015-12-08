@@ -450,7 +450,7 @@ function createLayout(node, fontSize) {
 
         for (let child of node) {
             // TODO: handle multiple numbers and numbers that come in the middle
-            if (child.type === "Expression") {
+            if (child.type === "Expression" || child.type === "Product") {
                 const lParen = new Glyph("(", fontSize);
                 lParen.x = penX;
                 lParen.id = node.id + ":(";
@@ -479,7 +479,7 @@ function createLayout(node, fontSize) {
             }
 
             layouts.push(childLayout);
-            if (child.type === "Expression") {
+            if (child.type === "Expression" || child.type === "Product") {
                 const rParen = new Glyph(")", fontSize);
                 rParen.x = penX;
                 rParen.id = node.id + ":)";
