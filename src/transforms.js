@@ -1,6 +1,6 @@
 const evaluate = require('./transforms/evaluate.js');
-const rewriteAddition = require('./transforms/rewrite-addition.js');
 const rewriteSubtraction = require('./transforms/rewrite-subtraction.js');
+const rewriteAsSubtraction = require('./transforms/rewrite-as-subtraction.js');
 const rewriteDivision = require('./transforms/rewrite-division.js');
 const rewriteAsDivision = require('./transforms/rewrite-as-division.js');
 const rewriteNegation = require('./transforms/rewrite-negation.js');
@@ -16,8 +16,8 @@ const removeParentheses = require('./transforms/remove-parentheses.js');
 module.exports = {
     commute,
     evaluate,
-    rewriteAddition,
     rewriteSubtraction,
+    rewriteAsSubtraction,
     rewriteDivision,
     rewriteAsDivision,
     rewriteNegation,

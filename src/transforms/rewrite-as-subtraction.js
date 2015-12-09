@@ -27,7 +27,7 @@ function doTransform(node) {
 }
 
 module.exports = {
-    label: 'rewrite addition',
+    label: 'rewrite as subtraction',
     canTransform,
     doTransform
 };
