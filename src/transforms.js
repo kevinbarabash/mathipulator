@@ -9,6 +9,7 @@ const distributeBackwards = require('./transforms/distribute-backwards.js');
 const eliminateZero = require('./transforms/eliminate-zero.js');
 const eliminateOne = require('./transforms/eliminate-one.js');
 const swapSides = require('./transforms/swap-sides.js');
+const removeParentheses = require('./transforms/remove-parentheses.js');
 
 module.exports = {
     commute,
@@ -22,4 +23,5 @@ module.exports = {
     eliminateZero,
     eliminateOne,
     swapSides,
+    removeParentheses,
 };

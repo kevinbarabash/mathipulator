@@ -82,6 +82,7 @@ class ListNode extends Node {
         if (this.last === current) {
             this.last = replacement;
         }
+        replacement.parent = this;
     }
 
     remove(node) {
