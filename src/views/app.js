@@ -13,8 +13,11 @@ class App extends Component {
 
         this.parser = new Parser();
 
-        //const math = this.parser.parse('5/2+2-3/(4+5)');
-        const math = this.parser.parse('1+2*(3-4)');
+        let math = this.parser.parse('-1*c');
+
+        if (math.type !== "Expression" && math.type !== "Equation") {
+            math = new Expression(math);
+        }
 
         this.state = {
             menu: null,
