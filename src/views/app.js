@@ -13,7 +13,7 @@ class App extends Component {
 
         this.parser = new Parser();
 
-        let math = this.parser.parse('-1*c');
+        let math = this.parser.parse('1/x+1/y');
 
         if (math.type !== "Expression" && math.type !== "Equation") {
             math = new Expression(math);

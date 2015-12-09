@@ -2,6 +2,7 @@ const evaluate = require('./transforms/evaluate.js');
 const rewriteAddition = require('./transforms/rewrite-addition.js');
 const rewriteSubtraction = require('./transforms/rewrite-subtraction.js');
 const rewriteDivision = require('./transforms/rewrite-division.js');
+const rewriteAsDivision = require('./transforms/rewrite-as-division.js');
 const rewriteNegation = require('./transforms/rewrite-negation.js');
 const rewriteAsNegation = require('./transforms/rewrite-as-negation.js');
 const commute = require('./transforms/commute.js');
@@ -18,6 +19,7 @@ module.exports = {
     rewriteAddition,
     rewriteSubtraction,
     rewriteDivision,
+    rewriteAsDivision,
     rewriteNegation,
     rewriteAsNegation,
     distributeForwards,
