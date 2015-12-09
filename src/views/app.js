@@ -1,7 +1,7 @@
 const React = require('react');
 
 const { Component } = React;
-const { Expression } = require("../ast.js");
+const { Expression, Operator } = require("../ast.js");
 const MathRenderer = require('./math-renderer.js');
 const Parser = require('../parser.js');
 const { add, sub, mul, div } = require('../operations.js');
@@ -54,11 +54,14 @@ class App extends Component {
     handlePerform() {
         const text = this.refs.performText.value;
 
-        // TODO: handle performing operations on selections
-        if (this.state.math.type !== 'Equation') {
-            return;
+        if (this.state.math.type === 'Equation') {
+            this.performEquationAction(text);
+        } else if (this.state.math.type === 'Expression') {
+            this.performExpressionAction(text);
         }
+    }
 
+    performEquationAction(text) {
         if (['+', '-', '*', '/'].includes(text[0])) {
             const { history } = this.state;
             history.push(this.state.math);
@@ -114,6 +117,63 @@ class App extends Component {
                 math.right = div(expr2, math.right);
                 this.setState({ math, history });
             }
+        }
+    }
+
+    performExpressionAction(text) {
+        const { history } = this.state;
+
+        if (['+', '-'].includes(text[0])) {
+            const expr = this.parser.parse(text.substring(1));
+            const math = this.state.math.clone();
+
+            if (expr.type === 'Expression' && expr.length === 3 && expr.first.next.operator === '-') {
+                const { first, last } = expr;
+
+                if (first.type === last.type) {
+                    if (first.type === 'Literal' && first.value === last.value) {
+                        history.push(this.state.math);
+                        math.append(new Operator('+'));
+                        for (const node of expr) {
+                            math.append(node.clone());
+                        }
+                        this.setState({ math, history });
+                    } else if (first.type === 'Identifier' && first.name === last.name) {
+                        history.push(this.state.math);
+                        math.append(new Operator('+'));
+                        for (const node of expr) {
+                            math.append(node.clone());
+                        }
+                        this.setState({ math, history });
+                    } else {
+                        // TODO: handle general comparison of two math AST tree
+                    }
+                }
+            }
+        } else if (['*', '/'].includes(text[0])) {
+            // TODO: finish implementing this after adding a root 'Math' node
+            //const frac = this.parser.parse(text.substring(1));
+            //const math = this.state.math.clone();
+            //
+            //if (frac.type === 'Fraction') {
+            //    const { numerator, denominator } = frac;
+            //
+            //    if (numerator.type === denominator.type) {
+            //        if (numerator.type === 'Literal' && numerator.value === denominator.value) {
+            //            history.push(this.state.math);
+            //            math.append(new Operator('*'));
+            //            math.append(frac.clone());
+            //            this.setState({ math, history });
+            //        } else if (numerator.type === 'Identifier' && numerator.name === denominator.name) {
+            //            history.push(this.state.math);
+            //            math.append(new Operator('*'));
+            //            math.append(frac.clone());
+            //            this.setState({ math, history });
+            //        } else {
+            //            // TODO: handle general comparison of two math AST tree
+            //        }
+            //    }
+            //}
         }
     }
 
