@@ -262,7 +262,7 @@ function createLayout(node, fontSize) {
 
         const lParen = new Glyph("(", fontSize);
         lParen.x = penX;
-        lParen.id = node.id + ":(";
+        lParen.id = node.id + ":(outer";
         lParen.selectable = false;
         penX += lParen.advance;
         children.push(lParen);
@@ -276,6 +276,7 @@ function createLayout(node, fontSize) {
         if (node.value.type === "Expression") {
             const lParen2 = new Glyph("(", fontSize);
             lParen2.x = penX;
+            lParen2.id = node.id + ":(inner";
             penX += lParen2.advance;
             children.push(lParen2);
         }
@@ -288,13 +289,14 @@ function createLayout(node, fontSize) {
         if (node.value.type === "Expression") {
             const rParen2 = new Glyph(")", fontSize);
             rParen2.x = penX;
+            rParen2.id = node.id + ":)inner";
             penX += rParen2.advance;
             children.push(rParen2);
         }
 
         const rParen = new Glyph(")", fontSize);
         rParen.x = penX;
-        rParen.id = node.id + ":)";
+        rParen.id = node.id + ":)outer";
         rParen.selectable = false;
         penX += rParen.advance;
         children.push(rParen);
