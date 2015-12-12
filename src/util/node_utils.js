@@ -1,3 +1,5 @@
+const f = require('functify');
+
 function findNode(node, id) {
     if (node.id === id) {
         return node;
@@ -24,6 +26,39 @@ function findNode(node, id) {
     }
 }
 
+var deepEqual = function(node1, node2) {
+    if (node1.type !== node2.type) {
+        return false;
+    }
+
+    const type = node1.type;
+
+    if (type === 'Expression' || type === 'Product') {
+        for (const [child1, child2] of f.zip([node1, node2])) {
+            if (!deepEqual(child1, child2)) {
+                return false;
+            }
+        }
+        return true;
+    } else if (type === 'Equation') {
+        return deepEqual(node1.left, node2.left) &&
+            deepEqual(node1.right, node2.right);
+    } else if (type === 'Fraction') {
+        return deepEqual(node1.numerator, node2.numerator) &&
+            deepEqual(node1.denominator, node2.denominator);
+    } else if (type === 'Negation') {
+        return deepEqual(node1.value, node2.value);
+    } else if (type === 'Operator') {
+        return node1.operator === node2.operator;
+    } else if (type === 'Identifier') {
+        return node1.name === node2.name;
+    } else if (type === 'Literal') {
+        return node1.value === node2.value;
+    }
+
+    return false;
+};
+
 function traverseNode(node, callback) {
     callback(node);
     if (["Expression", "Product"].includes(node.type)) {
@@ -44,4 +79,5 @@ function traverseNode(node, callback) {
 module.exports = {
     findNode,
     traverseNode,
+    deepEqual,
 };

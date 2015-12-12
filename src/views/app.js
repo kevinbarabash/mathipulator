@@ -5,7 +5,7 @@ const { Expression, Operator } = require("../ast.js");
 const MathRenderer = require('./math-renderer.js');
 const Parser = require('../parser.js');
 const { add, sub, mul, div } = require('../operations.js');
-const { findNode } = require('../util/node_utils.js');
+const { findNode, deepEqual } = require('../util/node_utils.js');
 
 class App extends Component {
     constructor() {
@@ -127,27 +127,20 @@ class App extends Component {
             const expr = this.parser.parse(text.substring(1));
             const math = this.state.math.clone();
 
-            if (expr.type === 'Expression' && expr.length === 3 && expr.first.next.operator === '-') {
+            // TODO: handle +x+(-x)
+            if (expr.type === 'Expression' && expr.length === 3 &&
+                ['+', '-'].includes(expr.first.next.operator) &&
+                text[0] !== expr.first.next.operator) {
+
                 const { first, last } = expr;
 
-                if (first.type === last.type) {
-                    if (first.type === 'Literal' && first.value === last.value) {
-                        history.push(this.state.math);
-                        math.append(new Operator('+'));
-                        for (const node of expr) {
-                            math.append(node.clone());
-                        }
-                        this.setState({ math, history });
-                    } else if (first.type === 'Identifier' && first.name === last.name) {
-                        history.push(this.state.math);
-                        math.append(new Operator('+'));
-                        for (const node of expr) {
-                            math.append(node.clone());
-                        }
-                        this.setState({ math, history });
-                    } else {
-                        // TODO: handle general comparison of two math AST tree
+                if (deepEqual(first, last)) {
+                    history.push(this.state.math);
+                    math.append(new Operator(text[0]));
+                    for (const node of expr) {
+                        math.append(node.clone());
                     }
+                    this.setState({math, history});
                 }
             }
         } else if (['*', '/'].includes(text[0])) {
