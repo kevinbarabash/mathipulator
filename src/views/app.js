@@ -13,11 +13,8 @@ class App extends Component {
 
         this.parser = new Parser();
 
-        let math = this.parser.parse('1/x+1/y');
-
-        if (math.type !== "Expression" && math.type !== "Equation") {
-            math = new Expression(math);
-        }
+        //const math = this.parser.parse('1/x+1/y');
+        const math = this.parser.parse('2x+5=10');
 
         this.state = {
             menu: null,
@@ -45,18 +42,16 @@ class App extends Component {
     handleReplace() {
         const text = this.refs.replaceText.value;
         let math = this.parser.parse(text);
-        if (math.type !== "Expression" && math.type !== "Equation") {
-            math = new Expression(math);
-        }
         this.setState({ math, history: [] });
     }
 
     handlePerform() {
         const text = this.refs.performText.value;
+        const root = this.state.math.root;
 
-        if (this.state.math.type === 'Equation') {
+        if (root.type === 'Equation') {
             this.performEquationAction(text);
-        } else if (this.state.math.type === 'Expression') {
+        } else if (root.type === 'Expression') {
             this.performExpressionAction(text);
         }
     }
@@ -67,10 +62,10 @@ class App extends Component {
             history.push(this.state.math);
 
             // TODO: check that it isn't an equation
-            const expr1 = this.parser.parse(text.substring(1));
-            const expr2 = this.parser.parse(text.substring(1));
+            const expr1 = this.parser.parse(text.substring(1)).root;
+            const expr2 = this.parser.parse(text.substring(1)).root;
             const op = text[0];
-            const math = this.state.math.clone();
+            const math = this.state.math.clone().root;
 
             // TODO: check that `math` isn't an equation
 
@@ -124,7 +119,7 @@ class App extends Component {
         const { history } = this.state;
 
         if (['+', '-'].includes(text[0])) {
-            const expr = this.parser.parse(text.substring(1));
+            const expr = this.parser.parse(text.substring(1)).root;
             const math = this.state.math.clone();
 
             // TODO: handle +x+(-x)
@@ -136,9 +131,10 @@ class App extends Component {
 
                 if (deepEqual(first, last)) {
                     history.push(this.state.math);
-                    math.append(new Operator(text[0]));
-                    for (const node of expr) {
-                        math.append(node.clone());
+                    if (text[0] === '+') {
+                        math.replace(expr, add(math.root, expr));
+                    } else if (text[0] === '-') {
+                        math.replace(expr, sub(math.root, expr))
                     }
                     this.setState({math, history});
                 }

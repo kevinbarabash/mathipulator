@@ -499,6 +499,8 @@ function createLayout(node, fontSize) {
         layout.descent = descent;
 
         return layout;
+    } else if (node.type === 'Math') {
+        return createLayout(node.root, fontSize);
     }
 }
 

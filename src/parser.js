@@ -8,6 +8,7 @@ const {
     Power,
     Negation,
     Fraction,
+    Math,
 } = require('./ast.js');
 
 function isAlpha(token) {
@@ -27,7 +28,7 @@ class Parser {
         this.i = 0;
         this.tokens = input.match(tokenRegex);
 
-        return this.equation();
+        return new Math(this.equation());
     }
 
     equation() {

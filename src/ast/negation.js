@@ -20,6 +20,14 @@ class Negation extends Node {
         clone.value.parent = clone;
         return clone;
     }
+
+    replace(current, replacement) {
+        if (this.value === current) {
+            this.value = replacement;
+            replacement.parent = this;
+            current.parent = null;
+        }
+    }
 }
 
 module.exports = Negation;

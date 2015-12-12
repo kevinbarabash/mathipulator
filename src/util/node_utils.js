@@ -23,6 +23,9 @@ function findNode(node, id) {
     } else if (node.type === "Negation") {
         const num = findNode(node.value, id);
         if (num) return num;
+    } else if (node.type === "Math") {
+        const num = findNode(node.root, id);
+        if (num) return num;
     }
 }
 
@@ -54,6 +57,8 @@ var deepEqual = function(node1, node2) {
         return node1.name === node2.name;
     } else if (type === 'Literal') {
         return node1.value === node2.value;
+    } else if (type === 'Math') {
+        return deepEqual(node1.root, node2.root);
     }
 
     return false;
@@ -73,6 +78,8 @@ function traverseNode(node, callback) {
         traverseNode(node.denominator, callback);
     } else if (node.type === "Negation") {
         traverseNode(node.value, callback);
+    } else if (node.type === "Math") {
+        traverseNode(node.root, callback);
     }
 }
 
