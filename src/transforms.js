@@ -12,6 +12,7 @@ const eliminateZero = require('./transforms/eliminate-zero.js');
 const eliminateOne = require('./transforms/eliminate-one.js');
 const swapSides = require('./transforms/swap-sides.js');
 const removeParentheses = require('./transforms/remove-parentheses.js');
+const multiplyFractions = require('./transforms/multiply-fractions.js');
 
 module.exports = {
     commute,
@@ -28,4 +29,5 @@ module.exports = {
     eliminateOne,
     swapSides,
     removeParentheses,
+    multiplyFractions,
 };

@@ -51,7 +51,7 @@ class App extends Component {
 
         if (root.type === 'Equation') {
             this.performEquationAction(text);
-        } else if (root.type === 'Expression') {
+        } else {
             this.performExpressionAction(text);
         }
     }
@@ -132,9 +132,9 @@ class App extends Component {
                 if (deepEqual(first, last)) {
                     history.push(this.state.math);
                     if (text[0] === '+') {
-                        math.replace(expr, add(math.root, expr));
+                        math.replace(math.root, add(math.root, expr));
                     } else if (text[0] === '-') {
-                        math.replace(expr, sub(math.root, expr))
+                        math.replace(math.root, sub(math.root, expr))
                     }
                     this.setState({math, history});
                 }
