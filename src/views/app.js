@@ -13,8 +13,8 @@ class App extends Component {
 
         this.parser = new Parser();
 
-        //const math = this.parser.parse('1/x+1/y');
-        const math = this.parser.parse('2x+5=10');
+        const math = this.parser.parse('1/x+1/y');
+        //const math = this.parser.parse('2x+5=10');
 
         this.state = {
             menu: null,
@@ -117,6 +117,8 @@ class App extends Component {
 
     performExpressionAction(text) {
         const { history } = this.state;
+        const { renderer } = this.refs;
+        const { selectedNode } = renderer.state;
 
         if (['+', '-'].includes(text[0])) {
             const expr = this.parser.parse(text.substring(1)).root;
@@ -131,38 +133,40 @@ class App extends Component {
 
                 if (deepEqual(first, last)) {
                     history.push(this.state.math);
-                    if (text[0] === '+') {
-                        math.replace(math.root, add(math.root, expr));
-                    } else if (text[0] === '-') {
-                        math.replace(math.root, sub(math.root, expr))
+                    if (selectedNode) {
+                        const node = findNode(math, selectedNode.id);
+                        if (text[0] === '+') {
+                            node.parent.replace(node, add(node.clone(), expr));
+                        } else if (text[0] === '-') {
+                            node.parent.replace(node, sub(node.clone(), expr))
+                        }
+                    } else {
+                        if (text[0] === '+') {
+                            math.replace(math.root, add(math.root, expr));
+                        } else if (text[0] === '-') {
+                            math.replace(math.root, sub(math.root, expr))
+                        }
                     }
                     this.setState({math, history});
                 }
             }
-        } else if (['*', '/'].includes(text[0])) {
-            // TODO: finish implementing this after adding a root 'Math' node
-            //const frac = this.parser.parse(text.substring(1));
-            //const math = this.state.math.clone();
-            //
-            //if (frac.type === 'Fraction') {
-            //    const { numerator, denominator } = frac;
-            //
-            //    if (numerator.type === denominator.type) {
-            //        if (numerator.type === 'Literal' && numerator.value === denominator.value) {
-            //            history.push(this.state.math);
-            //            math.append(new Operator('*'));
-            //            math.append(frac.clone());
-            //            this.setState({ math, history });
-            //        } else if (numerator.type === 'Identifier' && numerator.name === denominator.name) {
-            //            history.push(this.state.math);
-            //            math.append(new Operator('*'));
-            //            math.append(frac.clone());
-            //            this.setState({ math, history });
-            //        } else {
-            //            // TODO: handle general comparison of two math AST tree
-            //        }
-            //    }
-            //}
+        } else if ('*' === text[0]) {
+            const frac = this.parser.parse(text.substring(1)).root;
+            const math = this.state.math.clone();
+
+            if (frac.type === 'Fraction' && deepEqual(frac.numerator, frac.denominator)) {
+                history.push(this.state.math);
+                if (selectedNode) {
+                    const node = findNode(math, selectedNode.id);
+                    node.parent.replace(node, mul(node.clone(), frac));
+                    renderer.setState({menu: null});
+                } else {
+                    math.replace(math.root, mul(math.root, frac));
+                }
+                this.setState({math, history});
+            }
+
+            console.log(this.refs['renderer'].state.selectedNode);
         }
     }
 
@@ -187,6 +191,7 @@ class App extends Component {
 
         return <div style={styles.app}>
             <MathRenderer
+                ref='renderer'
                 color={'black'}
                 fontSize={60}
                 math={math}
