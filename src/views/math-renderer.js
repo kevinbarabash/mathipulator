@@ -78,10 +78,10 @@ class MathRenderer extends Component {
             const canvas = context.canvas;
             context.clearRect(0, 0, canvas.width, canvas.height);
 
-            const { selectedNode } = nextState;
+            const { selectedNode, hitNode } = nextState;
 
             if (selectedNode) {
-                this.drawSelection(selectedNode, nextState.layout);
+                this.drawSelection(selectedNode, hitNode, nextState.layout);
             }
 
             context.fillStyle = nextProps.color;
@@ -107,7 +107,7 @@ class MathRenderer extends Component {
         }
     }
 
-    getSelectedLayouts(layout, selectedNode) {
+    getSelectedLayouts(layout, selectedNode, hitNode) {
         const layoutDict = {};
 
         // layout node ids start with the math node's id but may contain additional
@@ -122,11 +122,15 @@ class MathRenderer extends Component {
         });
 
         const selectedLayouts = [];
-        traverseNode(selectedNode, (node) => {
-            if (layoutDict.hasOwnProperty(node.id)) {
-                selectedLayouts.push(...layoutDict[node.id]);
-            }
-        });
+        if (selectedNode.type === 'Equation' && hitNode.text === "=") {
+            selectedLayouts.push(hitNode);
+        } else {
+            traverseNode(selectedNode, (node) => {
+                if (layoutDict.hasOwnProperty(node.id)) {
+                    selectedLayouts.push(...layoutDict[node.id]);
+                }
+            });
+        }
 
         return selectedLayouts;
     }
@@ -153,13 +157,13 @@ class MathRenderer extends Component {
         layout.render(context);
     }
 
-    drawSelection(selectedNode, layout) {
+    drawSelection(selectedNode, hitNode, layout) {
         const { context } = this.state;
 
-        const selectedLayouts = this.getSelectedLayouts(layout, selectedNode);
+        const selectedLayouts = this.getSelectedLayouts(layout, selectedNode, hitNode);
 
         const bounds = unionBounds(selectedLayouts);
-        const circle = selectedLayouts.length ? !!selectedLayouts[0].circle : false;
+        const circle = selectedLayouts.length === 1 ? !!selectedLayouts[0].circle : false;
 
         const padding = 8;
 
@@ -196,7 +200,7 @@ class MathRenderer extends Component {
                 return;
             }
 
-            const selectedLayouts = this.getSelectedLayouts(layout, mathNode);
+            const selectedLayouts = this.getSelectedLayouts(layout, mathNode, hitNode);
 
             const bounds = unionBounds(selectedLayouts);
             const x = (bounds.left + bounds.right) / 2;
@@ -222,9 +226,9 @@ class MathRenderer extends Component {
                 }
             }
 
-            this.setState({ menu, selectedNode: mathNode });
+            this.setState({ menu, selectedNode: mathNode, hitNode });
         } else {
-            this.setState({ menu: null, selectedNode: null });
+            this.setState({ menu: null, selectedNode: null, hitNode: null });
         }
     }
 
