@@ -18,4 +18,5 @@ module.exports = {
     simplifyToZero: require('./transforms/simplify-to-zero.js'),
     cancelAddition: require('./transforms/cancel-addition.js'),
     cancelSubtraction: require('./transforms/cancel-subtraction.js'),
+    primeFactorization: require('./transforms/prime-factorization.js'),
 };
