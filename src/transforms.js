@@ -34,4 +34,6 @@ module.exports = {
     multiplyFractions,
     addFractions,
     simplifyToZero,
+    cancelAddition: require('./transforms/cancel-addition.js'),
+    cancelSubtraction: require('./transforms/cancel-subtraction.js'),
 };
