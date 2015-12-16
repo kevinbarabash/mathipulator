@@ -273,7 +273,7 @@ function createLayout(node, fontSize) {
         penX += negativeSign.advance;
         children.push(negativeSign);
 
-        if (node.value.type === "Expression") {
+        if (["Expression", "Product"].includes(node.value.type)) {
             const lParen2 = new Glyph("(", fontSize);
             lParen2.x = penX;
             lParen2.id = node.id + ":(inner";
@@ -286,7 +286,7 @@ function createLayout(node, fontSize) {
         penX += valueLayout.advance;
         children.push(valueLayout);
 
-        if (node.value.type === "Expression") {
+        if (["Expression", "Product"].includes(node.value.type)) {
             const rParen2 = new Glyph(")", fontSize);
             rParen2.x = penX;
             rParen2.id = node.id + ":)inner";
@@ -301,7 +301,7 @@ function createLayout(node, fontSize) {
         penX += rParen.advance;
         children.push(rParen);
 
-        const layout = new Layout(children, valueLayout.atomic);
+        const layout = new Layout(children);
 
         layout.advance = penX;
         layout.id = node.id;
