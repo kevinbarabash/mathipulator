@@ -221,7 +221,7 @@ function makeMetricsSquare(metrics) {
 
 function startsExpression(node) {
     return node.parent.type === 'Expression' && node.parent.first !== node ||
-        node.parent.parent.type === 'Expression' && node.parent.parent.first !== node.parent;
+        node.parent.parent && node.parent.parent.type === 'Expression' && node.parent.parent.first !== node.parent;
 }
 
 
@@ -230,7 +230,7 @@ function createLayout(node, fontSize) {
     const dashMetrics = getMetrics("\u2212", fontSize);
 
     if (node.type === "Literal") {
-        const parens = startsExpression(node);
+        const parens = startsExpression(node) || node.parent.type === "Product" && node.parent.first !== node;
         const text = formatText(String(node.value), parens);
 
         let penX = 0;
