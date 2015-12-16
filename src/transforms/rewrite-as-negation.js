@@ -1,4 +1,4 @@
-const { Negation } = require('../ast.js');
+const { Negation, Literal } = require('../ast.js');
 
 function canTransform(node) {
     // TODO: handle a * -1 * b -> a * -b
@@ -10,8 +10,12 @@ function canTransform(node) {
 
 function doTransform(node) {
     if (canTransform(node)) {
-        const replacement = new Negation(node.last.clone());
-        node.parent.replace(node, replacement)
+        if (node.last.type === 'Literal' && node.last.value > 0) {
+            node.parent.replace(node, new Literal(-node.last.value));
+        } else {
+            const replacement = new Negation(node.last.clone());
+            node.parent.replace(node, replacement);
+        }
     }
 }
 

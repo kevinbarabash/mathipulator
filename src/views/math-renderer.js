@@ -190,8 +190,9 @@ class MathRenderer extends Component {
         const hitNode = layout.hitTest(e.pageX, e.pageY);
 
         if (hitNode && hitNode.selectable) {
-            let mathNode = findNode(math, hitNode.id);
-            if (selectedNode && findNode(selectedNode, hitNode.id)) {
+            const id = hitNode.id.split(":")[0];
+            let mathNode = findNode(math, id);
+            if (selectedNode && findNode(selectedNode, id)) {
                 mathNode = selectedNode.parent;
             }
 

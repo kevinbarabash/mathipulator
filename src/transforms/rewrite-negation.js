@@ -18,20 +18,12 @@ function doTransform(node) {
             } else if (node.type === 'Literal') {
                 parent.replace(node, new Literal(-node.value));
             }
-        } else if (parent.type === 'Expression') {
-            if (node.type === 'Negation') {
-                parent.replace(node, new Product(new Literal(-1), new Operator('*'), node.value));
-            } else if (node.type === 'Literal') {
-                parent.replace(node, new Product(new Literal(-1), new Operator('*'), new Literal(-node.value)));
-            }
-        } else if (parent.type === 'Fraction') {
-            if (node.type === 'Negation') {
-                parent.replace(node, new Product(new Literal(-1), new Operator('*'), node.value));
-            } else if (node.type === 'Literal') {
-                parent.replace(node, new Product(new Literal(-1), new Operator('*'), new Literal(-node.value)));
-            }
         } else {
-            throw new Error(`rewrite-negation failed with parent of type ${parent.type}`);
+            if (node.type === 'Negation') {
+                parent.replace(node, new Product(new Literal(-1), new Operator('*'), node.value));
+            } else if (node.type === 'Literal') {
+                parent.replace(node, new Product(new Literal(-1), new Operator('*'), new Literal(-node.value)));
+            }
         }
     }
 }
