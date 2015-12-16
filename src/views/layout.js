@@ -7,8 +7,8 @@ const RenderOptions = {
     bounds: false
 };
 
-function formatText(text) {
-    if (parseFloat(text) < 0) {
+function formatText(text, parens) {
+    if (parseFloat(text) < 0 && parens) {
         text = `(${text})`;
     }
     return String(text).replace(/\-/g, "\u2212").replace(/\*/g, "\u00B7");
@@ -219,13 +219,19 @@ function makeMetricsSquare(metrics) {
     }
 }
 
+function startsExpression(node) {
+    return node.parent.type === 'Expression' && node.parent.first !== node ||
+        node.parent.parent.type === 'Expression' && node.parent.parent.first !== node.parent;
+}
+
 
 function createLayout(node, fontSize) {
     const spaceMetrics = getMetrics(" ", fontSize);
     const dashMetrics = getMetrics("\u2212", fontSize);
 
     if (node.type === "Literal") {
-        const text = formatText(String(node.value));
+        const parens = startsExpression(node);
+        const text = formatText(String(node.value), parens);
 
         let penX = 0;
         const layouts = [];
@@ -260,12 +266,14 @@ function createLayout(node, fontSize) {
         const children = [];
         let penX = 0;
 
-        const lParen = new Glyph("(", fontSize);
-        lParen.x = penX;
-        lParen.id = node.id + ":(outer";
-        lParen.selectable = false;
-        penX += lParen.advance;
-        children.push(lParen);
+        if (startsExpression(node)) {
+            const lParen = new Glyph("(", fontSize);
+            lParen.x = penX;
+            lParen.id = node.id + ":(outer";
+            lParen.selectable = false;
+            penX += lParen.advance;
+            children.push(lParen);
+        }
 
         const negativeSign = new Glyph("\u2212", fontSize);
         negativeSign.x = penX;
@@ -294,12 +302,14 @@ function createLayout(node, fontSize) {
             children.push(rParen2);
         }
 
-        const rParen = new Glyph(")", fontSize);
-        rParen.x = penX;
-        rParen.id = node.id + ":)outer";
-        rParen.selectable = false;
-        penX += rParen.advance;
-        children.push(rParen);
+        if (startsExpression(node)) {
+            const rParen = new Glyph(")", fontSize);
+            rParen.x = penX;
+            rParen.id = node.id + ":)outer";
+            rParen.selectable = false;
+            penX += rParen.advance;
+            children.push(rParen);
+        }
 
         const layout = new Layout(children);
 
