@@ -61,31 +61,31 @@ class App extends Component {
             const { history } = this.state;
             history.push(this.state.math);
 
-            // TODO: check that it isn't an equation
             const expr1 = this.parser.parse(text.substring(1)).root;
             const expr2 = this.parser.parse(text.substring(1)).root;
             const op = text[0];
-            const math = this.state.math.clone().root;
-
-            // TODO: check that `math` isn't an equation
+            const math = this.state.math.clone();
+            const root = math.root;
 
             if (op === '+') {
-                math.left = add(math.left, expr1);
-                math.right = add(math.right, expr2);
-                this.setState({ math, history });
+                root.left = add(root.left, expr1);
+                root.right = add(root.right, expr2);
             } else if (op === '-') {
-                math.left = sub(math.left, expr1);
-                math.right = sub(math.right, expr2);
-                this.setState({ math, history });
+                root.left = sub(root.left, expr1);
+                root.right = sub(root.right, expr2);
             } else if (op === '*') {
-                math.left = mul(math.left, expr1);
-                math.right = mul(math.right, expr2);
-                this.setState({ math, history });
+                root.left = mul(root.left, expr1);
+                root.right = mul(root.right, expr2);
             } else if (op === '/') {
-                math.left = div(math.left, expr1);
-                math.right = div(math.right, expr2);
-                this.setState({ math, history });
+                root.left = div(root.left, expr1);
+                root.right = div(root.right, expr2);
+            } else {
+                return;
             }
+
+            math.root = root;
+            this.setState({ math, history });
+
         } else if  (['+', '-', '*', '/'].includes(text[text.length - 1])) {
             const { history } = this.state;
             history.push(this.state.math);
@@ -94,24 +94,26 @@ class App extends Component {
             const expr2 = this.parser.parse(text.substring(0, text.length - 1));
             const op = text[text.length - 1];
             const math = this.state.math.clone();
+            const root = math.root;
 
             if (op === '+') {
-                math.left = add(expr1, math.left);
-                math.right = add(expr2, math.right);
-                this.setState({ math, history });
+                root.left = add(expr1, root.left);
+                root.right = add(expr2, root.right);
             } else if (op === '-') {
-                math.left = sub(expr1, math.left);
-                math.right = sub(expr2, math.right);
-                this.setState({ math, history });
+                root.left = sub(expr1, root.left);
+                root.right = sub(expr2, root.right);
             } else if (op === '*') {
-                math.left = mul(expr1, math.left);
-                math.right = mul(expr2, math.right);
-                this.setState({ math, history });
+                root.left = mul(expr1, root.left);
+                root.right = mul(expr2, root.right);
             } else if (op === '/') {
-                math.left = div(expr1, math.left);
-                math.right = div(expr2, math.right);
-                this.setState({ math, history });
+                root.left = div(expr1, root.left);
+                root.right = div(expr2, root.right);
+            } else {
+                return;
             }
+
+            math.root = root;
+            this.setState({ math, history });
         }
     }
 
