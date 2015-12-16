@@ -14,6 +14,7 @@ const swapSides = require('./transforms/swap-sides.js');
 const removeParentheses = require('./transforms/remove-parentheses.js');
 const multiplyFractions = require('./transforms/multiply-fractions.js');
 const addFractions = require('./transforms/add-fractions.js');
+const simplifyToZero = require('./transforms/simplify-to-zero.js');
 
 module.exports = {
     commute,
@@ -32,4 +33,5 @@ module.exports = {
     removeParentheses,
     multiplyFractions,
     addFractions,
+    simplifyToZero,
 };
