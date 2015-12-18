@@ -2,7 +2,7 @@ const assert = require('assert');
 
 const { Literal, Identifier, Operator } = require('../src/ast.js');
 const Parser = require('../src/parser.js');
-const { deepEqual } = require('../src/util/node_utils.js');
+const { deepEqual, evaluate } = require('../src/util/node_utils.js');
 
 function assertDeepEqual(node1, node2) {
     assert.equal(deepEqual(node1, node2), true);
@@ -12,14 +12,20 @@ function assertNotEqual(node1, node2) {
     assert.equal(deepEqual(node1, node2), false);
 }
 
+const TOLERANCE = 0.000000001;
+
+function assertCloseEnough(value1, value2) {
+    assert.ok(Math.abs(value1 - value2) < TOLERANCE, `${value1} is not close enough to ${value2}`);
+}
+
 describe('node_utils', () => {
+    let parser;
+
+    beforeEach(() => {
+        parser = new Parser();
+    });
+
     describe('deepEqual', () => {
-        let parser;
-
-        beforeEach(() => {
-            parser = new Parser();
-        });
-
         it('atomic nodes', () => {
             assertDeepEqual(new Literal(5), new Literal(5));
             assertNotEqual(new Literal(5), new Literal(10));
@@ -71,6 +77,32 @@ describe('node_utils', () => {
             const neg1 = parser.parse('-c');
             const neg2 = parser.parse('-c');
             assertDeepEqual(neg1, neg2);
+        });
+    });
+
+    describe('evaluate', () => {
+        it('adding fractions', () => {
+            const expr = parser.parse('1/10 + 2/10');
+            assertCloseEnough(evaluate(expr), 0.3);
+        });
+
+        it('adding fractions with variables', () => {
+            const expr = parser.parse('x/10 + y/10');
+            const dict = {
+                x: 1,
+                y: 2
+            };
+            assertCloseEnough(evaluate(expr, dict), 0.3);
+        });
+
+        it('should throw if an identifier is not the dict', () => {
+            const expr = parser.parse('x/10 + y/10');
+            const dict = {
+                x: 1
+            };
+            assert.throws(() => {
+                evaluate(expr, dict);
+            });
         });
     });
 });

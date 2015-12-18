@@ -83,8 +83,57 @@ function traverseNode(node, callback) {
     }
 }
 
+const evaluate = function(node, dict = {}) {
+    if (node.type === 'Math') {
+        return evaluate(node.root, dict);
+    } else if (node.type === 'Identifier') {
+        // handle well known values such as e and pi
+        if (node.name in dict) {
+            return dict[node.name];
+        } else {
+            throw new Error(`${node.name} not found in dict`);
+        }
+    } else if (node.type === 'Literal') {
+        return node.value;
+    } else if (node.type === 'Product') {
+        let result = 1;
+
+        for (const child of node) {
+            if (child.type !== 'Operator') {
+                result = result * evaluate(child, dict);
+            }
+        }
+
+        return result;
+    } else if (node.type === 'Expression') {
+        let result = 0;
+        let op = '+';
+
+        for (const child of node) {
+            if (child.type === 'Operator') {
+                op = child.operator;
+            } else {
+                if (op === '+') {
+                    result = result + evaluate(child, dict);
+                } else if (op === '-') {
+                    result = result - evaluate(child, dict);
+                }
+            }
+        }
+
+        return result;
+    } else if (node.type === 'Fraction') {
+        return evaluate(node.numerator, dict) / evaluate(node.denominator, dict);
+    } else if (node.type === 'Negation') {
+        return -evaluate(node.value, dict);
+    } else {
+        throw new Error(`unexpected node: ${node.type}`);
+    }
+};
+
 module.exports = {
     findNode,
     traverseNode,
     deepEqual,
+    evaluate,
 };
