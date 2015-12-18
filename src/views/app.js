@@ -14,7 +14,8 @@ class App extends Component {
         this.parser = new Parser();
 
         //const math = this.parser.parse('1/x+1/y');
-        const math = this.parser.parse('(-(2x+5))=10');
+        //const math = this.parser.parse('(-(2x+5))=10');
+        const math = this.parser.parse('a = -1*-a');
 
         this.state = {
             menu: null,

@@ -51,6 +51,7 @@ class ListNode extends Node {
         if (referenceNode === this.last) {
             this.last = newNode;
         }
+        newNode.parent = this;
     }
 
     insertBefore(newNode, referenceNode) {
@@ -63,6 +64,7 @@ class ListNode extends Node {
         if (referenceNode === this.first) {
             this.first = newNode;
         }
+        newNode.parent = this;
     }
 
     replace(current, replacement) {
