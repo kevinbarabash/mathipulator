@@ -1,11 +1,18 @@
 const React = require('react');
 
 const { Component } = React;
-const { Expression, Operator } = require("../ast.js");
+const { Literal } = require("../ast.js");
 const MathRenderer = require('./math-renderer.js');
 const Parser = require('../parser.js');
 const { add, sub, mul, div } = require('../operations.js');
-const { findNode, deepEqual } = require('../util/node_utils.js');
+const { findNode, compare } = require('../util/node_utils.js');
+
+const opDict = {
+    '+': add,
+    '-': sub,
+    '*': mul,
+    '/': div
+};
 
 class App extends Component {
     constructor() {
@@ -58,60 +65,36 @@ class App extends Component {
     }
 
     performEquationAction(text) {
+        const { history } = this.state;
+
         if (['+', '-', '*', '/'].includes(text[0])) {
-            const { history } = this.state;
             history.push(this.state.math);
 
             const expr1 = this.parser.parse(text.substring(1)).root;
             const expr2 = this.parser.parse(text.substring(1)).root;
-            const op = text[0];
             const math = this.state.math.clone();
             const root = math.root;
 
-            if (op === '+') {
-                root.left = add(root.left, expr1);
-                root.right = add(root.right, expr2);
-            } else if (op === '-') {
-                root.left = sub(root.left, expr1);
-                root.right = sub(root.right, expr2);
-            } else if (op === '*') {
-                root.left = mul(root.left, expr1);
-                root.right = mul(root.right, expr2);
-            } else if (op === '/') {
-                root.left = div(root.left, expr1);
-                root.right = div(root.right, expr2);
-            } else {
-                return;
-            }
+            const op = opDict[text[0]];
+
+            root.left = op(root.left, expr1);
+            root.right = op(root.right, expr2);
 
             math.root = root;
             this.setState({ math, history });
 
         } else if  (['+', '-', '*', '/'].includes(text[text.length - 1])) {
-            const { history } = this.state;
             history.push(this.state.math);
 
             const expr1 = this.parser.parse(text.substring(0, text.length - 1));
             const expr2 = this.parser.parse(text.substring(0, text.length - 1));
-            const op = text[text.length - 1];
             const math = this.state.math.clone();
             const root = math.root;
 
-            if (op === '+') {
-                root.left = add(expr1, root.left);
-                root.right = add(expr2, root.right);
-            } else if (op === '-') {
-                root.left = sub(expr1, root.left);
-                root.right = sub(expr2, root.right);
-            } else if (op === '*') {
-                root.left = mul(expr1, root.left);
-                root.right = mul(expr2, root.right);
-            } else if (op === '/') {
-                root.left = div(expr1, root.left);
-                root.right = div(expr2, root.right);
-            } else {
-                return;
-            }
+            const op = opDict[text[text.length - 1]];
+
+            root.left = op(expr1, root.left);
+            root.right = op(expr2, root.right);
 
             math.root = root;
             this.setState({ math, history });
@@ -123,54 +106,25 @@ class App extends Component {
         const { renderer } = this.refs;
         const { selectedNode } = renderer.state;
 
-        if (['+', '-'].includes(text[0])) {
-            const expr = this.parser.parse(text.substring(1)).root;
-            const math = this.state.math.clone();
+        const op = opDict[text[0]];
 
-            // TODO: handle +x+(-x)
-            if (expr.type === 'Expression' && expr.length === 3 &&
-                ['+', '-'].includes(expr.first.next.operator) &&
-                text[0] !== expr.first.next.operator) {
+        const expr = this.parser.parse(text.substring(1)).root;
+        const math = this.state.math.clone();
 
-                const { first, last } = expr;
-
-                if (deepEqual(first, last)) {
-                    history.push(this.state.math);
-                    if (selectedNode) {
-                        const node = findNode(math, selectedNode.id);
-                        if (text[0] === '+') {
-                            node.parent.replace(node, add(node.clone(), expr));
-                        } else if (text[0] === '-') {
-                            node.parent.replace(node, sub(node.clone(), expr))
-                        }
-                    } else {
-                        if (text[0] === '+') {
-                            math.replace(math.root, add(math.root, expr));
-                        } else if (text[0] === '-') {
-                            math.replace(math.root, sub(math.root, expr))
-                        }
-                    }
-                    this.setState({math, history});
-                }
-            }
-        } else if ('*' === text[0]) {
-            const frac = this.parser.parse(text.substring(1)).root;
-            const math = this.state.math.clone();
-
-            if (frac.type === 'Fraction' && deepEqual(frac.numerator, frac.denominator)) {
-                history.push(this.state.math);
-                if (selectedNode) {
-                    const node = findNode(math, selectedNode.id);
-                    node.parent.replace(node, mul(node.clone(), frac));
-                    renderer.setState({menu: null});
-                } else {
-                    math.replace(math.root, mul(math.root, frac));
-                }
-                this.setState({math, history});
-            }
-
-            console.log(this.refs['renderer'].state.selectedNode);
+        // TODO: handle -x+x
+        if (['+', '-'].includes(text[0]) && compare(expr, new Literal(0))) {
+            history.push(this.state.math);
+            const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
+            node.parent.replace(node, op(node.clone(), expr));
+            this.setState({math, history, menu: null});
+        } else if (['*', '/'].includes(text[0]) && compare(expr, new Literal(1))) {
+            history.push(this.state.math);
+            const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
+            node.parent.replace(node, op(node.clone(), expr));
+            this.setState({math, history});
         }
+
+        renderer.setState({menu: null});
     }
 
     render() {
