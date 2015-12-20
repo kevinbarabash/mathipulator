@@ -2,7 +2,7 @@ const assert = require('assert');
 
 const { Literal, Identifier, Operator } = require('../src/ast.js');
 const Parser = require('../src/parser.js');
-const { deepEqual, evaluate } = require('../src/util/node_utils.js');
+const { deepEqual, evaluate, compare } = require('../src/util/node_utils.js');
 
 function assertDeepEqual(node1, node2) {
     assert.equal(deepEqual(node1, node2), true);
@@ -103,6 +103,28 @@ describe('node_utils', () => {
             assert.throws(() => {
                 evaluate(expr, dict);
             });
+        });
+    });
+
+    describe('compare', () => {
+        it('compare expression without variables', () => {
+            assert.ok(compare(parser.parse('1/10 + 2/10'), new Literal(0.3)));
+        });
+
+        it('compare expression with one variable with a constant', () => {
+            assert.ok(compare(parser.parse('x/(x+x)'), new Literal(0.5)));
+            assert.ok(compare(parser.parse('2x/x'), new Literal(2)));
+            assert.ok(compare(parser.parse('x-x'), new Literal(0)));
+            assert.ok(compare(parser.parse('x+(-x)'), new Literal(0)));
+        });
+
+        it('compare different one variable expressions', () => {
+            assert.ok(compare(parser.parse('2x'), parser.parse('x+x')));
+            assert.ok(compare(parser.parse('1/(1+x)'), parser.parse('1/(x+1)')));
+        });
+
+        it('compare expression with two variables', () => {
+            assert.ok(compare(parser.parse('(x+y)/(x*y)'), parser.parse('1/x + 1/y')));
         });
     });
 });
