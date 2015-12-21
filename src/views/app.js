@@ -4,6 +4,7 @@ const { Component } = React;
 const { Literal } = require('../ast.js');
 const History = require('./history.js');
 const MathRenderer = require('./math-renderer.js');
+const HistoryRenderer = require('./history-renderer.js');
 const Parser = require('../parser.js');
 const { add, sub, mul, div } = require('../operations.js');
 const { findNode, compare } = require('../util/node_utils.js');
@@ -27,6 +28,7 @@ class App extends Component {
         this.state = {
             menu: null,
             history,
+            view: 'edit',
         };
 
         this.handleClick = this.handleClick.bind(this);
@@ -34,6 +36,8 @@ class App extends Component {
         this.handlePerform = this.handlePerform.bind(this);
         this.handleUndo = this.handleUndo.bind(this);
         this.handleRedo = this.handleRedo.bind(this);
+        this.handleHistory = this.handleHistory.bind(this);
+        this.handleEdit = this.handleEdit.bind(this);
     }
 
     handleClick(id, transform) {
@@ -86,6 +90,14 @@ class App extends Component {
         } else {
             this.performExpressionAction(text);
         }
+    }
+
+    handleHistory() {
+        this.setState({ view: 'history' });
+    }
+
+    handleEdit() {
+        this.setState({ view: 'edit' });
     }
 
     performEquationAction(text) {
@@ -156,7 +168,7 @@ class App extends Component {
     }
 
     render() {
-        const { menu, history } = this.state;
+        const { menu, history, view } = this.state;
 
         const buttonStyle = {
             marginLeft: 10,
@@ -172,6 +184,8 @@ class App extends Component {
             top:20,
             width:'100%',
             boxSizing:'border-box',
+            display:'flex',
+            flexDirection:'row',
         };
 
         const bottomContainer = {
@@ -179,22 +193,33 @@ class App extends Component {
             padding:20,
             bottom:20,
             width:'100%',
-            boxSizing:'border-box'
+            boxSizing:'border-box',
+            display:'flex',
+            flexDirection:'row',
         };
 
         return <div style={styles.app}>
-            <MathRenderer
-                ref='renderer'
-                color={'black'}
-                fontSize={60}
-                history={history}
-                width={window.innerWidth}
-                height={window.innerHeight}
-                onClick={this.handleClick}
-            />
+            {view === 'edit' &&
+                <MathRenderer
+                    ref='renderer'
+                    color={'black'}
+                    fontSize={60}
+                    history={history}
+                    width={window.innerWidth}
+                    height={window.innerHeight}
+                    onClick={this.handleClick}
+                />}
+            {view === 'history' &&
+                <HistoryRenderer
+                    color={'black'}
+                    fontSize={60}
+                    history={history}
+                    width={window.innerWidth}
+                    height={window.innerHeight}
+                />}
             {menu}
             <div style={topContainer}>
-                <div style={{float:'left'}}>
+                <span>
                     <button
                         onClick={this.handleUndo}
                         style={buttonStyle}
@@ -202,8 +227,24 @@ class App extends Component {
                     >
                         Undo
                     </button>
-                </div>
-                <div style={{float:'right'}}>
+                </span>
+                <span style={{textAlign: 'center', flexGrow:1}}>
+                    {view === 'edit' &&
+                        <button
+                            onClick={this.handleHistory}
+                            style={buttonStyle}
+                        >
+                            History
+                        </button>}
+                    {view === 'history' &&
+                        <button
+                            onClick={this.handleEdit}
+                            style={buttonStyle}
+                        >
+                            Edit
+                        </button>}
+                </span>
+                <span>
                     <button
                         onClick={this.handleRedo}
                         style={buttonStyle}
@@ -211,21 +252,24 @@ class App extends Component {
                     >
                         Redo
                     </button>
-                </div>
+                </span>
             </div>
             <div style={bottomContainer}>
-                <div style={{float:'left'}}>
+                <span>
                     <input type="text" style={{fontSize:20}} ref="replaceText"/>
                     <button onClick={this.handleReplace} style={buttonStyle}>
                         Replace
                     </button>
-                </div>
-                <div style={{float:'right'}}>
+                </span>
+                <span style={{textAlign: 'center', flexGrow:1}}>
+
+                </span>
+                <span>
                     <input type="text" style={{fontSize:20}} ref="performText"/>
                     <button onClick={this.handlePerform} style={buttonStyle}>
                         Perform
                     </button>
-                </div>
+                </span>
             </div>
         </div>;
     }
