@@ -39,33 +39,31 @@ class MathRenderer extends Component {
         canvas.height = this.props.height;
 
         const { history, fontSize } = this.props;
-        const math = history[history.length - 1];
-        const layout = createFlatLayout(
-            math, fontSize, window.innerWidth, window.innerHeight);
 
         let layoutHistory = [...this.state.layoutHistory];
 
         if (history.length > layoutHistory.length) {
             for (let i = layoutHistory.length; i < history.length; i++) {
                 layoutHistory.push(createFlatLayout(
-                    history[i], fontSize, window.innerWidth, window.innerHeight));
+                    history.getStep(i), fontSize, window.innerWidth, window.innerHeight));
             }
         } else {
             layoutHistory = [];
             for (let i = 0; i < history.length; i++) {
                 layoutHistory.push(createFlatLayout(
-                    history[i], fontSize, window.innerWidth, window.innerHeight));
+                    history.getStep(i), fontSize, window.innerWidth, window.innerHeight));
             }
         }
 
         const context = canvas.getContext('2d');
 
         const { historyGap } = this.props;
-        this.drawLayouts(context, layout, layoutHistory, historyGap, 1.0);
+        const currentLayout = layoutHistory[history.current];
+        this.drawLayouts(context, history, currentLayout, layoutHistory, historyGap, 1.0);
 
         container.appendChild(canvas);
 
-        this.setState({ context, layout, layoutHistory });
+        this.setState({ context, layoutHistory });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -76,54 +74,54 @@ class MathRenderer extends Component {
         if (history.length > layoutHistory.length) {
             for (let i = layoutHistory.length; i < history.length; i++) {
                 layoutHistory.push(createFlatLayout(
-                    history[i], fontSize, window.innerWidth, window.innerHeight));
+                    history.getStep(i), fontSize, window.innerWidth, window.innerHeight));
             }
         } else {
             layoutHistory = [];
             for (let i = 0; i < history.length; i++) {
                 layoutHistory.push(createFlatLayout(
-                    history[i], fontSize, window.innerWidth, window.innerHeight));
+                    history.getStep(i), fontSize, window.innerWidth, window.innerHeight));
             }
         }
 
-        const math = history[history.length - 1];
-        const layout = createFlatLayout(math, fontSize, window.innerWidth, window.innerHeight);
-        this.setState({ layout, layoutHistory });
+        this.setState({ layoutHistory });
     }
 
     componentWillUpdate(nextProps, nextState) {
         const { context } = this.state;
-        const { historyGap } = nextProps;
+        const { historyGap, history } = nextProps;
 
         if (context) {
             const canvas = context.canvas;
             context.clearRect(0, 0, canvas.width, canvas.height);
 
+            const currentLayout = this.state.layoutHistory[this.props.history.current];
+            const nextLayout = nextState.layoutHistory[nextProps.history.current];
+
             const { selectedNode, hitNode } = nextState;
 
             if (selectedNode) {
-                this.drawSelection(selectedNode, hitNode, nextState.layout);
+                this.drawSelection(selectedNode, hitNode, nextLayout);
             }
 
             context.fillStyle = nextProps.color;
 
-            if (this.state.layout !== nextState.layout) {
-                const animatedLayout = new AnimatedLayout(this.state.layout, nextState.layout);
+            if (currentLayout !== nextLayout) {
+                const animatedLayout = new AnimatedLayout(currentLayout, nextLayout);
                 const layoutHistory = nextState.layoutHistory;
 
                 let t = 0;
                 animatedLayout.callback = () => {
                     context.clearRect(0, 0, canvas.width, canvas.height);
-                    this.drawLayouts(context, animatedLayout, layoutHistory, historyGap, t);
+                    this.drawLayouts(context, history, animatedLayout, layoutHistory, historyGap, t);
                     t += 0.035;
                 };
 
                 animatedLayout.start();
             } else {
-                const { layout } = nextState;
                 const layoutHistory = this.state.layoutHistory;
 
-                this.drawLayouts(context, layout, layoutHistory, historyGap, 1.0);
+                this.drawLayouts(context, history, currentLayout, layoutHistory, historyGap, 1.0);
             }
         }
     }
@@ -156,25 +154,54 @@ class MathRenderer extends Component {
         return selectedLayouts;
     }
 
-    drawLayouts(context, layout, layoutHistory, historyGap, t) {
+    // TODO: need to know if we're going forwards or backwards
+    drawLayouts(context, history, currentLayout, layoutHistory, historyGap, t) {
         let k = 192;
-        context.save();
-        for (let i = layoutHistory.length - 2; i > -1; i--) {
-            const bounds = layoutHistory[i].getBounds();
-            const nextBounds = layoutHistory[i+1].getBounds();
-            const height = bounds.bottom - nextBounds.top + historyGap;
-            if (i === layoutHistory.length - 2) {
-                context.translate(0,-height * Math.min(t, 1.0));
-            } else {
-                context.translate(0,-height);
-            }
-            context.fillStyle = `rgb(${k}, ${k}, ${k})`;
-            layoutHistory[i].render(context);
-        }
-        context.restore();
+        const showHistory = false;
+        const currentBounds = currentLayout.getBounds();
 
+        // draw previous steps
+        if (showHistory) {
+            context.save();
+            for (let i = history.current - 1; i > -1; i--) {
+                const bounds = layoutHistory[i].getBounds();
+                if (i === history.current - 1) {
+                    const height = bounds.bottom - currentBounds.top + historyGap;
+                    context.translate(0,-height * Math.min(t, 1.0));
+                } else {
+                    const nextBounds = layoutHistory[i+1].getBounds();
+                    const height = bounds.bottom - nextBounds.top + historyGap;
+                    context.translate(0,-height);
+                }
+                context.fillStyle = `rgb(${k}, ${k}, ${k})`;
+                layoutHistory[i].render(context);
+            }
+            context.restore();
+        }
+
+        // draw next steps
+        if (showHistory) {
+            context.save();
+            for (let i = history.current + 1; i < history.length; i++) {
+                const bounds = layoutHistory[i].getBounds();
+                if (i === history.current + 1) {
+                    const height = currentBounds.bottom - bounds.top + historyGap;
+                    context.translate(0, +height * Math.min(t, 1.0));
+                } else {
+                    const prevBounds = layoutHistory[i - 1].getBounds();
+                    const height = prevBounds.bottom - bounds.top + historyGap;
+                    context.translate(0, +height);
+                }
+                context.fillStyle = `rgb(${k}, ${k}, ${k})`;
+                layoutHistory[i].render(context);
+            }
+            context.restore();
+        }
+
+        // draw current step
         context.fillStyle = 'rgb(0, 0, 0)';
-        layout.render(context);
+        currentLayout.render(context);
+
     }
 
     drawSelection(selectedNode, hitNode, layout) {
@@ -206,8 +233,9 @@ class MathRenderer extends Component {
 
     handleClick(e) {
         const { history } = this.props;
-        const math = history[history.length - 1];
-        const { layout, selectedNode } = this.state;
+        const math = history.getCurrentStep();
+        const { layoutHistory, selectedNode } = this.state;
+        const layout = layoutHistory[history.current];
         const hitNode = layout.hitTest(e.pageX, e.pageY);
 
         if (hitNode && hitNode.selectable) {

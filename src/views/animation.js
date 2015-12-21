@@ -194,6 +194,11 @@ class AnimatedLayout {
             }
         }
     }
+
+    // TODO: get the in between bounds
+    getBounds() {
+        return this.endLayout.getBounds();
+    }
 }
 
 module.exports = {
