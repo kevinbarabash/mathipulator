@@ -170,6 +170,8 @@ class App extends Component {
     render() {
         const { menu, history, view } = this.state;
 
+        const math = history.getCurrentStep();
+
         const buttonStyle = {
             marginLeft: 10,
             fontSize: 20,
@@ -204,10 +206,10 @@ class App extends Component {
                     ref='renderer'
                     color={'black'}
                     fontSize={60}
-                    history={history}
                     width={window.innerWidth}
                     height={window.innerHeight}
                     onClick={this.handleClick}
+                    math={math}
                 />}
             {view === 'history' &&
                 <HistoryRenderer
