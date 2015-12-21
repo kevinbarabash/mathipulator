@@ -23,7 +23,8 @@ class App extends Component {
         this.parser = new Parser();
 
         const history = new History();
-        history.addStep(this.parser.parse('2x+5=10'));
+        //history.addStep(this.parser.parse('2x+5=10'));
+        history.addStep(this.parser.parse('1/x+1/y=4'));
 
         this.state = {
             menu: null,
@@ -84,8 +85,10 @@ class App extends Component {
         const text = this.refs.performText.value;
         const { history } = this.state;
         const root = history.getCurrentStep().root;
+        const { renderer } = this.refs;
+        const { selectedNode } = renderer.state;
 
-        if (root.type === 'Equation') {
+        if (!selectedNode && root.type === 'Equation') {
             this.performEquationAction(text);
         } else {
             this.performExpressionAction(text);
@@ -155,12 +158,12 @@ class App extends Component {
         if (['+', '-'].includes(text[0]) && compare(expr, new Literal(0))) {
             const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
             node.parent.replace(node, op(node.clone(), expr));
-            history.push(math);
+            history.addStep(math);
             this.setState({history, menu: null});
         } else if (['*', '/'].includes(text[0]) && compare(expr, new Literal(1))) {
             const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
             node.parent.replace(node, op(node.clone(), expr));
-            history.push(math);
+            history.addStep(math);
             this.setState({math, history});
         }
 
