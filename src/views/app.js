@@ -71,7 +71,9 @@ class App extends Component {
     handleReplace() {
         const text = this.refs.replaceText.value;
         let math = this.parser.parse(text);
-        this.setState({ history: [math] });
+        const history = new History();
+        history.addStep(math);
+        this.setState({ history });
     }
 
     handlePerform() {
@@ -128,14 +130,14 @@ class App extends Component {
     }
 
     performExpressionAction(text) {
-        const { history } = this.state;
+        const history = this.state.history.clone();
         const { renderer } = this.refs;
         const { selectedNode } = renderer.state;
 
         const op = opDict[text[0]];
 
         const expr = this.parser.parse(text.substring(1)).root;
-        const math = history[history.length - 1];
+        const math = history.getCurrentStep();
 
         // TODO: handle -x+x
         if (['+', '-'].includes(text[0]) && compare(expr, new Literal(0))) {
