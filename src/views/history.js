@@ -40,6 +40,14 @@ class History {
         return this.steps.length;
     }
 
+    canUndo() {
+        return this.current > 0;
+    }
+
+    canRedo() {
+        return this.current < this.length - 1;
+    }
+
     clone() {
         const clone = new History();
         clone.steps = [...this.steps];

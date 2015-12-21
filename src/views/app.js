@@ -169,7 +169,7 @@ class App extends Component {
             padding:20,
             top:20,
             width:'100%',
-            boxSizing:'border-box'
+            boxSizing:'border-box',
         };
 
         const bottomContainer = {
@@ -193,12 +193,20 @@ class App extends Component {
             {menu}
             <div style={topContainer}>
                 <div style={{float:'left'}}>
-                    <button onClick={this.handleUndo} style={buttonStyle}>
+                    <button
+                        onClick={this.handleUndo}
+                        style={buttonStyle}
+                        disabled={!history.canUndo()}
+                    >
                         Undo
                     </button>
                 </div>
                 <div style={{float:'right'}}>
-                    <button onClick={this.handleRedo} style={buttonStyle}>
+                    <button
+                        onClick={this.handleRedo}
+                        style={buttonStyle}
+                        disabled={!history.canRedo()}
+                    >
                         Redo
                     </button>
                 </div>
