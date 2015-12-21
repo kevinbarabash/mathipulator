@@ -80,14 +80,16 @@ class App extends Component {
             root.left = op(root.left, expr1);
             root.right = op(root.right, expr2);
 
+            root.left.parent = root;
+            root.right.parent = root;
+
             math.root = root;
             this.setState({ math, history });
-
         } else if  (['+', '-', '*', '/'].includes(text[text.length - 1])) {
             history.push(this.state.math);
 
-            const expr1 = this.parser.parse(text.substring(0, text.length - 1));
-            const expr2 = this.parser.parse(text.substring(0, text.length - 1));
+            const expr1 = this.parser.parse(text.substring(0, text.length - 1)).root;
+            const expr2 = this.parser.parse(text.substring(0, text.length - 1)).root;
             const math = this.state.math.clone();
             const root = math.root;
 
@@ -96,7 +98,11 @@ class App extends Component {
             root.left = op(expr1, root.left);
             root.right = op(expr2, root.right);
 
+            root.left.parent = root;
+            root.right.parent = root;
+
             math.root = root;
+            console.log(root);
             this.setState({ math, history });
         }
     }
