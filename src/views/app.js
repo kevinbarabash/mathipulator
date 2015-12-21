@@ -21,13 +21,12 @@ class App extends Component {
         this.parser = new Parser();
 
         //const math = this.parser.parse('1/x+1/y');
-        //const math = this.parser.parse('(-(2x+5))=10');
-        const math = this.parser.parse('a = -1*-a');
+        const math = this.parser.parse('2x+5=10');
+        //const math = this.parser.parse('a = -1*-a');
 
         this.state = {
             menu: null,
-            math: math,
-            history: [],
+            history: [math],
         };
 
         this.handleClick = this.handleClick.bind(this);
@@ -36,26 +35,29 @@ class App extends Component {
     }
 
     handleClick(id, transform) {
-        const { math, history } = this.state;
+        const { history } = this.state;
+        const math = history[history.length - 1];
         const nextMath = math.clone();
         const node = findNode(nextMath, id);
 
         if (node && transform && transform.canTransform(node)) {
+            // the transform updates nextMath
             transform.doTransform(node);
-            history.push(math);
-            this.setState({ math: nextMath, history });
+            history.push(nextMath);
+            this.setState({ history });
         }
     }
 
     handleReplace() {
         const text = this.refs.replaceText.value;
         let math = this.parser.parse(text);
-        this.setState({ math, history: [] });
+        this.setState({ history: [math] });
     }
 
     handlePerform() {
         const text = this.refs.performText.value;
-        const root = this.state.math.root;
+        const { history } = this.state;
+        const root = history[history.length - 1].root;
 
         if (root.type === 'Equation') {
             this.performEquationAction(text);
@@ -66,13 +68,13 @@ class App extends Component {
 
     performEquationAction(text) {
         const { history } = this.state;
+        const math = history[history.length - 1].clone();
 
         if (['+', '-', '*', '/'].includes(text[0])) {
-            history.push(this.state.math);
+            history.push(math);
 
             const expr1 = this.parser.parse(text.substring(1)).root;
             const expr2 = this.parser.parse(text.substring(1)).root;
-            const math = this.state.math.clone();
             const root = math.root;
 
             const op = opDict[text[0]];
@@ -86,11 +88,10 @@ class App extends Component {
             math.root = root;
             this.setState({ math, history });
         } else if  (['+', '-', '*', '/'].includes(text[text.length - 1])) {
-            history.push(this.state.math);
+            history.push(math);
 
             const expr1 = this.parser.parse(text.substring(0, text.length - 1)).root;
             const expr2 = this.parser.parse(text.substring(0, text.length - 1)).root;
-            const math = this.state.math.clone();
             const root = math.root;
 
             const op = opDict[text[text.length - 1]];
@@ -115,18 +116,18 @@ class App extends Component {
         const op = opDict[text[0]];
 
         const expr = this.parser.parse(text.substring(1)).root;
-        const math = this.state.math.clone();
+        const math = history[history.length - 1];
 
         // TODO: handle -x+x
         if (['+', '-'].includes(text[0]) && compare(expr, new Literal(0))) {
-            history.push(this.state.math);
             const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
             node.parent.replace(node, op(node.clone(), expr));
-            this.setState({math, history, menu: null});
+            history.push(math);
+            this.setState({history, menu: null});
         } else if (['*', '/'].includes(text[0]) && compare(expr, new Literal(1))) {
-            history.push(this.state.math);
             const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
             node.parent.replace(node, op(node.clone(), expr));
+            history.push(math);
             this.setState({math, history});
         }
 
@@ -134,7 +135,7 @@ class App extends Component {
     }
 
     render() {
-        const { menu, math, history } = this.state;
+        const { menu, history } = this.state;
 
         const buttonStyle = {
             marginLeft: 10,
@@ -157,7 +158,6 @@ class App extends Component {
                 ref='renderer'
                 color={'black'}
                 fontSize={60}
-                math={math}
                 history={history}
                 width={window.innerWidth}
                 height={window.innerHeight}
