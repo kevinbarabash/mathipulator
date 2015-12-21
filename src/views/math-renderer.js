@@ -28,7 +28,7 @@ class MathRenderer extends Component {
     static defaultProps = {
         color: 'black',
         fontSize: 72,
-        historyGap: 8,
+        historyGap: 16,
     };
 
     componentDidMount() {
@@ -160,9 +160,9 @@ class MathRenderer extends Component {
         let k = 192;
         context.save();
         for (let i = layoutHistory.length - 2; i > -1; i--) {
-            // TODO compute the difference between the bottom of previous and the top of the next
             const bounds = layoutHistory[i].getBounds();
-            const height = bounds.bottom - bounds.top + historyGap;
+            const nextBounds = layoutHistory[i+1].getBounds();
+            const height = bounds.bottom - nextBounds.top + historyGap;
             if (i === layoutHistory.length - 2) {
                 context.translate(0,-height * Math.min(t, 1.0));
             } else {
