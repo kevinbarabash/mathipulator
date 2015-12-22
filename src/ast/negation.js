@@ -12,11 +12,11 @@ class Negation extends Node {
         return `[${this.type}:${this.value}]`;
     }
 
-    clone() {
+    clone(uniqueId = false) {
         const clone = Object.create(Negation.prototype);
-        clone.id = this.id;
+        clone.id = uniqueId ? Negation.generateId() : this.id;
         clone.type = this.type;
-        clone.value = this.value.clone();
+        clone.value = this.value.clone(uniqueId);
         clone.value.parent = clone;
         return clone;
     }

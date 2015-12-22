@@ -11,10 +11,10 @@ class Literal extends Node {
         return `${this.type}:${this.value}(${this.id})`;
     }
 
-    clone() {
+    clone(uniqueId = false) {
         var clone = Object.create(Literal.prototype);
         clone.type = this.type;
-        clone.id = this.id;
+        clone.id = uniqueId ? Literal.generateId() : this.id;
         clone.value = this.value;
         return clone;
     }

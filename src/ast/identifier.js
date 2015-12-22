@@ -13,10 +13,10 @@ class Identifier extends Node {
         return `${this.type}:${this.name}`;
     }
 
-    clone() {
+    clone(uniqueId = false) {
         const clone = Object.create(Identifier.prototype);
         clone.type = this.type;
-        clone.id = this.id;
+        clone.id = uniqueId ? Identifier.generateId() : this.id;
         clone.name = this.name;
         clone.subscript = this.subscript;
         clone.accent = this.accent;

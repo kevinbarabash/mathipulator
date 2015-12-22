@@ -14,12 +14,12 @@ class Equation extends Node {
         return `${this.type}:[${this.left} = ${this.right}]`;
     }
 
-    clone() {
+    clone(uniqueId = false) {
         var clone = Object.create(Equation.prototype);
         clone.type = this.type;
-        clone.id = this.id;
-        clone.left = this.left.clone();
-        clone.right = this.right.clone();
+        clone.id = uniqueId ? Equation.generateId() : this.id;
+        clone.left = this.left.clone(uniqueId);
+        clone.right = this.right.clone(uniqueId);
         clone.left.parent = clone;
         clone.right.parent = clone;
         return clone;

@@ -14,12 +14,12 @@ class Power extends Node {
         return `[${this.type}:${this.base}^${this.exponent}]`;
     }
 
-    clone() {
+    clone(uniqueId = false) {
         const clone = Object.create(Power.prototype);
         clone.type = this.type;
-        clone.id = this.id;
-        clone.base = this.base.clone();
-        clone.exponent = this.exponent.clone();
+        clone.id = uniqueId ? Fraction.generateId() : this.id;
+        clone.base = this.base.clone(uniqueId);
+        clone.exponent = this.exponent.clone(uniqueId);
         clone.base.parent = clone;
         clone.exponent.parent = clone;
         return clone;

@@ -17,8 +17,7 @@ function doTransform(node) {
             }
         }
         for (const term of terms) {
-            // TODO: give clone() an option that gives all nodes new ids
-            const prod = mul(new Literal(node.value), term.clone());
+            const prod = mul(node.clone(true), term.clone());
             expr.replace(term, prod);
         }
         const parent = node.parent;

@@ -11,10 +11,10 @@ class Operator extends Node {
         return `${this.type}:${this.operator}`;
     }
 
-    clone() {
+    clone(uniqueId = false) {
         const clone = Object.create(Operator.prototype);
         clone.type = this.type;
-        clone.id = this.id;
+        clone.id = uniqueId ? Operator.generateId() : this.id;
         clone.operator = this.operator;
         return clone;
     }

@@ -12,11 +12,11 @@ class Expression extends ListNode {
         return `${this.type}:${super.toString()}`;
     }
 
-    clone() {
+    clone(uniqueId = false) {
         const clone = Object.create(Expression.prototype);
         clone.type = this.type;
-        clone.id = this.id;
-        clone.append(...f(this).map(x => x.clone()));
+        clone.id = uniqueId ? Expression.generateId() : this.id;
+        clone.append(...f(this).map(x => x.clone(uniqueId)));
         return clone;
     }
 

@@ -14,12 +14,12 @@ class Fraction extends Node {
         return `[${this.type}:${this.numerator}/${this.denominator}]`;
     }
 
-    clone() {
+    clone(uniqueId = false) {
         const clone = Object.create(Fraction.prototype);
         clone.type = this.type;
-        clone.id = this.id;
-        clone.numerator = this.numerator.clone();
-        clone.denominator = this.denominator.clone();
+        clone.id = uniqueId ? Fraction.generateId() : this.id;
+        clone.numerator = this.numerator.clone(uniqueId);
+        clone.denominator = this.denominator.clone(uniqueId);
         clone.numerator.parent = clone;
         clone.denominator.parent = clone;
         return clone;

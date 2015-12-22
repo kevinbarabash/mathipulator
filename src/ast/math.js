@@ -12,11 +12,11 @@ class Math extends Node {
         return `[${this.type}:${this.value}]`;
     }
 
-    clone() {
+    clone(uniqueId = false) {
         const clone = Object.create(Math.prototype);
-        clone.id = this.id;
+        clone.id = uniqueId ? Math.generateId() : this.id;
         clone.type = this.type;
-        clone.root = this.root.clone();
+        clone.root = this.root.clone(uniqueId);
         clone.root.parent = clone;
         return clone;
     }
