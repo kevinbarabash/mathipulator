@@ -20,6 +20,7 @@ class MathRenderer extends Component {
             layout: null,
             start: null,
             multiselect: false,
+            timeout: null,
         };
 
         this.handleClick = this.handleClick.bind(this);
@@ -235,38 +236,49 @@ class MathRenderer extends Component {
                     this.setState({ menu, selectedNodes: [mathNode], hitNode });
                 }
             }
-        } else {
-            this.setState({ menu: null, selectedNodes: [], hitNode: null, multiselect: false });
-        }
 
-        this.setState({
-            start: {
-                x: e.pageX,
-                y: e.pageY,
-                timestamp: Date.now(),
-            },
-            current: {
-                x: e.pageX,
-                y: e.pageY,
-                timestamp: Date.now(),
-            },
-            mouse: 'down',
-        });
-
-        setTimeout(() => {
-            const {start, current, mouse} = this.state;
-
-            const dx = current.x - start.x;
-            const dy = current.y - start.y;
-
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < 25 && mouse === 'down') {
-                this.setState({
-                    multiselect: true
-                });
+            if (this.state.timeout) {
+                clearTimeout(this.state.timeout);
             }
-        }, 500);
+
+            const timeout = setTimeout(() => {
+                const {start, current, mouse} = this.state;
+
+                const dx = current.x - start.x;
+                const dy = current.y - start.y;
+
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 25 && mouse === 'down') {
+                    this.setState({
+                        multiselect: true
+                    });
+                }
+            }, 500);
+
+            this.setState({
+                start: {
+                    x: e.pageX,
+                    y: e.pageY,
+                    timestamp: Date.now(),
+                },
+                current: {
+                    x: e.pageX,
+                    y: e.pageY,
+                    timestamp: Date.now(),
+                },
+                mouse: 'down',
+                timeout,
+            });
+        } else {
+            this.setState({
+                menu: null,
+                selectedNodes: [],
+                hitNode: null,
+                multiselect: false,
+                timeout: null
+            });
+        }
     }
 
     handleMouseMove(e) {
