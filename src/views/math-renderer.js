@@ -231,9 +231,20 @@ class MathRenderer extends Component {
                 }
 
                 if (multiselect) {
-                    this.setState({ menu, selectedNodes: [...selectedNodes, mathNode], hitNode });
+                    if (selectedNodes.includes(mathNode)) {
+                        this.setState({
+                            menu,
+                            selectedNodes: selectedNodes.filter(node => node.id !== mathNode.id),
+                            hitNode });
+                    } else {
+                        this.setState({ menu, selectedNodes: [...selectedNodes, mathNode], hitNode });
+                    }
                 } else {
-                    this.setState({ menu, selectedNodes: [mathNode], hitNode });
+                    if (selectedNodes.includes(mathNode)) {
+                        this.setState({ menu, selectedNodes: [], hitNode });
+                    } else {
+                        this.setState({ menu, selectedNodes: [mathNode], hitNode });
+                    }
                 }
             }
 
