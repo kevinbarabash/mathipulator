@@ -12,7 +12,7 @@ module.exports = {
     eliminateZero: require('./transforms/eliminate-zero.js'),
     eliminateOne: require('./transforms/eliminate-one.js'),
     swapSides: require('./transforms/swap-sides.js'),
-    removeParentheses: require('./transforms/swap-sides.js'),
+    removeParentheses: require('./transforms/remove-parens.js'),
     multiplyFractions: require('./transforms/multiply-fractions.js'),
     addFractions: require('./transforms/add-fractions.js'),
     simplifyToZero: require('./transforms/simplify-to-zero.js'),

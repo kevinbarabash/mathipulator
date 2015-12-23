@@ -1,7 +1,7 @@
 function canTransform(node) {
     if (node && node.parent) {
         if (node.type === 'Expression' && node.parent.type === 'Expression') {
-            return node.prev.operator === '+';
+            return node.prev == null || node.prev.operator === '+';
         } else {
             return node.type === 'Product' && node.parent.type === 'Product';
         }
@@ -24,6 +24,10 @@ function doTransform(node) {
             parent.last = node.last;
         } else {
             node.next.prev = node.last;
+        }
+
+        for (const child of node) {
+            child.parent = parent;
         }
     }
 }
