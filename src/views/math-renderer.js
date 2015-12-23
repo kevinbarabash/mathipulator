@@ -16,12 +16,16 @@ class MathRenderer extends Component {
         this.state = {
             context: null,
             menu: null,
-            selectedNode: null,
+            selectedNodes: [],
             layout: null,
+            start: null,
+            multiselect: false,
         };
 
         this.handleClick = this.handleClick.bind(this);
         this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseMove = this.handleMouseMove.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
     }
 
     static defaultProps = {
@@ -69,10 +73,10 @@ class MathRenderer extends Component {
             const currentLayout = this.state.layout;
             const nextLayout = nextState.layout;
 
-            const { selectedNode, hitNode } = nextState;
+            const { selectedNodes, hitNode } = nextState;
 
-            if (selectedNode) {
-                this.drawSelection(selectedNode, hitNode, nextLayout);
+            if (selectedNodes.length > 0) {
+                this.drawSelection(selectedNodes, hitNode, nextLayout, nextState);
             }
 
             context.fillStyle = nextProps.color;
@@ -94,7 +98,7 @@ class MathRenderer extends Component {
         }
     }
 
-    getSelectedLayouts(layout, selectedNode, hitNode) {
+    getSelectionHighlights(layout, selectedNodes, hitNode) {
         const layoutDict = {};
 
         // layout node ids start with the math node's id but may contain additional
@@ -108,18 +112,27 @@ class MathRenderer extends Component {
             layoutDict[id].push(child);
         });
 
-        const selectedLayouts = [];
-        if (selectedNode.type === 'Equation' && hitNode.text === "=") {
-            selectedLayouts.push(hitNode);
-        } else {
-            traverseNode(selectedNode, (node) => {
-                if (layoutDict.hasOwnProperty(node.id)) {
-                    selectedLayouts.push(...layoutDict[node.id]);
-                }
-            });
-        }
+        const highlights = [];
 
-        return selectedLayouts;
+        selectedNodes.forEach(node => {
+            const layouts = [];
+            if (node.type === 'Equation' && hitNode.text === "=") {
+                layouts.push(hitNode);
+            } else {
+                traverseNode(node, (node) => {
+                    if (layoutDict.hasOwnProperty(node.id)) {
+                        layouts.push(...layoutDict[node.id]);
+                    }
+                });
+            }
+
+            highlights.push({
+                shape: layouts.length === 1 && layouts[0].circle ? 'circle' : 'rect',
+                bounds: unionBounds(layouts),
+            });
+        });
+
+        return highlights;
     }
 
     drawLayout(context, currentLayout) {
@@ -128,84 +141,148 @@ class MathRenderer extends Component {
 
     }
 
-    drawSelection(selectedNode, hitNode, layout) {
+    drawSelection(selectedNodes, hitNode, layout, nextState) {
         const { context } = this.state;
 
-        const selectedLayouts = this.getSelectedLayouts(layout, selectedNode, hitNode);
-
-        const bounds = unionBounds(selectedLayouts);
-        const circle = selectedLayouts.length === 1 ? !!selectedLayouts[0].circle : false;
-
+        const highlights = this.getSelectionHighlights(layout, selectedNodes, hitNode);
         const padding = 8;
 
-        context.fillStyle = 'rgba(255,255,0,0.5)';
-
-        if (circle) {
-            const x = (bounds.left + bounds.right) / 2;
-            const y = (bounds.top + bounds.bottom) / 2;
-            const radius = (bounds.right - bounds.left) / 2 + padding;
-            fillCircle(context, x, y, radius);
+        if (nextState.multiselect) {
+            context.fillStyle = 'rgba(0,128,0,0.5)';
         } else {
-            const radius = padding;
-            const x = bounds.left - radius;
-            const y = bounds.top - radius;
-            const width = bounds.right - bounds.left + 2 * radius;
-            const height = bounds.bottom - bounds.top + 2 * radius;
-            roundRect(context, x, y, width, height, radius);
+            context.fillStyle = 'rgba(255,255,0,0.5)';
+        }
+
+        for (const {shape, bounds} of highlights) {
+            if (shape === 'circle') {
+                const x = (bounds.left + bounds.right) / 2;
+                const y = (bounds.top + bounds.bottom) / 2;
+                const radius = (bounds.right - bounds.left) / 2 + padding;
+                fillCircle(context, x, y, radius);
+            } else {
+                const radius = padding;
+                const x = bounds.left - radius;
+                const y = bounds.top - radius;
+                const width = bounds.right - bounds.left + 2 * radius;
+                const height = bounds.bottom - bounds.top + 2 * radius;
+                roundRect(context, x, y, width, height, radius);
+            }
         }
     }
 
     handleClick(e) {
+
+    }
+
+    handleMouseDown(e) {
+        e.preventDefault();
+
         const { math } = this.props;
-        const { layout, selectedNode } = this.state;
+        const { layout, selectedNodes, multiselect } = this.state;
         const hitNode = layout.hitTest(e.pageX, e.pageY);
 
         if (hitNode && hitNode.selectable) {
             const id = hitNode.id.split(":")[0];
             let mathNode = findNode(math, id);
-            if (selectedNode && findNode(selectedNode, id)) {
-                mathNode = selectedNode.parent;
-            }
+
+            // TODO: handle enlarging the selection by dragging
+            // TODO: tap a selection again to toggle it
+            // tap in whitepsace to drop all selections
+            // if you've already created a selection as part of multiselect and
+            // then you grow a new selection... the new selection will actively
+            // reject growing to including any of the existing selections
+
+            //if (selectedNode && findNode(selectedNode, id)) {
+            //    mathNode = selectedNode.parent;
+            //}
 
             if (!mathNode) {
-                this.setState({ menu: null, selectedNode: null });
+                this.setState({ menu: null, selectedNodes: [] });
                 return;
             }
 
-            const selectedLayouts = this.getSelectedLayouts(layout, mathNode, hitNode);
+            const highlights = this.getSelectionHighlights(layout, [mathNode], hitNode);
 
-            const bounds = unionBounds(selectedLayouts);
-            const x = (bounds.left + bounds.right) / 2;
-            const y = bounds.top - 10;
+            if (highlights.length === 1) {
+                const {bounds} = highlights[0];
 
-            let menu = null;
+                const x = (bounds.left + bounds.right) / 2;
+                const y = bounds.top - 10;
 
-            if (mathNode) {
-                const items = Object.values(transforms)
-                    .filter(transform => transform.canTransform(mathNode))
-                    .map(transform => {
-                        return {
-                            label: transform.label,
-                            action: () => {
-                                this.props.onClick(mathNode.id, transform);
-                                this.setState({ menu: null, selectedNode: null });
+                let menu = null;
+
+                if (mathNode) {
+                    const items = Object.values(transforms)
+                        .filter(transform => transform.canTransform(mathNode))
+                        .map(transform => {
+                            return {
+                                label: transform.label,
+                                action: () => {
+                                    this.props.onClick(mathNode.id, transform);
+                                    this.setState({ menu: null, selectedNodes: [] });
+                                }
                             }
-                        }
-                    });
+                        });
 
-                if (items.length > 0) {
-                    menu = <Menu position={{x, y}} items={items}/>;
+                    if (items.length > 0) {
+                        menu = <Menu position={{x, y}} items={items}/>;
+                    }
+                }
+
+                if (multiselect) {
+                    this.setState({ menu, selectedNodes: [...selectedNodes, mathNode], hitNode });
+                } else {
+                    this.setState({ menu, selectedNodes: [mathNode], hitNode });
                 }
             }
-
-            this.setState({ menu, selectedNode: mathNode, hitNode });
         } else {
-            this.setState({ menu: null, selectedNode: null, hitNode: null });
+            this.setState({ menu: null, selectedNodes: [], hitNode: null, multiselect: false });
         }
+
+        this.setState({
+            start: {
+                x: e.pageX,
+                y: e.pageY,
+                timestamp: Date.now(),
+            },
+            current: {
+                x: e.pageX,
+                y: e.pageY,
+                timestamp: Date.now(),
+            },
+            mouse: 'down',
+        });
+
+        setTimeout(() => {
+            const {start, current, mouse} = this.state;
+
+            const dx = current.x - start.x;
+            const dy = current.y - start.y;
+
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 25 && mouse === 'down') {
+                this.setState({
+                    multiselect: true
+                });
+            }
+        }, 500);
     }
 
-    handleMouseDown(e) {
-        e.preventDefault();
+    handleMouseMove(e) {
+        this.setState({
+            current: {
+                x: e.pageX,
+                y: e.pageY,
+                timestamp: Date.now(),
+            },
+        });
+    }
+
+    handleMouseUp(e) {
+        this.setState({
+            mouse: 'up'
+        });
     }
 
     render() {
@@ -215,8 +292,9 @@ class MathRenderer extends Component {
             <div
                 ref="container"
                 style={styles.container}
-                onClick={this.handleClick}
                 onMouseDown={this.handleMouseDown}
+                onMouseMove={this.handleMouseMove}
+                onMouseUp={this.handleMouseUp}
             ></div>
             {menu}
         </div>;

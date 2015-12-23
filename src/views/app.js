@@ -23,8 +23,7 @@ class App extends Component {
         this.parser = new Parser();
 
         const history = new History();
-        //history.addStep(this.parser.parse('2x+5=10'));
-        history.addStep(this.parser.parse('1/x+1/y=4'));
+        history.addStep(this.parser.parse('(10xy)/(2x)'));
 
         this.state = {
             menu: null,
