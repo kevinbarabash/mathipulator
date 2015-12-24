@@ -12,6 +12,7 @@ module.exports = {
     distributeBackwards: require('./transforms/distribute-backwards.js'),
     eliminateZero: require('./transforms/eliminate-zero.js'),
     eliminateOne: require('./transforms/eliminate-one.js'),
+    eliminateDivByOne: require('./transforms/eliminate-div-by-one.js'),
     swapSides: require('./transforms/swap-sides.js'),
     removeParentheses: require('./transforms/remove-parens.js'),
     multiplyFractions: require('./transforms/multiply-fractions.js'),

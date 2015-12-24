@@ -94,9 +94,9 @@ class App extends Component {
         const { history } = this.state;
         const root = history.getCurrentStep().root;
         const { renderer } = this.refs;
-        const { selectedNode } = renderer.state;
+        const { selectedNodes } = renderer.state;
 
-        if (!selectedNode && root.type === 'Equation') {
+        if (selectedNodes.length === 0 && root.type === 'Equation') {
             this.performEquationAction(text);
         } else {
             this.performExpressionAction(text);
@@ -155,7 +155,7 @@ class App extends Component {
     performExpressionAction(text) {
         const history = this.state.history.clone();
         const { renderer } = this.refs;
-        const { selectedNode } = renderer.state;
+        const { selectedNodes } = renderer.state;
 
         const op = opDict[text[0]];
 
@@ -163,16 +163,19 @@ class App extends Component {
         const math = history.getCurrentStep();
 
         // TODO: handle -x+x
-        if (['+', '-'].includes(text[0]) && compare(expr, new Literal(0))) {
-            const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
-            node.parent.replace(node, op(node.clone(), expr));
-            history.addStep(math);
-            this.setState({history, menu: null});
-        } else if (['*', '/'].includes(text[0]) && compare(expr, new Literal(1))) {
-            const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
-            node.parent.replace(node, op(node.clone(), expr));
-            history.addStep(math);
-            this.setState({math, history});
+        if (selectedNodes.length === 1) {
+            const selectedNode = selectedNodes[0];
+            if (['+', '-'].includes(text[0]) && compare(expr, new Literal(0))) {
+                const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
+                node.parent.replace(node, op(node.clone(), expr));
+                history.addStep(math);
+                this.setState({history, menu: null});
+            } else if (['*', '/'].includes(text[0]) && compare(expr, new Literal(1))) {
+                const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
+                node.parent.replace(node, op(node.clone(), expr));
+                history.addStep(math);
+                this.setState({math, history});
+            }
         }
 
         renderer.setState({menu: null});
