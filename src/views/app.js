@@ -40,15 +40,24 @@ class App extends Component {
         this.handleEdit = this.handleEdit.bind(this);
     }
 
-    handleClick(id, transform) {
+    handleClick(selectedNodes, transform) {
         const history = this.state.history.clone();
         const math = history.getCurrentStep();
         const nextMath = math.clone();
-        const node = findNode(nextMath, id);
 
-        if (node && transform && transform.canTransform(node)) {
-            // the transform updates nextMath
-            transform.doTransform(node);
+        const newSelectedNodes =
+            selectedNodes.map(node => findNode(nextMath, node.id));
+
+        if (newSelectedNodes.length === 1) {
+            const node = newSelectedNodes[0];
+            if (transform && transform.canTransform(node)) {
+                // the transform updates nextMath
+                transform.doTransform(node);
+                history.addStep(nextMath);
+                this.setState({ history });
+            }
+        } else if (transform.hasOwnProperty('canTransformNodes') && transform.canTransformNodes(newSelectedNodes)) {
+            transform.transformNodes(newSelectedNodes);
             history.addStep(nextMath);
             this.setState({ history });
         }

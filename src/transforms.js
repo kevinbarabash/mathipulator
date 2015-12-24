@@ -1,4 +1,5 @@
 module.exports = {
+    // single node transforms
     commute: require('./transforms/commute.js'),
     evaluate: require('./transforms/evaluate.js'),
     rewriteSubtraction: require('./transforms/rewrite-subtraction.js'),
@@ -19,4 +20,7 @@ module.exports = {
     cancelAddition: require('./transforms/cancel-addition.js'),
     cancelSubtraction: require('./transforms/cancel-subtraction.js'),
     primeFactorization: require('./transforms/prime-factorization.js'),
+
+    // multi-node transforms
+    cancelFactor: require('./transforms/cancel-factor.js'),
 };

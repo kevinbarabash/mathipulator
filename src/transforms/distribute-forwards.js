@@ -1,4 +1,3 @@
-const Literal = require('../ast/literal.js');
 const { mul } = require('../operations.js');
 
 function canTransform(node) {

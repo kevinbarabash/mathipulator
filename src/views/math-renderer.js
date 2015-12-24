@@ -205,47 +205,51 @@ class MathRenderer extends Component {
             const highlights = this.getSelectionHighlights(layout, [mathNode], hitNode);
 
             if (highlights.length === 1) {
-                const {bounds} = highlights[0];
-
-                const x = (bounds.left + bounds.right) / 2;
-                const y = bounds.top - 10;
-
-                let menu = null;
-
-                if (mathNode) {
-                    const items = Object.values(transforms)
-                        .filter(transform => transform.canTransform(mathNode))
-                        .map(transform => {
-                            return {
-                                label: transform.label,
-                                action: () => {
-                                    this.props.onClick(mathNode.id, transform);
-                                    this.setState({ menu: null, selectedNodes: [] });
-                                }
-                            }
-                        });
-
-                    if (items.length > 0) {
-                        menu = <Menu position={{x, y}} items={items}/>;
-                    }
-                }
+                let newSelectedNodes = [];
 
                 if (multiselect) {
                     if (selectedNodes.includes(mathNode)) {
-                        this.setState({
-                            menu,
-                            selectedNodes: selectedNodes.filter(node => node.id !== mathNode.id),
-                            hitNode });
+                        newSelectedNodes = selectedNodes.filter(node => node.id !== mathNode.id);
                     } else {
-                        this.setState({ menu, selectedNodes: [...selectedNodes, mathNode], hitNode });
+                        newSelectedNodes = [...selectedNodes, mathNode];
                     }
                 } else {
                     if (selectedNodes.includes(mathNode)) {
-                        this.setState({ menu, selectedNodes: [], hitNode });
+                        newSelectedNodes = [];
                     } else {
-                        this.setState({ menu, selectedNodes: [mathNode], hitNode });
+                        newSelectedNodes = [mathNode];
                     }
                 }
+
+                const items = Object.values(transforms)
+                    .filter(transform => {
+                        if (newSelectedNodes.length === 1) {
+                            return transform.canTransform(newSelectedNodes[0]);
+                        } else if (transform.hasOwnProperty('canTransformNodes')) {
+                            return transform.canTransformNodes(newSelectedNodes);
+                        }
+                    })
+                    .map(transform => {
+                        return {
+                            label: transform.label,
+                            action: () => {
+                                this.props.onClick(newSelectedNodes, transform);
+                                this.setState({
+                                    menu: null,
+                                    selectedNodes: [],
+                                    multiselect: false
+                                });
+                            }
+                        }
+                    });
+
+                const {bounds} = highlights[0];
+                const x = (bounds.left + bounds.right) / 2;
+                const y = bounds.top - 10;
+
+                const menu = items.length > 0 ? <Menu position={{x, y}} items={items}/> : null;
+
+                this.setState({ menu, selectedNodes: newSelectedNodes, hitNode });
             }
 
             if (this.state.timeout) {
