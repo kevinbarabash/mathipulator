@@ -171,6 +171,15 @@ class MathRenderer extends Component {
         }
     }
 
+    performTransform(selectedNodes, transform) {
+        this.props.onClick(selectedNodes, transform);
+        this.setState({
+            menu: null,
+            selectedNodes: [],
+            multiselect: false
+        });
+    }
+
     handleClick(e) {
 
     }
@@ -202,54 +211,47 @@ class MathRenderer extends Component {
                 return;
             }
 
-            const highlights = this.getSelectionHighlights(layout, [mathNode], hitNode);
+            let newSelectedNodes = [];
 
-            if (highlights.length === 1) {
-                let newSelectedNodes = [];
-
-                if (multiselect) {
-                    if (selectedNodes.includes(mathNode)) {
-                        newSelectedNodes = selectedNodes.filter(node => node.id !== mathNode.id);
-                    } else {
-                        newSelectedNodes = [...selectedNodes, mathNode];
-                    }
+            if (multiselect) {
+                if (selectedNodes.includes(mathNode)) {
+                    newSelectedNodes = selectedNodes.filter(node => node.id !== mathNode.id);
                 } else {
-                    if (selectedNodes.includes(mathNode)) {
-                        newSelectedNodes = [];
-                    } else {
-                        newSelectedNodes = [mathNode];
-                    }
+                    newSelectedNodes = [...selectedNodes, mathNode];
                 }
+            } else {
+                if (selectedNodes.includes(mathNode)) {
+                    newSelectedNodes = [];
+                } else {
+                    newSelectedNodes = [mathNode];
+                }
+            }
 
-                const items = Object.values(transforms)
-                    .filter(transform => {
-                        if (newSelectedNodes.length === 1) {
-                            return transform.canTransform(newSelectedNodes[0]);
-                        } else if (transform.hasOwnProperty('canTransformNodes')) {
-                            return transform.canTransformNodes(newSelectedNodes);
-                        }
-                    })
-                    .map(transform => {
-                        return {
-                            label: transform.label,
-                            action: () => {
-                                this.props.onClick(newSelectedNodes, transform);
-                                this.setState({
-                                    menu: null,
-                                    selectedNodes: [],
-                                    multiselect: false
-                                });
-                            }
-                        }
-                    });
+            const items = Object.values(transforms)
+                .filter(transform => {
+                    if (newSelectedNodes.length === 1) {
+                        return transform.canTransform(newSelectedNodes[0]);
+                    } else if (transform.hasOwnProperty('canTransformNodes')) {
+                        return transform.canTransformNodes(newSelectedNodes);
+                    }
+                })
+                .map(transform => {
+                    return {
+                        label: transform.label,
+                        action: () => this.performTransform(newSelectedNodes, transform)
+                    }
+                });
 
-                const {bounds} = highlights[0];
+            const highlights = this.getSelectionHighlights(layout, newSelectedNodes, hitNode);
+
+            const pos = { x:Infinity, y:Infinity };
+            for (const {bounds} of highlights) {
                 const x = (bounds.left + bounds.right) / 2;
                 const y = bounds.top - 10;
-
-                const menu = items.length > 0 ? <Menu position={{x, y}} items={items}/> : null;
-
-                this.setState({ menu, selectedNodes: newSelectedNodes, hitNode });
+                if (y < pos.y) {
+                    pos.x = x;
+                    pos.y = y;
+                }
             }
 
             if (this.state.timeout) {
@@ -271,7 +273,12 @@ class MathRenderer extends Component {
                 }
             }, 500);
 
+            const menu = items.length > 0 ? <Menu position={pos} items={items}/> : null;
+
             this.setState({
+                menu,
+                selectedNodes: newSelectedNodes,
+                hitNode,
                 start: {
                     x: e.pageX,
                     y: e.pageY,
