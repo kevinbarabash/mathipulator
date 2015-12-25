@@ -21,6 +21,7 @@ module.exports = {
     cancelAddition: require('./transforms/cancel-addition.js'),
     cancelSubtraction: require('./transforms/cancel-subtraction.js'),
     primeFactorization: require('./transforms/prime-factorization.js'),
+    collectLikeTerms: require('./transforms/collect-like-terms.js'),
 
     // multi-node transforms
     cancelFactor: require('./transforms/cancel-factor.js'),
