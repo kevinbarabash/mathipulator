@@ -35,7 +35,7 @@ function doTransform(node) {
 }
 
 module.exports = {
-    label: 'eliminate one',
+    label: 'eliminate',
     canTransform,
     doTransform,
 };

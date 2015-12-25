@@ -48,7 +48,7 @@ function doTransform(node) {
 }
 
 module.exports = {
-    label: 'eliminate zero',
+    label: 'eliminate',
     canTransform,
     doTransform
 };

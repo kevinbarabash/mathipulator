@@ -18,7 +18,7 @@ function doTransform(node) {
 }
 
 module.exports = {
-    label: 'cancel subtraction',
+    label: 'cancel',
     canTransform,
     doTransform
 };

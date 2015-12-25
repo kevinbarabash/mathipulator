@@ -22,7 +22,7 @@ function doTransform(node) {
 }
 
 module.exports = {
-    label: 'cancel addition',
+    label: 'cancel',
     canTransform,
     doTransform
 };

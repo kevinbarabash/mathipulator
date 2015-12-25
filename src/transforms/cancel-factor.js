@@ -99,7 +99,7 @@ function transformNodes(nodes) {
 }
 
 module.exports = {
-    label: 'cancel factor',
+    label: 'cancel',
     canTransform,
     canTransformNodes,
     transformNodes

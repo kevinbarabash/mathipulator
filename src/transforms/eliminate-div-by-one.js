@@ -12,7 +12,7 @@ function doTransform(node) {
 }
 
 module.exports = {
-    label: 'eliminate division by one',
+    label: 'eliminate',
     canTransform,
     doTransform,
 };
