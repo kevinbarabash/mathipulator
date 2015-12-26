@@ -27,6 +27,7 @@ function findNode(node, id) {
         const num = findNode(node.root, id);
         if (num) return num;
     }
+    return null;
 }
 
 var deepEqual = function(node1, node2) {

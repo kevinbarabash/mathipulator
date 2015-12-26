@@ -8,6 +8,7 @@ const transforms = require('../transforms.js');
 const { findNode, traverseNode } = require('../util/node_utils.js');
 const { AnimatedLayout } = require('./animation.js');
 const { roundRect, fillCircle } = require('./canvas-util.js');
+const Selection = require('./selection.js');
 
 class MathRenderer extends Component {
     constructor() {
@@ -24,6 +25,7 @@ class MathRenderer extends Component {
         };
 
         this.handleClick = this.handleClick.bind(this);
+
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
@@ -99,7 +101,7 @@ class MathRenderer extends Component {
         }
     }
 
-    getSelectionHighlights(layout, selectedNodes, hitNode) {
+    getSelectionHighlights(layout, selections, hitNode) {
         const layoutDict = {};
 
         // layout node ids start with the math node's id but may contain additional
@@ -115,16 +117,19 @@ class MathRenderer extends Component {
 
         const highlights = [];
 
-        selectedNodes.forEach(node => {
+        selections.forEach(selection => {
             const layouts = [];
-            if (node.type === 'Equation' && hitNode.text === "=") {
-                layouts.push(hitNode);
-            } else {
-                traverseNode(node, (node) => {
-                    if (layoutDict.hasOwnProperty(node.id)) {
-                        layouts.push(...layoutDict[node.id]);
-                    }
-                });
+
+            for (const node of selection) {
+                if (node.type === 'Equation' && hitNode.text === "=") {
+                    layouts.push(hitNode);
+                } else {
+                    traverseNode(node, (node) => {
+                        if (layoutDict.hasOwnProperty(node.id)) {
+                            layouts.push(...layoutDict[node.id]);
+                        }
+                    });
+                }
             }
 
             highlights.push({
@@ -217,20 +222,24 @@ class MathRenderer extends Component {
                 if (selectedNodes.includes(mathNode)) {
                     newSelectedNodes = selectedNodes.filter(node => node.id !== mathNode.id);
                 } else {
-                    newSelectedNodes = [...selectedNodes, mathNode];
+                    newSelectedNodes = [...selectedNodes, new Selection(mathNode)];
                 }
             } else {
                 if (selectedNodes.includes(mathNode)) {
                     newSelectedNodes = [];
                 } else {
-                    newSelectedNodes = [mathNode];
+                    newSelectedNodes = [new Selection(mathNode)];
                 }
             }
 
             const items = Object.values(transforms)
                 .filter(transform => {
                     if (newSelectedNodes.length === 1) {
-                        return transform.canTransform(newSelectedNodes[0]);
+                        if (newSelectedNodes[0].type === "single") {
+                            return transform.canTransform(newSelectedNodes[0].first);
+                        } else {
+                            return false;
+                        }
                     } else if (transform.hasOwnProperty('canTransformNodes')) {
                         return transform.canTransformNodes(newSelectedNodes);
                     }
@@ -311,6 +320,63 @@ class MathRenderer extends Component {
                 timestamp: Date.now(),
             },
         });
+
+        e.preventDefault();
+
+        const { math } = this.props;
+        const { layout, selectedNodes, mouse } = this.state;
+
+        if (mouse === 'down') {
+            const hitNode = layout.hitTest(e.pageX, e.pageY);
+
+            if (hitNode && hitNode.selectable) {
+                const id = hitNode.id.split(":")[0];
+                let mathNode = findNode(math, id);
+
+                if (selectedNodes.length > 0) {
+                    const selection = selectedNodes[selectedNodes.length - 1];
+                    const parent = selection.first.parent;
+
+                    if (mathNode.parent === parent && ['Expression', 'Product'].includes(parent.type)) {
+                        if (parent.indexOf(mathNode) < parent.indexOf(selection.first)) {
+                            selection.first = mathNode;
+                        }
+
+                        if (parent.indexOf(mathNode) > parent.indexOf(selection.last)) {
+                            selection.last = mathNode;
+                        }
+
+                        if (selection.first.type === 'Operator') {
+                            selection.first = selection.first.prev;
+                        }
+
+                        if (selection.last.type === 'Operator') {
+                            selection.last = selection.last.next;
+                        }
+
+                        if (selection.first === parent.first && selection.last === parent.last) {
+                            selection.first = parent;
+                            selection.last = parent;
+                        }
+
+                        selectedNodes[selectedNodes - 1] = selection;
+
+                        this.setState({selectedNodes});
+                    } else if (selection.first.parent.type === 'Fraction') {
+                        if (!findNode(selection.first, mathNode.id)) {
+                            if (findNode(parent, mathNode.id)) {
+                                selection.first = parent;
+                                selection.last = parent;
+
+                                selectedNodes[selectedNodes.length - 1] = selection;
+
+                                this.setState({selectedNodes});
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     handleMouseUp(e) {

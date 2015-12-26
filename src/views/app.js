@@ -6,6 +6,7 @@ const History = require('./history.js');
 const MathRenderer = require('./math-renderer.js');
 const HistoryRenderer = require('./history-renderer.js');
 const Parser = require('../parser.js');
+const Selection = require('./selection.js');
 const { add, sub, mul, div } = require('../operations.js');
 const { findNode, compare } = require('../util/node_utils.js');
 
@@ -23,7 +24,9 @@ class App extends Component {
         this.parser = new Parser();
 
         const history = new History();
-        history.addStep(this.parser.parse('(10xy)/(2x)'));
+        history.addStep(this.parser.parse('(2xy)/(2x)'));
+        //history.addStep(this.parser.parse('5*(1/(1+x))*2*(1/y)'));
+        //history.addStep(this.parser.parse('1/x+1/y'));
 
         this.state = {
             menu: null,
@@ -45,16 +48,21 @@ class App extends Component {
         const math = history.getCurrentStep();
         const nextMath = math.clone();
 
-        const newSelectedNodes =
-            selectedNodes.map(node => findNode(nextMath, node.id));
+        const newSelectedNodes = selectedNodes.map(selection => {
+            const first = findNode(nextMath, selection.first.id);
+            const last = findNode(nextMath, selection.last.id);
+            return new Selection(first, last);
+        });
 
         if (newSelectedNodes.length === 1) {
-            const node = newSelectedNodes[0];
-            if (transform && transform.canTransform(node)) {
-                // the transform updates nextMath
-                transform.doTransform(node);
-                history.addStep(nextMath);
-                this.setState({ history });
+            if (newSelectedNodes[0].type === "single") {
+                const node = newSelectedNodes[0].first;
+                if (transform && transform.canTransform(node)) {
+                    // the transform updates nextMath
+                    transform.doTransform(node);
+                    history.addStep(nextMath);
+                    this.setState({ history });
+                }
             }
         } else if (transform.hasOwnProperty('canTransformNodes') && transform.canTransformNodes(newSelectedNodes)) {
             transform.transformNodes(newSelectedNodes);
@@ -163,8 +171,8 @@ class App extends Component {
         const math = history.getCurrentStep();
 
         // TODO: handle -x+x
-        if (selectedNodes.length === 1) {
-            const selectedNode = selectedNodes[0];
+        if (selectedNodes.length === 1 && selectedNodes[0].type === "single") {
+            const selectedNode = selectedNodes[0].first;
             if (['+', '-'].includes(text[0]) && compare(expr, new Literal(0))) {
                 const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
                 node.parent.replace(node, op(node.clone(), expr));
@@ -178,7 +186,7 @@ class App extends Component {
             }
         }
 
-        renderer.setState({menu: null});
+        renderer.setState({menu: null, selectedNodes: []});
     }
 
     render() {

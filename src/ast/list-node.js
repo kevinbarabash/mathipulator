@@ -106,6 +106,17 @@ class ListNode extends Node {
         }
     }
 
+    indexOf(node) {
+        let index = 0;
+        for (const child of this) {
+            if (node === child) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
+    }
+
     *[Symbol.iterator]() {
         let node = this.first;
         while (node != null) {
