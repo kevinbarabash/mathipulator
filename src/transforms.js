@@ -14,7 +14,6 @@ module.exports = {
     eliminateOne: require('./transforms/eliminate-one.js'),
     eliminateDivByOne: require('./transforms/eliminate-div-by-one.js'),
     swapSides: require('./transforms/swap-sides.js'),
-    removeParentheses: require('./transforms/remove-parens.js'),
     multiplyFractions: require('./transforms/multiply-fractions.js'),
     addFractions: require('./transforms/add-fractions.js'),
     simplifyToZero: require('./transforms/simplify-to-zero.js'),
@@ -22,6 +21,9 @@ module.exports = {
     cancelSubtraction: require('./transforms/cancel-subtraction.js'),
     primeFactorization: require('./transforms/prime-factorization.js'),
     collectLikeTerms: require('./transforms/collect-like-terms.js'),
+
+    addParentheses: require('./transforms/add-parens.js'),
+    removeParentheses: require('./transforms/remove-parens.js'),
 
     // multi-node transforms
     cancelFactor: require('./transforms/cancel-factor.js'),

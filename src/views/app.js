@@ -24,9 +24,10 @@ class App extends Component {
         this.parser = new Parser();
 
         const history = new History();
-        history.addStep(this.parser.parse('(2xyz)/(xy)'));
+        //history.addStep(this.parser.parse('(2xyz)/(xy)'));
         //history.addStep(this.parser.parse('5*(1/(1+x))*2*(1/y)'));
         //history.addStep(this.parser.parse('1/x+1/y'));
+        history.addStep(this.parser.parse('1+2+3+4+5'));
 
         this.state = {
             menu: null,
@@ -58,13 +59,11 @@ class App extends Component {
         });
 
         if (newSelections.length === 1) {
-            if (newSelections[0].type === "single") {
-                if (transform && transform.canTransform(newSelections[0])) {
-                    // the transform updates nextMath
-                    transform.doTransform(newSelections[0]);
-                    history.addStep(nextMath);
-                    this.setState({ history });
-                }
+            if (transform && transform.canTransform(newSelections[0])) {
+                // the transform updates nextMath
+                transform.doTransform(newSelections[0]);
+                history.addStep(nextMath);
+                this.setState({ history });
             }
         } else if (transform.hasOwnProperty('canTransformNodes') && transform.canTransformNodes(newSelections)) {
             transform.transformNodes(newSelections);
