@@ -20,8 +20,6 @@ class MathRenderer extends Component {
             selections: [],
             layout: null,
             start: null,
-            multiselect: false,
-            timeout: null,
         };
 
         this.handleClick = this.handleClick.bind(this);
@@ -153,11 +151,7 @@ class MathRenderer extends Component {
         const highlights = this.getSelectionHighlights(layout, selections, hitNode);
         const padding = 8;
 
-        if (nextState.multiselect) {
-            context.fillStyle = 'rgba(0,128,0,0.5)';
-        } else {
-            context.fillStyle = 'rgba(255,255,0,0.5)';
-        }
+        context.fillStyle = 'rgba(255,255,0,0.5)';
 
         for (const {shape, bounds} of highlights) {
             if (shape === 'circle') {
@@ -181,7 +175,6 @@ class MathRenderer extends Component {
         this.setState({
             menu: null,
             selections: [],
-            multiselect: false
         });
     }
 
@@ -228,7 +221,7 @@ class MathRenderer extends Component {
         e.preventDefault();
 
         const { math } = this.props;
-        const { layout, selections, multiselect } = this.state;
+        const { layout, selections } = this.state;
         const hitNode = layout.hitTest(e.pageX, e.pageY);
 
         if (hitNode && hitNode.selectable) {
@@ -242,10 +235,6 @@ class MathRenderer extends Component {
             // then you grow a new selection... the new selection will actively
             // reject growing to including any of the existing selections
 
-            //if (selectedNode && findNode(selectedNode, id)) {
-            //    mathNode = selectedNode.parent;
-            //}
-
             if (!mathNode) {
                 this.setState({ menu: null, selections: [] });
                 return;
@@ -253,44 +242,17 @@ class MathRenderer extends Component {
 
             let newSelections = [];
 
-            if (multiselect) {
-                if (selections.every(selection => !selection.includes(mathNode))) {
-                    newSelections = [...selections, new Selection(mathNode)];
-                } else {
-                    const index = selections.findIndex(selection => selection.includes(mathNode));
-
-                    if (index != undefined) {
-                        newSelections = [...selections.slice(0, index), ...selections.slice(index + 1)];
-                    }
-                }
+            if (selections.every(selection => !selection.includes(mathNode))) {
+                newSelections = [...selections, new Selection(mathNode)];
             } else {
-                if (selections.includes(mathNode)) {
-                    newSelections = [];
-                } else {
-                    newSelections = [new Selection(mathNode)];
+                const index = selections.findIndex(selection => selection.includes(mathNode));
+
+                if (index != undefined) {
+                    newSelections = [...selections.slice(0, index), ...selections.slice(index + 1)];
                 }
             }
 
             const menu = this.getMenu(layout, newSelections, hitNode);
-
-            if (this.state.timeout) {
-                clearTimeout(this.state.timeout);
-            }
-
-            const timeout = setTimeout(() => {
-                const {start, current, mouse} = this.state;
-
-                const dx = current.x - start.x;
-                const dy = current.y - start.y;
-
-                const dist = Math.sqrt(dx * dx + dy * dy);
-
-                if (dist < 25 && mouse === 'down') {
-                    this.setState({
-                        multiselect: true
-                    });
-                }
-            }, 500);
 
             this.setState({
                 menu,
@@ -307,15 +269,12 @@ class MathRenderer extends Component {
                     timestamp: Date.now(),
                 },
                 mouse: 'down',
-                timeout,
             });
         } else {
             this.setState({
                 menu: null,
                 selections: [],
                 hitNode: null,
-                multiselect: false,
-                timeout: null
             });
         }
     }
