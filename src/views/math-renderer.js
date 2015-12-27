@@ -182,11 +182,7 @@ class MathRenderer extends Component {
         const items = Object.values(transforms)
             .filter(transform => {
                 if (newSelections.length === 1) {
-                    if (newSelections[0].type === "single") {
-                        return transform.canTransform(newSelections[0].first);
-                    } else {
-                        return false;
-                    }
+                    return transform.canTransform(newSelections[0]);
                 } else if (transform.hasOwnProperty('canTransformNodes')) {
                     return transform.canTransformNodes(newSelections);
                 }

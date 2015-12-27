@@ -1,6 +1,10 @@
 const { Literal, Operator } = require('../ast.js');
 
-function canTransform(node) {
+function canTransform(selection) {
+    if (selection.type === 'range') {
+        return false;
+    }
+    const node = selection.first;
     if (node.type === 'Literal' && node.value === 1) {
         if (node.next && node.prev) {
             return node.next.operator === '*' && node.prev.operator === '*';
@@ -14,8 +18,9 @@ function canTransform(node) {
     }
 }
 
-function doTransform(node) {
-    if (canTransform(node)) {
+function doTransform(selection) {
+    if (canTransform(selection)) {
+        const node = selection.first;
         const { parent, next, prev } = node;
 
         if (next) {

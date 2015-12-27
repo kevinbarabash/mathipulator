@@ -2,14 +2,19 @@ const Literal = require('../ast/literal.js');
 const Operator = require('../ast/operator.js');
 const Negation = require('../ast/negation.js');
 
-function canTransform(node) {
+function canTransform(selection) {
+    if (selection.type === 'range') {
+        return false;
+    }
+    const node = selection.first;
     if (node.type === 'Operator' && node.operator === '-') {
         return true;
     }
 }
 
-function doTransform(node) {
-    if (canTransform(node)) {
+function doTransform(selection) {
+    if (canTransform(selection)) {
+        const node = selection.first;
         const next = node.next;
         const parent = node.parent;
 

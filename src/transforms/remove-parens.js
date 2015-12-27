@@ -1,4 +1,8 @@
-function canTransform(node) {
+function canTransform(selection) {
+    if (selection.type === 'range') {
+        return false;
+    }
+    const node = selection.first;
     if (node && node.parent) {
         if (node.type === 'Expression' && node.parent.type === 'Expression') {
             return node.prev == null || node.prev.operator === '+';
@@ -9,8 +13,9 @@ function canTransform(node) {
     return false;
 }
 
-function doTransform(node) {
-    if (canTransform(node)) {
+function doTransform(selection) {
+    if (canTransform(selection)) {
+        const node = selection.first;
         const parent = node.parent;
 
         node.first.prev = node.prev;

@@ -1,6 +1,7 @@
 const { Literal } = require('../ast.js');
 const { mul, removeExtraProductParens } = require('../operations.js');
 
+// TODO: move to utils
 const primeFactorization = function(num, result = []) {
     let root = Math.sqrt(num);
     let x = 2;
@@ -16,7 +17,11 @@ const primeFactorization = function(num, result = []) {
     return (x === num) ? result : primeFactorization(num / x, result);
 };
 
-function canTransform(node) {
+function canTransform(selection) {
+    if (selection.type === 'range') {
+        return false;
+    }
+    const node = selection.first;
     if (node.type === 'Literal') {
         const factors = primeFactorization(node.value);
         return factors.length > 1;
@@ -24,8 +29,9 @@ function canTransform(node) {
     return false;
 }
 
-function doTransform(node) {
-    if (canTransform(node)) {
+function doTransform(selection) {
+    if (canTransform(selection)) {
+        const node = selection.first;
         const { parent } = node;
         const factors = primeFactorization(node.value);
 

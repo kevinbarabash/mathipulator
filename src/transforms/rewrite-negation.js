@@ -2,13 +2,18 @@ const Literal = require('../ast/literal.js');
 const Operator = require('../ast/operator.js');
 const Product = require('../ast/product.js');
 
-function canTransform(node) {
+function canTransform(selection) {
+    if (selection.type === 'range') {
+        return false;
+    }
+    const node = selection.first;
     return node.type === 'Negation' ||
         node.type === 'Literal' && node.value < 0;
 }
 
-function doTransform(node) {
-    if (canTransform(node)) {
+function doTransform(selection) {
+    if (canTransform(selection)) {
+        const node = selection.first;
         const parent = node.parent;
         if (parent.type === 'Product') {
             parent.insertBefore(new Literal(-1), node);

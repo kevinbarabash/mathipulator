@@ -1,13 +1,18 @@
 const { mul } = require('../operations.js');
 
-function canTransform(node) {
+function canTransform(selection) {
+    if (selection.type === 'range') {
+        return false;
+    }
+    const node = selection.first;
     return node.parent && node.parent.type === 'Product' &&
         node.prev && node.prev.operator === '*' &&
         node.prev.prev && node.prev.prev.type === 'Expression';
 }
 
-function doTransform(node) {
-    if (canTransform(node)) {
+function doTransform(selection) {
+    if (canTransform(selection)) {
+        const node = selection.first;
         const expr = node.prev.prev;
         const terms = [];
         for (const child of expr) {

@@ -7,7 +7,11 @@ const operations = {
     '/': (a, b) => a / b,
 };
 
-function canTransform(node) {
+function canTransform(selection) {
+    if (selection.type === 'range') {
+        return false;
+    }
+    const node = selection.first;
     const { prev, next } = node;
     if (prev && next) {
         if (prev.type === "Literal" && next.type === "Literal") {
@@ -20,8 +24,9 @@ function canTransform(node) {
     return false;
 }
 
-function doTransform(node) {
-    if (canTransform(node)) {
+function doTransform(selection) {
+    if (canTransform(selection)) {
+        const node = selection.first;
         const { prev, next } = node;
 
         const left = prev.value;

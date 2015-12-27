@@ -59,10 +59,9 @@ class App extends Component {
 
         if (newSelections.length === 1) {
             if (newSelections[0].type === "single") {
-                const node = newSelections[0].first;
-                if (transform && transform.canTransform(node)) {
+                if (transform && transform.canTransform(newSelections[0])) {
                     // the transform updates nextMath
-                    transform.doTransform(node);
+                    transform.doTransform(newSelections[0]);
                     history.addStep(nextMath);
                     this.setState({ history });
                 }
