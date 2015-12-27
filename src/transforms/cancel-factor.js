@@ -44,18 +44,12 @@ function canTransformNodes(selections) {
 
         if ((a === aFrac.numerator || a.parent === aFrac.numerator) &&
             (b === bFrac.denominator || b.parent === bFrac.denominator)) {
-            const result = compare(a, b);
-            console.log(result);
-            console.log(a);
-            console.log(b);
-            return result;
+            return compare(a, b);
         }
 
         if ((a === aFrac.denominator || a.parent === aFrac.denominator) &&
             (b === bFrac.numerator || b.parent === bFrac.numerator)) {
-            const result = compare(a, b);
-            console.log(result);
-            return result;
+            return compare(a, b);
         }
     }
     return false;
@@ -94,7 +88,7 @@ function transformNodes(selections) {
                     nodes.unshift(a.first.prev);
                 }
                 // TODO: handle the third case, e.g. (2*x*y*5)/(x*y) where we want to leave one of the '*' operators
-                // TODO: update Expression and Product to handle 
+                // TODO: update Expression and Product to handle
                 for (const node of nodes) {
                     parent.remove(node);
                 }

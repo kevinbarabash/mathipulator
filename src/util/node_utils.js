@@ -128,7 +128,7 @@ const evaluate = function(node, dict = {}) {
     } else if (node.type === 'Negation') {
         return -evaluate(node.value, dict);
     } else {
-        throw new Error(`unexpected node: ${node.type}`);
+        return NaN;
     }
 };
 
@@ -150,6 +150,10 @@ const testValues = [-1000, -100, -10, -1, -0.1, -0.01, -0.001, 0, 0.001, 0.01, 0
 
 // Returns true if left is an equivalent expression to right
 const compare = function(left, right) {
+    if (left.type === 'Operator' || right.type === 'Operator') {
+        return false;
+    }
+
     const identifiers = new Set();
     for (const id of getIdentifiers(left)) {
         identifiers.add(id);
