@@ -17,7 +17,7 @@ class MathRenderer extends Component {
         this.state = {
             context: null,
             menu: null,
-            selectedNodes: [],
+            selections: [],
             layout: null,
             start: null,
             multiselect: false,
@@ -76,10 +76,10 @@ class MathRenderer extends Component {
             const currentLayout = this.state.layout;
             const nextLayout = nextState.layout;
 
-            const { selectedNodes, hitNode } = nextState;
+            const { selections, hitNode } = nextState;
 
-            if (selectedNodes.length > 0) {
-                this.drawSelection(selectedNodes, hitNode, nextLayout, nextState);
+            if (selections.length > 0) {
+                this.drawSelection(selections, hitNode, nextLayout, nextState);
             }
 
             context.fillStyle = nextProps.color;
@@ -147,10 +147,10 @@ class MathRenderer extends Component {
 
     }
 
-    drawSelection(selectedNodes, hitNode, layout, nextState) {
+    drawSelection(selections, hitNode, layout, nextState) {
         const { context } = this.state;
 
-        const highlights = this.getSelectionHighlights(layout, selectedNodes, hitNode);
+        const highlights = this.getSelectionHighlights(layout, selections, hitNode);
         const padding = 8;
 
         if (nextState.multiselect) {
@@ -176,11 +176,11 @@ class MathRenderer extends Component {
         }
     }
 
-    performTransform(selectedNodes, transform) {
-        this.props.onClick(selectedNodes, transform);
+    performTransform(selections, transform) {
+        this.props.onClick(selections, transform);
         this.setState({
             menu: null,
-            selectedNodes: [],
+            selections: [],
             multiselect: false
         });
     }
@@ -193,7 +193,7 @@ class MathRenderer extends Component {
         e.preventDefault();
 
         const { math } = this.props;
-        const { layout, selectedNodes, multiselect } = this.state;
+        const { layout, selections, multiselect } = this.state;
         const hitNode = layout.hitTest(e.pageX, e.pageY);
 
         if (hitNode && hitNode.selectable) {
@@ -212,50 +212,50 @@ class MathRenderer extends Component {
             //}
 
             if (!mathNode) {
-                this.setState({ menu: null, selectedNodes: [] });
+                this.setState({ menu: null, selections: [] });
                 return;
             }
 
-            let newSelectedNodes = [];
+            let newSelections = [];
 
             if (multiselect) {
-                if (selectedNodes.every(selection => !selection.includes(mathNode))) {
-                    newSelectedNodes = [...selectedNodes, new Selection(mathNode)];
+                if (selections.every(selection => !selection.includes(mathNode))) {
+                    newSelections = [...selections, new Selection(mathNode)];
                 } else {
-                    const index = selectedNodes.findIndex(selection => selection.includes(mathNode));
+                    const index = selections.findIndex(selection => selection.includes(mathNode));
 
                     if (index != undefined) {
-                        newSelectedNodes = [...selectedNodes.slice(0, index), ...selectedNodes.slice(index + 1)];
+                        newSelections = [...selections.slice(0, index), ...selections.slice(index + 1)];
                     }
                 }
             } else {
-                if (selectedNodes.includes(mathNode)) {
-                    newSelectedNodes = [];
+                if (selections.includes(mathNode)) {
+                    newSelections = [];
                 } else {
-                    newSelectedNodes = [new Selection(mathNode)];
+                    newSelections = [new Selection(mathNode)];
                 }
             }
 
             const items = Object.values(transforms)
                 .filter(transform => {
-                    if (newSelectedNodes.length === 1) {
-                        if (newSelectedNodes[0].type === "single") {
-                            return transform.canTransform(newSelectedNodes[0].first);
+                    if (newSelections.length === 1) {
+                        if (newSelections[0].type === "single") {
+                            return transform.canTransform(newSelections[0].first);
                         } else {
                             return false;
                         }
                     } else if (transform.hasOwnProperty('canTransformNodes')) {
-                        return transform.canTransformNodes(newSelectedNodes);
+                        return transform.canTransformNodes(newSelections);
                     }
                 })
                 .map(transform => {
                     return {
                         label: transform.label,
-                        action: () => this.performTransform(newSelectedNodes, transform)
+                        action: () => this.performTransform(newSelections, transform)
                     }
                 });
 
-            const highlights = this.getSelectionHighlights(layout, newSelectedNodes, hitNode);
+            const highlights = this.getSelectionHighlights(layout, newSelections, hitNode);
 
             const pos = { x:Infinity, y:Infinity };
             for (const {bounds} of highlights) {
@@ -290,7 +290,7 @@ class MathRenderer extends Component {
 
             this.setState({
                 menu,
-                selectedNodes: newSelectedNodes,
+                selections: newSelections,
                 hitNode,
                 start: {
                     x: e.pageX,
@@ -308,7 +308,7 @@ class MathRenderer extends Component {
         } else {
             this.setState({
                 menu: null,
-                selectedNodes: [],
+                selections: [],
                 hitNode: null,
                 multiselect: false,
                 timeout: null
@@ -328,7 +328,7 @@ class MathRenderer extends Component {
         e.preventDefault();
 
         const { math } = this.props;
-        const { layout, selectedNodes, mouse } = this.state;
+        const { layout, selections, mouse } = this.state;
 
         if (mouse === 'down') {
             const hitNode = layout.hitTest(e.pageX, e.pageY);
@@ -337,14 +337,14 @@ class MathRenderer extends Component {
                 const id = hitNode.id.split(":")[0];
                 let mathNode = findNode(math, id);
 
-                if (selectedNodes.length > 0) {
-                    const previousSelections = selectedNodes.slice(0, selectedNodes.length - 1);
+                if (selections.length > 0) {
+                    const previousSelections = selections.slice(0, selections.length - 1);
 
                     if (previousSelections.some(previousSelection => previousSelection.includes(mathNode))) {
                         return;
                     }
 
-                    const selection = selectedNodes[selectedNodes.length - 1].clone();
+                    const selection = selections[selections.length - 1].clone();
 
                     selection.add(mathNode);
 
@@ -354,7 +354,7 @@ class MathRenderer extends Component {
                     }
 
                     this.setState({
-                        selectedNodes: [...previousSelections, selection]
+                        selections: [...previousSelections, selection]
                     });
                 }
             }

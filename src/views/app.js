@@ -43,20 +43,23 @@ class App extends Component {
         this.handleEdit = this.handleEdit.bind(this);
     }
 
-    handleClick(selectedNodes, transform) {
+    handleClick(selections, transform) {
         const history = this.state.history.clone();
         const math = history.getCurrentStep();
         const nextMath = math.clone();
 
-        const newSelectedNodes = selectedNodes.map(selection => {
+        // Selections in `selections` point nodes in math not nextMath so we
+        // need to find the corresponding nodes in nextMath before we pass the
+        // selection(s) to the transforms.
+        const newSelections = selections.map(selection => {
             const first = findNode(nextMath, selection.first.id);
             const last = findNode(nextMath, selection.last.id);
             return new Selection(first, last);
         });
 
-        if (newSelectedNodes.length === 1) {
-            if (newSelectedNodes[0].type === "single") {
-                const node = newSelectedNodes[0].first;
+        if (newSelections.length === 1) {
+            if (newSelections[0].type === "single") {
+                const node = newSelections[0].first;
                 if (transform && transform.canTransform(node)) {
                     // the transform updates nextMath
                     transform.doTransform(node);
@@ -64,8 +67,8 @@ class App extends Component {
                     this.setState({ history });
                 }
             }
-        } else if (transform.hasOwnProperty('canTransformNodes') && transform.canTransformNodes(newSelectedNodes)) {
-            transform.transformNodes(newSelectedNodes);
+        } else if (transform.hasOwnProperty('canTransformNodes') && transform.canTransformNodes(newSelections)) {
+            transform.transformNodes(newSelections);
             history.addStep(nextMath);
             this.setState({ history });
         }
@@ -102,9 +105,9 @@ class App extends Component {
         const { history } = this.state;
         const root = history.getCurrentStep().root;
         const { renderer } = this.refs;
-        const { selectedNodes } = renderer.state;
+        const { selections } = renderer.state;
 
-        if (selectedNodes.length === 0 && root.type === 'Equation') {
+        if (selections.length === 0 && root.type === 'Equation') {
             this.performEquationAction(text);
         } else {
             this.performExpressionAction(text);
@@ -163,7 +166,7 @@ class App extends Component {
     performExpressionAction(text) {
         const history = this.state.history.clone();
         const { renderer } = this.refs;
-        const { selectedNodes } = renderer.state;
+        const { selections } = renderer.state;
 
         const op = opDict[text[0]];
 
@@ -171,8 +174,8 @@ class App extends Component {
         const math = history.getCurrentStep();
 
         // TODO: handle -x+x
-        if (selectedNodes.length === 1 && selectedNodes[0].type === "single") {
-            const selectedNode = selectedNodes[0].first;
+        if (selections.length === 1 && selections[0].type === "single") {
+            const selectedNode = selections[0].first;
             if (['+', '-'].includes(text[0]) && compare(expr, new Literal(0))) {
                 const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
                 node.parent.replace(node, op(node.clone(), expr));
@@ -186,7 +189,7 @@ class App extends Component {
             }
         }
 
-        renderer.setState({menu: null, selectedNodes: []});
+        renderer.setState({menu: null, selections: []});
     }
 
     render() {
