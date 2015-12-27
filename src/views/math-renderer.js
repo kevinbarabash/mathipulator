@@ -338,65 +338,24 @@ class MathRenderer extends Component {
                 let mathNode = findNode(math, id);
 
                 if (selectedNodes.length > 0) {
-                    const selection = selectedNodes[selectedNodes.length - 1].clone();
-                    const parent = selection.first.parent;
-
                     const previousSelections = selectedNodes.slice(0, selectedNodes.length - 1);
 
                     if (previousSelections.some(previousSelection => previousSelection.includes(mathNode))) {
                         return;
                     }
 
-                    if (mathNode.parent === parent && ['Expression', 'Product'].includes(parent.type)) {
-                        if (parent.indexOf(mathNode) < parent.indexOf(selection.first)) {
-                            selection.first = mathNode;
-                        }
+                    const selection = selectedNodes[selectedNodes.length - 1].clone();
 
-                        if (parent.indexOf(mathNode) > parent.indexOf(selection.last)) {
-                            selection.last = mathNode;
-                        }
+                    selection.add(mathNode);
 
-                        // expand selection to include operands if necessary
-                        if (selection.first.type === 'Operator') {
-                            selection.first = selection.first.prev;
-                        }
-
-                        if (selection.last.type === 'Operator') {
-                            selection.last = selection.last.next;
-                        }
-
-                        // if we've selected all terms in the expression or all
-                        // factors in the product, select the parent instead
-                        if (selection.first === parent.first && selection.last === parent.last) {
-                            selection.first = parent;
-                            selection.last = parent;
-                        }
-
-                        // abort if the new selection in intersecting previous selections
-                        if (previousSelections.some(previous => previous.intersects(selection))) {
-                            return;
-                        }
-
-                        this.setState({
-                            selectedNodes: [...previousSelections, selection]
-                        });
-                    } else if (selection.first.parent.type === 'Fraction') {
-                        if (!findNode(selection.first, mathNode.id)) {
-                            if (findNode(parent, mathNode.id)) {
-                                selection.first = parent;
-                                selection.last = parent;
-
-                                // abort if the new selection in intersecting previous selections
-                                if (previousSelections.some(previous => previous.intersects(selection))) {
-                                    return;
-                                }
-
-                                this.setState({
-                                    selectedNodes: [...previousSelections, selection]
-                                });
-                            }
-                        }
+                    // abort if the new selection in intersecting previous selections
+                    if (previousSelections.some(previous => previous.intersects(selection))) {
+                        return;
                     }
+
+                    this.setState({
+                        selectedNodes: [...previousSelections, selection]
+                    });
                 }
             }
         }

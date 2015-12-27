@@ -47,6 +47,43 @@ class Selection {
         return false
     }
 
+    add(mathNode) {
+        const parent = this.first.parent;
+
+        if (mathNode.parent === parent && ['Expression', 'Product'].includes(parent.type)) {
+            if (parent.indexOf(mathNode) < parent.indexOf(this.first)) {
+                this.first = mathNode;
+            }
+
+            if (parent.indexOf(mathNode) > parent.indexOf(this.last)) {
+                this.last = mathNode;
+            }
+
+            // expand selection to include operands if necessary
+            if (this.first.type === 'Operator') {
+                this.first = this.first.prev;
+            }
+
+            if (this.last.type === 'Operator') {
+                this.last = this.last.next;
+            }
+
+            // if we've selected all terms in the expression or all
+            // factors in the product, select the parent instead
+            if (this.first === parent.first && this.last === parent.last) {
+                this.first = parent;
+                this.last = parent;
+            }
+        } else if (this.first.parent.type === 'Fraction') {
+            if (!findNode(this.first, mathNode.id)) {
+                if (findNode(parent, mathNode.id)) {
+                    this.first = parent;
+                    this.last = parent;
+                }
+            }
+        }
+    }
+
     clone() {
         return new Selection(this.first, this.last);
     }
