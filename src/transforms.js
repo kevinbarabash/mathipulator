@@ -27,4 +27,5 @@ module.exports = {
 
     // multi-node transforms
     cancelFactor: require('./transforms/cancel-factor.js'),
+    factor: require('./transforms/factor.js'),
 };
