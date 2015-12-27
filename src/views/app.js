@@ -27,7 +27,8 @@ class App extends Component {
         //history.addStep(this.parser.parse('(2xyz)/(xy)'));
         //history.addStep(this.parser.parse('5*(1/(1+x))*2*(1/y)'));
         //history.addStep(this.parser.parse('1/x+1/y'));
-        history.addStep(this.parser.parse('2x+2y=10'));
+        //history.addStep(this.parser.parse('2x+2y=10'));
+        history.addStep(this.parser.parse('(2*3)/(2*2)'));
 
         this.state = {
             menu: null,

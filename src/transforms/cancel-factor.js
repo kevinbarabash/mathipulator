@@ -96,7 +96,11 @@ function transformNodes(selections) {
             if (b.prev) {
                 b.parent.remove(b.prev);
             }
-            b.parent.removeSelection(b);
+            if (bSel.type === 'single') {
+                b.parent.remove(b);
+            } else {
+                b.parent.removeSelection(b);
+            }
         }
 
         if (frac.numerator.type === 'Product' && frac.numerator.length === 0) {
