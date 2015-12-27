@@ -61,12 +61,14 @@ class Selection {
             }
 
             // expand selection to include operands if necessary
-            if (this.first.type === 'Operator') {
-                this.first = this.first.prev;
-            }
+            if (this.first !== this.last) {
+                if (this.first.type === 'Operator') {
+                    this.first = this.first.prev;
+                }
 
-            if (this.last.type === 'Operator') {
-                this.last = this.last.next;
+                if (this.last.type === 'Operator') {
+                    this.last = this.last.next;
+                }
             }
 
             // if we've selected all terms in the expression or all

@@ -329,6 +329,23 @@ class MathRenderer extends Component {
     }
 
     handleMouseUp(e) {
+        // TODO: figure out selection semantics that prevent users from creating non-sensical selections
+        const {selections} = this.state;
+        if (selections.length > 0) {
+            const lastSelection = selections[selections.length - 1];
+            if (lastSelection.type === 'single' && lastSelection.first.type === 'Operator') {
+                const {layout} = this.state;
+                const newSelections = [lastSelection];
+                const hitNode = layout.hitTest(e.pageX, e.pageY);
+                const menu = this.getMenu(layout, newSelections, hitNode);
+
+                this.setState({
+                    selections: [lastSelection],
+                    menu
+                });
+            }
+        }
+
         this.setState({
             mouse: 'up'
         });
