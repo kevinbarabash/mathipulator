@@ -24,5 +24,5 @@ module.exports = {
     collectLikeTerms: require('./transforms/collect-like-terms.js'),
 
     // multi-node transforms
-    //cancelFactor: require('./transforms/cancel-factor.js'),
+    cancelFactor: require('./transforms/cancel-factor.js'),
 };

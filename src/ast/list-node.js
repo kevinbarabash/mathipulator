@@ -119,12 +119,15 @@ class ListNode extends Node {
 
     *[Symbol.iterator]() {
         let node = this.first;
-        while (node != null) {
+        while (node != this.last) {
             // grab the current node so that we can do replacements while
             // iterating
             let current = node;
             node = node.next;
             yield current;
+        }
+        if (this.last) {
+            yield this.last;
         }
     }
 

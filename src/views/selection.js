@@ -1,3 +1,4 @@
+const { Expression, Product } = require('../ast.js');
 const { findNode } = require('../util/node_utils.js');
 
 class Selection {
@@ -86,6 +87,28 @@ class Selection {
 
     clone() {
         return new Selection(this.first, this.last);
+    }
+
+    toExpression() {
+        if (this.type === 'single') {
+            return this.first;
+        } else {
+            if (this.first.parent.type === 'Product' && this.first.parent === this.last.parent) {
+                const product = new Product();
+                product.first = this.first;
+                product.last = this.last;
+                product.parent = this.first.parent;
+                return product;
+            } else if (this.first.parent.type === 'Expression' && this.first.parent === this.last.parent) {
+                const expression = new Expression();
+                expression.first = this.first;
+                expression.last = this.last;
+                expression.parent = this.first.parent;
+                return expression;
+            } else {
+                throw new Error('toExpression failed');
+            }
+        }
     }
 }
 

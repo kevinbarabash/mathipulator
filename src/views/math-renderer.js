@@ -185,6 +185,41 @@ class MathRenderer extends Component {
         });
     }
 
+    getMenu(layout, newSelections, hitNode) {
+        const items = Object.values(transforms)
+            .filter(transform => {
+                if (newSelections.length === 1) {
+                    if (newSelections[0].type === "single") {
+                        return transform.canTransform(newSelections[0].first);
+                    } else {
+                        return false;
+                    }
+                } else if (transform.hasOwnProperty('canTransformNodes')) {
+                    return transform.canTransformNodes(newSelections);
+                }
+            })
+            .map(transform => {
+                return {
+                    label: transform.label,
+                    action: () => this.performTransform(newSelections, transform)
+                }
+            });
+
+        const highlights = this.getSelectionHighlights(layout, newSelections, hitNode);
+
+        const pos = { x:Infinity, y:Infinity };
+        for (const {bounds} of highlights) {
+            const x = (bounds.left + bounds.right) / 2;
+            const y = bounds.top - 10;
+            if (y < pos.y) {
+                pos.x = x;
+                pos.y = y;
+            }
+        }
+
+        return items.length > 0 ? <Menu position={pos} items={items}/> : null;
+    }
+
     handleClick(e) {
 
     }
@@ -236,36 +271,7 @@ class MathRenderer extends Component {
                 }
             }
 
-            const items = Object.values(transforms)
-                .filter(transform => {
-                    if (newSelections.length === 1) {
-                        if (newSelections[0].type === "single") {
-                            return transform.canTransform(newSelections[0].first);
-                        } else {
-                            return false;
-                        }
-                    } else if (transform.hasOwnProperty('canTransformNodes')) {
-                        return transform.canTransformNodes(newSelections);
-                    }
-                })
-                .map(transform => {
-                    return {
-                        label: transform.label,
-                        action: () => this.performTransform(newSelections, transform)
-                    }
-                });
-
-            const highlights = this.getSelectionHighlights(layout, newSelections, hitNode);
-
-            const pos = { x:Infinity, y:Infinity };
-            for (const {bounds} of highlights) {
-                const x = (bounds.left + bounds.right) / 2;
-                const y = bounds.top - 10;
-                if (y < pos.y) {
-                    pos.x = x;
-                    pos.y = y;
-                }
-            }
+            const menu = this.getMenu(layout, newSelections, hitNode);
 
             if (this.state.timeout) {
                 clearTimeout(this.state.timeout);
@@ -285,8 +291,6 @@ class MathRenderer extends Component {
                     });
                 }
             }, 500);
-
-            const menu = items.length > 0 ? <Menu position={pos} items={items}/> : null;
 
             this.setState({
                 menu,
@@ -353,8 +357,12 @@ class MathRenderer extends Component {
                         return;
                     }
 
+                    const newSelections = [...previousSelections, selection];
+                    const menu = this.getMenu(layout, newSelections, hitNode);
+
                     this.setState({
-                        selections: [...previousSelections, selection]
+                        selections: newSelections,
+                        menu,
                     });
                 }
             }

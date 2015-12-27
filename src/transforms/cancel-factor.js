@@ -12,12 +12,16 @@ function replace(parent, propName, newChild) {
     newChild.parent = parent;
 }
 
-function canTransformNodes(nodes) {
-    if (nodes.length === 2) {
-        const [a, b] = nodes;
+function canTransformNodes(selections) {
+    if (selections.length === 2) {
+        const [aSel, bSel] = selections;
         let aFrac = null;
         let bFrac = null;
 
+        const a = aSel.toExpression();
+        const b = bSel.toExpression();
+
+        // TODO: proxy .first on selection to selection.first.parent
         if (a.parent.type === 'Fraction') {
             aFrac = a.parent;
         } else if (a.parent.type === 'Product' && a.parent.parent.type === 'Fraction') {
@@ -40,20 +44,29 @@ function canTransformNodes(nodes) {
 
         if ((a === aFrac.numerator || a.parent === aFrac.numerator) &&
             (b === bFrac.denominator || b.parent === bFrac.denominator)) {
-            return compare(a, b);
+            const result = compare(a, b);
+            console.log(result);
+            console.log(a);
+            console.log(b);
+            return result;
         }
 
         if ((a === aFrac.denominator || a.parent === aFrac.denominator) &&
             (b === bFrac.numerator || b.parent === bFrac.numerator)) {
-            return compare(a, b);
+            const result = compare(a, b);
+            console.log(result);
+            return result;
         }
     }
     return false;
 }
 
-function transformNodes(nodes) {
-    if (canTransformNodes(nodes)) {
-        const [a, b] = nodes;
+function transformNodes(selections) {
+    if (canTransformNodes(selections)) {
+        const [aSel, bSel] = selections;
+        const a = aSel.toExpression();
+        const b = bSel.toExpression();
+
         let frac = a.parent.type === 'Fraction' ? a.parent : a.parent.parent;
 
         if (a.parent === frac) {
@@ -69,7 +82,24 @@ function transformNodes(nodes) {
             if (a.prev) {
                 a.parent.remove(a.prev);
             }
-            a.parent.remove(a);
+            if (aSel.type === 'single') {
+                a.parent.remove(a);
+            } else {
+                const parent = a.parent;
+                const nodes = [...a];
+                if (a.last !== parent.last) {
+                    nodes.push(a.last.next);
+                }
+                if (a.first !== parent.first) {
+                    nodes.unshift(a.first.prev);
+                }
+                // TODO: handle the third case, e.g. (2*x*y*5)/(x*y) where we want to leave one of the '*' operators
+                // TODO: update Expression and Product to handle 
+                for (const node of nodes) {
+                    parent.remove(node);
+                }
+
+            }
         }
 
         if (b.parent === frac) {

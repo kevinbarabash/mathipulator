@@ -24,7 +24,7 @@ class App extends Component {
         this.parser = new Parser();
 
         const history = new History();
-        history.addStep(this.parser.parse('(2xy)/(2x)'));
+        history.addStep(this.parser.parse('(2xyz)/(xy)'));
         //history.addStep(this.parser.parse('5*(1/(1+x))*2*(1/y)'));
         //history.addStep(this.parser.parse('1/x+1/y'));
 
