@@ -79,20 +79,7 @@ function transformNodes(selections) {
             if (aSel.type === 'single') {
                 a.parent.remove(a);
             } else {
-                const parent = a.parent;
-                const nodes = [...a];
-                if (a.last !== parent.last) {
-                    nodes.push(a.last.next);
-                }
-                if (a.first !== parent.first) {
-                    nodes.unshift(a.first.prev);
-                }
-                // TODO: handle the third case, e.g. (2*x*y*5)/(x*y) where we want to leave one of the '*' operators
-                // TODO: update Expression and Product to handle
-                for (const node of nodes) {
-                    parent.remove(node);
-                }
-
+                a.parent.removeSelection(a);
             }
         }
 
@@ -109,7 +96,7 @@ function transformNodes(selections) {
             if (b.prev) {
                 b.parent.remove(b.prev);
             }
-            b.parent.remove(b);
+            b.parent.removeSelection(b);
         }
 
         if (frac.numerator.type === 'Product' && frac.numerator.length === 0) {
