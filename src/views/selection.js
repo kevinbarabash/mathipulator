@@ -51,7 +51,14 @@ class Selection {
     add(mathNode) {
         const parent = this.first.parent;
 
-        if (mathNode.parent === parent && ['Expression', 'Product'].includes(parent.type)) {
+        if (['Expression', 'Product'].includes(parent.type) && findNode(parent, mathNode.id)) {
+            // handles the case of selection a number times a fraction
+            for (const node of parent) {
+                if (node !== mathNode && findNode(node, mathNode.id)) {
+                    mathNode = node;
+                }
+            }
+
             if (parent.indexOf(mathNode) < parent.indexOf(this.first)) {
                 this.first = mathNode;
             }
