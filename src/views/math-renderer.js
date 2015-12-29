@@ -31,7 +31,7 @@ class MathRenderer extends Component {
 
     static defaultProps = {
         color: 'black',
-        fontSize: 72,
+        fontSize: 60,
     };
 
     componentDidMount() {
@@ -248,10 +248,7 @@ class MathRenderer extends Component {
                 }
             }
 
-            const menu = this.getMenu(layout, newSelections, hitNode);
-
             this.setState({
-                menu,
                 selections: newSelections,
                 hitNode,
                 start: {
@@ -267,6 +264,7 @@ class MathRenderer extends Component {
                 mouse: 'down',
             });
         } else {
+            // TODO: check if the click is inside a highlight
             this.setState({
                 menu: null,
                 selections: [],
@@ -312,12 +310,8 @@ class MathRenderer extends Component {
                         return;
                     }
 
-                    const newSelections = [...previousSelections, selection];
-                    const menu = this.getMenu(layout, newSelections, hitNode);
-
                     this.setState({
-                        selections: newSelections,
-                        menu,
+                        selections: [...previousSelections, selection],
                     });
                 }
             }
@@ -327,23 +321,17 @@ class MathRenderer extends Component {
     handleMouseUp(e) {
         // TODO: figure out selection semantics that prevent users from creating non-sensical selections
         const {selections} = this.state;
-        if (selections.length > 0) {
-            const lastSelection = selections[selections.length - 1];
-            if (lastSelection.type === 'single' && lastSelection.first.type === 'Operator') {
-                const {layout} = this.state;
-                const newSelections = [lastSelection];
-                const hitNode = layout.hitTest(e.pageX, e.pageY);
-                const menu = this.getMenu(layout, newSelections, hitNode);
+        let menu = null;
 
-                this.setState({
-                    selections: [lastSelection],
-                    menu
-                });
-            }
+        if (selections.length > 0) {
+            const {layout} = this.state;
+            const hitNode = layout.hitTest(e.pageX, e.pageY);
+            menu = this.getMenu(layout, selections, hitNode);
         }
 
         this.setState({
-            mouse: 'up'
+            menu,
+            mouse: 'up',
         });
     }
 

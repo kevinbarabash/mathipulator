@@ -539,6 +539,7 @@ function flatten(layout) {
     return new Layout(_flatten(layout));
 }
 
+// TODO: separate the centering from the creation of the layout
 function createFlatLayout(node, fontSize, width, height) {
     let newLayout = createLayout(node, fontSize);
     let flattenedLayout = flatten(newLayout);

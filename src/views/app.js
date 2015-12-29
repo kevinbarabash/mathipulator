@@ -7,6 +7,7 @@ const MathRenderer = require('./math-renderer.js');
 const HistoryRenderer = require('./history-renderer.js');
 const Parser = require('../parser.js');
 const Selection = require('./selection.js');
+const Modal = require('./modal.js');
 const { add, sub, mul, div } = require('../operations.js');
 const { findNode, compare } = require('../util/node_utils.js');
 
@@ -28,10 +29,10 @@ class App extends Component {
         //history.addStep(this.parser.parse('5*(1/(1+x))*2*(1/y)'));
         //history.addStep(this.parser.parse('1/x+1/y'));
         //history.addStep(this.parser.parse('2x+2y=10'));
-        history.addStep(this.parser.parse('(2*3)/(2*2)'));
+        history.addStep(this.parser.parse('8/24'));
 
         this.state = {
-            menu: null,
+            modal: null,
             history,
             view: 'edit',
         };
@@ -61,10 +62,29 @@ class App extends Component {
 
         if (newSelections.length === 1) {
             if (transform && transform.canTransform(newSelections[0])) {
-                // the transform updates nextMath
-                transform.doTransform(newSelections[0]);
-                history.addStep(nextMath);
-                this.setState({ history });
+                if (transform.needsUserInput) {
+
+                    const mathToReplace = newSelections[0].toExpression();
+
+                    const callback = (newMath) => {
+                        transform.doTransform(newSelections[0], newMath);
+                        history.addStep(nextMath);
+                        this.setState({ history, modal: null });
+                    };
+
+                    const modal = <Modal
+                        math={mathToReplace}
+                        callback={callback}
+                    />;
+
+                    this.setState({ modal });
+
+                } else {
+                    // the transform updates nextMath
+                    transform.doTransform(newSelections[0]);
+                    history.addStep(nextMath);
+                    this.setState({ history });
+                }
             }
         } else if (transform.hasOwnProperty('canTransformNodes') && transform.canTransformNodes(newSelections)) {
             transform.transformNodes(newSelections);
@@ -179,7 +199,7 @@ class App extends Component {
                 const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
                 node.parent.replace(node, op(node.clone(), expr));
                 history.addStep(math);
-                this.setState({history, menu: null});
+                this.setState({history});
             } else if (['*', '/'].includes(text[0]) && compare(expr, new Literal(1))) {
                 const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
                 node.parent.replace(node, op(node.clone(), expr));
@@ -191,8 +211,12 @@ class App extends Component {
         renderer.setState({menu: null, selections: []});
     }
 
+    showModal(modal) {
+        this.setState({ modal });
+    }
+
     render() {
-        const { menu, history, view } = this.state;
+        const { history, view, modal } = this.state;
 
         const math = history.getCurrentStep();
 
@@ -243,7 +267,6 @@ class App extends Component {
                     width={window.innerWidth}
                     height={window.innerHeight}
                 />}
-            {menu}
             <div style={topContainer}>
                 <span>
                     <button
@@ -297,6 +320,7 @@ class App extends Component {
                     </button>
                 </span>
             </div>
+            {modal}
         </div>;
     }
 }

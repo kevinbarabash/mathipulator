@@ -2,6 +2,7 @@ module.exports = {
     // single node transforms
     commute: require('./transforms/commute.js'),
     evaluate: require('./transforms/evaluate.js'),
+    replaceWith: require('./transforms/replace-selection.js'),
     rewriteSubtraction: require('./transforms/rewrite-subtraction.js'),
     rewriteAsSubtraction: require('./transforms/rewrite-as-subtraction.js'),
     rewriteDivision: require('./transforms/rewrite-division.js'),

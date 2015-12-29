@@ -9,7 +9,7 @@ class Math extends Node {
     }
 
     toString() {
-        return `[${this.type}:${this.value}]`;
+        return `[${this.type}:${this.root}]`;
     }
 
     clone(uniqueId = false) {
