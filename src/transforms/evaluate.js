@@ -8,33 +8,30 @@ const operations = {
 };
 
 function canTransform(selection) {
-    if (selection.type === 'range') {
+    if (selection.type === 'single') {
         return false;
     }
-    const node = selection.first;
-    const { prev, next } = node;
-    if (prev && next) {
-        if (prev.type === "Literal" && next.type === "Literal") {
-            if (prev.prev && prev.prev.operator === '-') {
-                return false;
-            }
-            return true;
+    if (selection.length === 3 &&
+        selection.first.type === 'Literal' && selection.last.type == 'Literal' &&
+        selection.first.next.type === 'Operator') {
+
+        if (selection.first.prev && selection.first.prev.operator === '-') {
+            return false;
         }
+        return true;
     }
     return false;
 }
 
-function doTransform(selection) {
+function doTransform(selection, newMath) {
     if (canTransform(selection)) {
-        const node = selection.first;
+        const node = selection.first.next;
         const { prev, next } = node;
-
-        const left = prev.value;
-        const right = next.value;
-        const result = operations[node.operator](left, right);
         const parent = node.parent;
 
-        const replacement = new Literal(result);
+        const replacement = newMath || new Literal(
+                operations[node.operator](prev.value, next.value)
+            );
 
         parent.remove(prev);
         parent.remove(next);
@@ -52,5 +49,6 @@ function doTransform(selection) {
 module.exports = {
     label: 'evaluate',
     canTransform,
-    doTransform
+    doTransform,
+    needsUserInput: false,
 };

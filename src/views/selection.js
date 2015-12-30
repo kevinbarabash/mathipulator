@@ -21,6 +21,14 @@ class Selection {
         yield this.last;
     }
 
+    get length() {
+        let count = 0;
+        for (let node of this) {
+            count++;
+        }
+        return count;
+    }
+
     includes(node) {
         if (this.type === 'single') {
             return findNode(this.first, node.id);
