@@ -36,6 +36,10 @@ function doTransform(selection) {
         } else {
             parent.remove(node);
         }
+
+        if (parent.first === parent.last) {
+            parent.parent.replace(parent, parent.first);
+        }
     }
 }
 

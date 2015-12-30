@@ -20,7 +20,7 @@ class Modal extends Component {
             const newMath = parser.parse(e.target.value);
             if (compare(this.props.math, newMath)) {
                 console.log('valid replacement');
-                this.props.callback(newMath);
+                this.props.callback(newMath.root);
             } else {
                 console.log('invalid');
             }

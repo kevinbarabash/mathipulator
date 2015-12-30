@@ -14,11 +14,26 @@ function doTransform(selection, newMath) {
         if (selection.type === 'single') {
             const node = selection.first;
 
-            // TODO: handle expressions/products so that we dont' get unnecessary nesting
-            node.parent.replace(node, newMath.root);
+            node.parent.replace(node, newMath);
         } else {
 
-            // TODO: implement this case
+            const parent = selection.first.parent;
+
+            if (['Product', 'Expression'].includes(parent.type)) {
+                const selExpr = selection.toExpression();
+                const prev = selExpr.first.prev;
+                const next = selExpr.last.next;
+                parent.removeSelection(selExpr, true);
+
+                if (prev) {
+                    parent.insertAfter(newMath, prev);
+                } else if (next) {
+                    parent.insertBefore(newMath, next);
+                } else {
+                    // we've selected the whole expression in which case the
+                    // selection.type is 'single'
+                }
+            }
         }
     }
 }

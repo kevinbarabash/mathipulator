@@ -30,6 +30,7 @@ class App extends Component {
         //history.addStep(this.parser.parse('1/x+1/y'));
         //history.addStep(this.parser.parse('2x+2y=10'));
         history.addStep(this.parser.parse('8/24'));
+        history.addStep(this.parser.parse('1+2+3+4+5'));
 
         this.state = {
             modal: null,

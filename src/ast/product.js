@@ -20,33 +20,39 @@ class Product extends ListNode {
         return clone;
     }
 
-    removeSelection(selection) {
-    if (selection.first.parent === this && selection.last.parent === this) {
-        const nodes = [...selection];
+    removeSelection(selection, keepOperators = false) {
+        if (selection.first.parent === this && selection.last.parent === this) {
+            const nodes = [...selection];
 
-        for (const node of nodes) {
-            this.remove(node);
-        }
+            for (const node of nodes) {
+                this.remove(node);
+            }
 
-        if (this.first.type === 'Operator') {
-            this.remove(this.first);
-        }
-        if (this.last.type === 'Operator') {
-            this.remove(this.last);
-        }
+            if (!keepOperators) {
+                if (this.first.type === 'Operator') {
+                    this.remove(this.first);
+                }
+                if (this.last.type === 'Operator') {
+                    this.remove(this.last);
+                }
 
-        let duplicateOperator = null;
-        let i = 0;
-        for (const node of this) {
-            if (i++ % 2 === 0 && node.type === 'Operator') {
-                duplicateOperator = node;
+                let duplicateOperator = null;
+                let i = 0;
+                for (const node of this) {
+                    if (i++ % 2 === 0 && node.type === 'Operator') {
+                        if (!duplicateOperator) {
+                            duplicateOperator = node;
+                        }
+                    }
+                }
+                if (duplicateOperator) {
+                    this.remove(duplicateOperator);
+                }
             }
         }
-        if (duplicateOperator) {
-            this.remove(duplicateOperator);
-        }
     }
-}
+
+    // TODO have a validate method
 }
 
 module.exports = Product;
