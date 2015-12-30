@@ -47,7 +47,7 @@ class App extends Component {
         this.handleEdit = this.handleEdit.bind(this);
     }
 
-    handleClick(selections, transform) {
+    handleClick(selections, transform, completionCallback) {
         const history = this.state.history.clone();
         const math = history.getCurrentStep();
         const nextMath = math.clone();
@@ -71,6 +71,7 @@ class App extends Component {
                         transform.doTransform(newSelections[0], newMath);
                         history.addStep(nextMath);
                         this.setState({ history, modal: null });
+                        completionCallback();
                     };
 
                     const modal = <Modal
@@ -85,12 +86,14 @@ class App extends Component {
                     transform.doTransform(newSelections[0]);
                     history.addStep(nextMath);
                     this.setState({ history });
+                    completionCallback();
                 }
             }
         } else if (transform.hasOwnProperty('canTransformNodes') && transform.canTransformNodes(newSelections)) {
             transform.transformNodes(newSelections);
             history.addStep(nextMath);
             this.setState({ history });
+            completionCallback();
         }
     }
 
@@ -191,7 +194,7 @@ class App extends Component {
         const op = opDict[text[0]];
 
         const expr = this.parser.parse(text.substring(1)).root;
-        const math = history.getCurrentStep();
+        const math = history.getCurrentStep().clone();
 
         // TODO: handle -x+x
         if (selections.length === 1 && selections[0].type === "single") {

@@ -19,7 +19,6 @@ class MathRenderer extends Component {
             menu: null,
             selections: [],
             layout: null,
-            start: null,
         };
 
         this.handleClick = this.handleClick.bind(this);
@@ -56,12 +55,14 @@ class MathRenderer extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const { fontSize, math } = nextProps;
+        if (this.props.math !== nextProps.math) {
+            let layout = createFlatLayout(
+                nextProps.math, nextProps.fontSize,
+                window.innerWidth, window.innerHeight
+            );
 
-        let layout = createFlatLayout(
-            math, fontSize, window.innerWidth, window.innerHeight);
-
-        this.setState({ layout });
+            this.setState({ layout });
+        }
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -171,10 +172,11 @@ class MathRenderer extends Component {
     }
 
     performTransform(selections, transform) {
-        this.props.onClick(selections, transform);
-        this.setState({
-            menu: null,
-            selections: [],
+        this.props.onClick(selections, transform, () => {
+            this.setState({
+                menu: null,
+                selections: [],
+            });
         });
     }
 
@@ -190,7 +192,10 @@ class MathRenderer extends Component {
             .map(transform => {
                 return {
                     label: transform.label,
-                    action: () => this.performTransform(newSelections, transform)
+                    action: () => {
+                        this.setState({ menu: null });
+                        this.performTransform(newSelections, transform);
+                    }
                 }
             });
 
@@ -251,16 +256,6 @@ class MathRenderer extends Component {
             this.setState({
                 selections: newSelections,
                 hitNode,
-                start: {
-                    x: e.pageX,
-                    y: e.pageY,
-                    timestamp: Date.now(),
-                },
-                current: {
-                    x: e.pageX,
-                    y: e.pageY,
-                    timestamp: Date.now(),
-                },
                 mouse: 'down',
             });
         } else {
@@ -274,13 +269,6 @@ class MathRenderer extends Component {
     }
 
     handleMouseMove(e) {
-        this.setState({
-            current: {
-                x: e.pageX,
-                y: e.pageY,
-                timestamp: Date.now(),
-            },
-        });
 
         e.preventDefault();
 
@@ -320,19 +308,21 @@ class MathRenderer extends Component {
 
     handleMouseUp(e) {
         // TODO: figure out selection semantics that prevent users from creating non-sensical selections
-        const {selections} = this.state;
-        let menu = null;
+        const {selections, mouse} = this.state;
+        if (mouse === 'down') {
+            let menu = null;
 
-        if (selections.length > 0) {
-            const {layout} = this.state;
-            const hitNode = layout.hitTest(e.pageX, e.pageY);
-            menu = this.getMenu(layout, selections, hitNode);
+            if (selections.length > 0) {
+                const {layout} = this.state;
+                const hitNode = layout.hitTest(e.pageX, e.pageY);
+                menu = this.getMenu(layout, selections, hitNode);
+            }
+
+            this.setState({
+                menu,
+                mouse: 'up',
+            });
         }
-
-        this.setState({
-            menu,
-            mouse: 'up',
-        });
     }
 
     render() {

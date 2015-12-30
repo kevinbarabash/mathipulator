@@ -60,6 +60,7 @@ const modalStyle = {
     height: 200,
     backgroundColor: 'white',
     position: 'relative',
+    top: -200,
 };
 
 const inputContainer = {
