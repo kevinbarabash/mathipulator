@@ -1,14 +1,7 @@
 function canTransform(selection) {
-    if (selection.type === 'single' && selection.first.type === 'Operator') {
-        return false;
-    }
-    return true;
+    return selection.type === 'single' && selection.first.type === 'Literal';
 }
 
-// transforms should return a promise that resolves when the transform is complete
-// this allows for things like replacing the current selection with input from a
-// modal or for a user to respond to the 'evaluate' transform asking what the value
-// should be
 function doTransform(selection, newMath) {
     if (canTransform(selection)) {
         if (selection.type === 'single') {
@@ -39,7 +32,7 @@ function doTransform(selection, newMath) {
 }
 
 module.exports = {
-    label: 'replace with...',
+    label: 'replace...',
     canTransform,
     doTransform,
     needsUserInput: true,
