@@ -1,5 +1,34 @@
+const f = require('functify');
+
 const { Expression, Product } = require('../ast.js');
 const { findNode } = require('../util/node_utils.js');
+
+const getPath = function(node) {
+    const path = [];
+
+    while (node != null) {
+        path.push(node);
+        node = node.parent;
+    }
+
+    path.reverse();
+
+    return path;
+};
+
+const findCommonAncestor = function(a, b) {
+    const aPath = getPath(a);
+    const bPath = getPath(b);
+
+    let ancestor = null;
+    for (const [aNode, bNode] of f.zip([aPath, bPath])) {
+        if (aNode === bNode) {
+            ancestor = aNode;
+        }
+    }
+
+    return ancestor;
+};
 
 class Selection {
     constructor(first, last = first) {
@@ -57,7 +86,21 @@ class Selection {
     }
 
     add(mathNode) {
-        const parent = this.first.parent;
+        let parent = this.first.parent;
+
+        if (parent !== mathNode.parent) {
+            const ancestor = findCommonAncestor(parent, mathNode);
+            const parentPath = getPath(parent);
+            const mathNodePath = getPath(mathNode);
+
+            const aNode = parentPath.find(node => node.parent === ancestor);
+            const bNode = mathNodePath.find(node => node.parent === ancestor);
+
+            if (aNode) {
+                this.first = aNode;
+                this.last = aNode;
+            }
+        }
 
         if (['Expression', 'Product'].includes(parent.type) && findNode(parent, mathNode.id)) {
             // handles the case of selection a number times a fraction

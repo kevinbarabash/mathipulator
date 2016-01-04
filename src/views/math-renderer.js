@@ -269,39 +269,40 @@ class MathRenderer extends Component {
     }
 
     handleMouseMove(e) {
-
-        e.preventDefault();
-
         const { math } = this.props;
         const { layout, selections, mouse } = this.state;
 
-        if (mouse === 'down') {
-            const hitNode = layout.hitTest(e.pageX, e.pageY);
+        if (mouse !== 'down') {
+            return;
+        }
 
-            if (hitNode && hitNode.selectable) {
-                const id = hitNode.id.split(":")[0];
-                let mathNode = findNode(math, id);
+        e.preventDefault();
 
-                if (selections.length > 0) {
-                    const previousSelections = selections.slice(0, selections.length - 1);
+        const hitNode = layout.hitTest(e.pageX, e.pageY);
 
-                    if (previousSelections.some(previousSelection => previousSelection.includes(mathNode))) {
-                        return;
-                    }
+        if (hitNode && hitNode.selectable) {
+            const id = hitNode.id.split(":")[0];
+            let mathNode = findNode(math, id);
 
-                    const selection = selections[selections.length - 1].clone();
+            if (selections.length > 0) {
+                const prevSels = selections.slice(0, selections.length - 1);
 
-                    selection.add(mathNode);
-
-                    // abort if the new selection in intersecting previous selections
-                    if (previousSelections.some(previous => previous.intersects(selection))) {
-                        return;
-                    }
-
-                    this.setState({
-                        selections: [...previousSelections, selection],
-                    });
+                if (prevSels.some(sel => sel.includes(mathNode))) {
+                    return;
                 }
+
+                const selection = selections[selections.length - 1].clone();
+
+                selection.add(mathNode);
+
+                // abort if the new selection in intersecting previous selections
+                if (prevSels.some(previous => previous.intersects(selection))) {
+                    return;
+                }
+
+                this.setState({
+                    selections: [...prevSels, selection],
+                });
             }
         }
     }
