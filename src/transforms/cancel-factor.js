@@ -110,6 +110,14 @@ function transformNodes(selections) {
         if (frac.denominator.type === 'Product' && frac.denominator.length === 0) {
             replace(frac, 'denominator', new Literal(1));
         }
+
+        if (frac.numerator.type === 'Product' && frac.numerator.length === 1) {
+            replace(frac, 'numerator', frac.numerator.first);
+        }
+
+        if (frac.denominator.type === 'Product' && frac.denominator.length === 1) {
+            replace(frac, 'denominator', frac.denominator.first);
+        }
     }
 }
 

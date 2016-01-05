@@ -8,9 +8,6 @@ const operations = {
 };
 
 function canTransform(selection) {
-    if (selection.type !== 'single') {
-        return false;
-    }
     if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
         selection = selection.first;
     }
