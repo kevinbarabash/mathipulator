@@ -212,10 +212,38 @@ const compare = function(left, right) {
     return compareRanges(Array.from(identifiers));
 };
 
+const getPath = function(node) {
+    const path = [];
+
+    while (node != null) {
+        path.push(node);
+        node = node.parent;
+    }
+
+    path.reverse();
+
+    return path;
+};
+
+const findCommonAncestor = function (...args) {
+    const paths = args.map(node => getPath(node));
+
+    let ancestor = null;
+    for (const [first, ...remainder] of f.zip(paths)) {
+        if (remainder.every(node => node === first)) {
+            ancestor = first;
+        }
+    }
+
+    return ancestor;
+};
+
 module.exports = {
     findNode,
     traverseNode,
     deepEqual,
     evaluate,
     compare,
+    getPath,
+    findCommonAncestor,
 };

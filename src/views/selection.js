@@ -1,34 +1,5 @@
-const f = require('functify');
-
 const { Expression, Product } = require('../ast.js');
-const { findNode } = require('../util/node_utils.js');
-
-const getPath = function(node) {
-    const path = [];
-
-    while (node != null) {
-        path.push(node);
-        node = node.parent;
-    }
-
-    path.reverse();
-
-    return path;
-};
-
-const findCommonAncestor = function(a, b) {
-    const aPath = getPath(a);
-    const bPath = getPath(b);
-
-    let ancestor = null;
-    for (const [aNode, bNode] of f.zip(aPath, bPath)) {
-        if (aNode === bNode) {
-            ancestor = aNode;
-        }
-    }
-
-    return ancestor;
-};
+const { findNode, getPath, findCommonAncestor } = require('../util/node_utils.js');
 
 class Selection {
     constructor(first, last = first) {
