@@ -1,5 +1,15 @@
 function canTransform(selection) {
-    return selection.type === 'single' && selection.first.type === 'Literal';
+    if (selection.type === 'single') {
+        if (selection.first.type === 'Literal') {
+            return true;
+        } else if (selection.first.type === 'Fraction') {
+            const { numerator, denominator } = selection.first;
+            if (numerator.type === 'Literal' && denominator.type === 'Literal') {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 function doTransform(selection, newMath) {

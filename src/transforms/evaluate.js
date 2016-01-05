@@ -8,8 +8,11 @@ const operations = {
 };
 
 function canTransform(selection) {
-    if (selection.type === 'single') {
+    if (selection.type !== 'single') {
         return false;
+    }
+    if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+        selection = selection.first;
     }
     if (selection.length === 3 &&
         selection.first.type === 'Literal' && selection.last.type == 'Literal' &&
@@ -25,6 +28,9 @@ function canTransform(selection) {
 
 function doTransform(selection, newMath) {
     if (canTransform(selection)) {
+        if (selection.length === 1) {
+            selection = selection.first;
+        }
         const node = selection.first.next;
         const { prev, next } = node;
         const parent = node.parent;
