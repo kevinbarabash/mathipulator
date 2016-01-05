@@ -9,22 +9,18 @@ const StaticMath = require('./static-math.js');
 const parser = new Parser();
 
 class Modal extends Component {
-    constructor() {
-        super();
-        this.handleKeyDown = this.handleKeyDown.bind(this);
+    handleAccept() {
+        const newMath = parser.parse(this.refs.input.value);
+        if (compare(this.props.math, newMath)) {
+            this.props.callback(newMath.root);
+        } else {
+            // TODO: provide in modal feedback
+            console.log('invalid');
+        }
     }
 
-    handleKeyDown(e) {
-        if (e.keyCode == 13 ) {
-            console.log(e.target.value);
-            const newMath = parser.parse(e.target.value);
-            if (compare(this.props.math, newMath)) {
-                console.log('valid replacement');
-                this.props.callback(newMath.root);
-            } else {
-                console.log('invalid');
-            }
-        }
+    handleCancel() {
+        this.props.callback();
     }
 
     render() {
@@ -34,11 +30,24 @@ class Modal extends Component {
                 <div style={inputContainer}>
                     = &nbsp;
                     <input
+                        ref="input"
                         type="text"
                         style={{fontSize: 60, fontFamily: "Helvetica-Light"}}
                         size={6}
-                        onKeyDown={this.handleKeyDown}
                     />
+                </div>
+                <div style={{position:'absolute', bottom:8, right:8}}>
+                    <button
+                        onClick={() => this.handleCancel()}
+                        style={{marginRight: 8}}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => this.handleAccept()}
+                    >
+                        Accept
+                    </button>
                 </div>
             </div>
         </div>;

@@ -68,9 +68,13 @@ class App extends Component {
                     const mathToReplace = newSelections[0].toExpression();
 
                     const callback = (newMath) => {
-                        transform.doTransform(newSelections[0], newMath);
-                        history.addStep(nextMath);
-                        this.setState({ history, modal: null });
+                        if (newMath) {
+                            transform.doTransform(newSelections[0], newMath);
+                            history.addStep(nextMath);
+                            this.setState({ history, modal: null });
+                        } else {
+                            this.setState({ modal: null });
+                        }
                         completionCallback();
                     };
 
