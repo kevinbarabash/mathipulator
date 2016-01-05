@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "babel-core": "^5.8.22",
-    "functify": "^0.3.0",
+    "functify": "^0.3.2",
     "react-dom": "^0.14.3"
   },
   "devDependencies": {

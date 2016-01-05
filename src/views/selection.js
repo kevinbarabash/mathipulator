@@ -21,7 +21,7 @@ const findCommonAncestor = function(a, b) {
     const bPath = getPath(b);
 
     let ancestor = null;
-    for (const [aNode, bNode] of f.zip([aPath, bPath])) {
+    for (const [aNode, bNode] of f.zip(aPath, bPath)) {
         if (aNode === bNode) {
             ancestor = aNode;
         }

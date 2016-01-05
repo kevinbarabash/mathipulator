@@ -38,7 +38,7 @@ var deepEqual = function(node1, node2) {
     const type = node1.type;
 
     if (type === 'Expression' || type === 'Product') {
-        for (const [child1, child2] of f.zip([node1, node2])) {
+        for (const [child1, child2] of f.zip(node1, node2)) {
             if (!deepEqual(child1, child2)) {
                 return false;
             }
