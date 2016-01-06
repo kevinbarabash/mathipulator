@@ -1,5 +1,8 @@
+const f = require('functify');
+
+const { Literal } = require('../ast.js');
 const { mul } = require('../operations.js');
-const { compare } = require('../util/node_utils.js');
+const { findCommonAncestor, deepEqual } = require('../util/node_utils.js');
 
 function canTransform(node) {
     // can't do anything with a single node
@@ -8,39 +11,35 @@ function canTransform(node) {
 
 function canTransformNodes(selections) {
     if (selections.length > 1) {
-        if (selections.some(selection => selection.first.parent.type !== 'Product' || selection.first.parent.parent.type !== 'Expression')) {
-            return false;
+        const ancestor = findCommonAncestor(...f(selections).map(sel => sel.first));
+
+        if (ancestor.type === "Expression") {
+            if (selections.every(sel => sel.first.parent === ancestor || sel.first.parent.type === 'Product' && sel.first.parent.parent === ancestor)) {
+                const factors = selections.map(sel => sel.toExpression());
+                const [first, ...rest] = factors;
+                if (rest.every(expr => deepEqual(first, expr))) {
+                    return true;
+                }
+            }
         }
-
-        const grandparent = selections[0].first.parent.parent;
-
-        if (selections.some(selection => selection.first.parent.parent !== grandparent)) {
-            return false;
-        }
-
-        const expr = selections[0].toExpression();
-        if (selections.some(selection => !compare(selection.toExpression(), expr))) {
-            return false;
-        }
-
-        return true;
     }
     return false;
 }
 
 function transformNodes(selections) {
     if (canTransformNodes(selections)) {
+        const ancestor = findCommonAncestor(...f(selections).map(sel => sel.first));
 
-        const grandparent = selections[0].first.parent.parent;
-        const factor = selections[0].first.clone(true);
-
-        if (grandparent.parent) {
-            selections.forEach(selection => {
+        selections.forEach(selection => {
+            if (selection.first.parent.type === 'Product' && selection.first.parent.parent === ancestor) {
                 selection.first.parent.removeSelection(selection);
-            });
+            } else if (selection.first.parent === ancestor) {
+                ancestor.replace(selection.toExpression(), new Literal(1));
+            }
+        });
 
-            grandparent.parent.replace(grandparent, mul(factor, grandparent));
-        }
+        const factor = selections[0].toExpression().clone(true);
+        ancestor.parent.replace(ancestor, mul(factor, ancestor));
     }
 }
 
