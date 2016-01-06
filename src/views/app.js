@@ -25,13 +25,25 @@ class App extends Component {
         this.parser = new Parser();
 
         const history = new History();
+
+        const params = {};
+
+        location.search.substring(1).split('&').forEach(param => {
+            const [key, value] = param.split('=');
+            params[key] = decodeURIComponent(value);
+        });
+
+        if (params.start) {
+            history.addStep(this.parser.parse(params.start));
+        } else {
+            history.addStep(this.parser.parse('2x + 5 = 10'));
+        }
         //history.addStep(this.parser.parse('(2xyz)/(xy)'));
         //history.addStep(this.parser.parse('5*(1/(1+x))*2*(1/y)'));
         //history.addStep(this.parser.parse('1/x+1/y'));
         //history.addStep(this.parser.parse('2x+2y=10'));
         //history.addStep(this.parser.parse('8/24+x+y'));
         //history.addStep(this.parser.parse('1+2+3+4+5'));
-        history.addStep(this.parser.parse('x*y + x'));
 
         this.state = {
             modal: null,
