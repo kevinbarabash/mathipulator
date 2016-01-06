@@ -8,6 +8,7 @@ const HistoryRenderer = require('./history-renderer.js');
 const Parser = require('../parser.js');
 const Selection = require('./selection.js');
 const Modal = require('./modal.js');
+const StaticMath = require('./static-math.js');
 const { add, sub, mul, div } = require('../operations.js');
 const { findNode, compare } = require('../util/node_utils.js');
 
@@ -38,17 +39,18 @@ class App extends Component {
         } else {
             history.addStep(this.parser.parse('2x + 5 = 10'));
         }
-        //history.addStep(this.parser.parse('(2xyz)/(xy)'));
-        //history.addStep(this.parser.parse('5*(1/(1+x))*2*(1/y)'));
-        //history.addStep(this.parser.parse('1/x+1/y'));
-        //history.addStep(this.parser.parse('2x+2y=10'));
-        //history.addStep(this.parser.parse('8/24+x+y'));
-        //history.addStep(this.parser.parse('1+2+3+4+5'));
+
+        let goal = null;
+
+        if (params.finish) {
+            goal = this.parser.parse(params.finish);
+        }
 
         this.state = {
-            modal: null,
+            goal,
             history,
-            view: 'edit',
+            modal: null,
+            view: 'edit'
         };
 
         this.handleClick = this.handleClick.bind(this);
@@ -237,7 +239,7 @@ class App extends Component {
     }
 
     render() {
-        const { history, view, modal } = this.state;
+        const { goal, history, modal, view } = this.state;
 
         const math = history.getCurrentStep();
 
@@ -267,6 +269,11 @@ class App extends Component {
             boxSizing:'border-box',
             display:'flex',
             flexDirection:'row',
+        };
+
+        const goalStyle = {
+            position: 'absolute',
+            bottom: 250,
         };
 
         return <div style={styles.app}>
@@ -324,6 +331,15 @@ class App extends Component {
                     </button>
                 </span>
             </div>
+            {goal &&
+                <div style={goalStyle}>
+                    <StaticMath
+                        width={window.innerWidth}
+                        height={200}
+                        math={goal}
+                    />
+                </div>
+            }
             <div style={bottomContainer}>
                 <span>
                     <input type="text" style={{fontSize:20}} ref="replaceText"/>
