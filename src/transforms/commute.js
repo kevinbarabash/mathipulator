@@ -1,32 +1,30 @@
 function canTransform(selection) {
-    if (selection.type === 'range') {
-        return false;
+    if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+        selection = selection.first;
     }
-    const node = selection.first;
-    if (node.type === 'Operator' && ['+', '*'].includes(node.operator)) {
-        if (node.prev != null && node.next != null) {
-            // handle the case where there's no previous operator
-            if (!node.prev.prev) {
-                return true;
-            }
-            if (node.prev.prev && node.prev.prev.operator !== '-') {
-                return true;
-            }
-        } else {
-            throw new Error('Invalid expression');
+    if (selection.length === 3 &&
+        selection.first.type === 'Literal' && selection.last.type == 'Literal' &&
+        selection.first.next.type === 'Operator') {
+
+        if (selection.first.prev && selection.first.prev.operator === '-') {
+            return false;
         }
+        if (selection.first.next.operator === '-') {
+            return false;
+        }
+        return true;
     }
     return false;
 }
 
 function doTransform(selection) {
     if (canTransform(selection)) {
-        const node = selection.first;
-        const { parent, prev, next } = node;
-        parent.remove(prev);
-        parent.remove(next);
-        parent.insertAfter(prev, node);
-        parent.insertBefore(next, node);
+        const operator = selection.first.next;
+        const parent = operator.parent;
+        parent.remove(selection.first);
+        parent.remove(selection.last);
+        parent.insertAfter(selection.first, operator);
+        parent.insertBefore(selection.last, operator);
     }
 }
 

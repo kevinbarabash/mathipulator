@@ -3,20 +3,23 @@ const Operator = require('../ast/operator.js');
 const Negation = require('../ast/negation.js');
 
 function canTransform(selection) {
-    if (selection.type === 'range') {
-        return false;
+    if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+        selection = selection.first;
     }
-    const node = selection.first;
-    if (node.type === 'Operator' && node.operator === '-') {
-        return true;
+    if (selection.length === 3 &&
+        selection.first.type === 'Literal' && selection.last.type == 'Literal' &&
+        selection.first.next.type === 'Operator') {
+
+        return selection.first.next.operator === '-';
     }
+    return false;
 }
 
 function doTransform(selection) {
     if (canTransform(selection)) {
-        const node = selection.first;
-        const next = node.next;
-        const parent = node.parent;
+        const operator = selection.first.next;
+        const parent = operator.parent;
+        const next = selection.last;
 
         if (next.type === 'Literal' && next.value > 0) {
             parent.replace(next, new Literal(-next.value));
@@ -24,7 +27,7 @@ function doTransform(selection) {
             parent.replace(next, new Negation(next));
         }
 
-        parent.replace(node, new Operator('+'));
+        parent.replace(operator, new Operator('+'));
     }
 }
 

@@ -2,32 +2,50 @@ const Literal = require('../ast/literal.js');
 const Operator = require('../ast/operator.js');
 
 function canTransform(selection) {
-    if (selection.type === 'range') {
-        return false;
+    if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+        selection = selection.first;
     }
-    const node = selection.first;
-    if (node.type === 'Operator' && node.operator === '+') {
-        if (node.next && node.next.type === 'Literal' && node.next.value < 0) {
+    if (selection.length === 3 &&
+        selection.first.type === 'Literal' && selection.last.type == 'Literal' &&
+        selection.first.next.type === 'Operator') {
+
+        const node = selection.first.next;
+        const last = selection.last;
+
+        if (last.type === 'Literal' && last.value < 0) {
             return true;
-        } else if (node.next && node.next.type === 'Negation') {
+        } else if (last.type === 'Negation') {
             return true;
         }
     }
+    return false;
+    //
+    //if (selection.type === 'range') {
+    //    return false;
+    //}
+    //const node = selection.first;
+    //if (node.type === 'Operator' && node.operator === '+') {
+    //    if (node.next && node.next.type === 'Literal' && node.next.value < 0) {
+    //        return true;
+    //    } else if (node.next && node.next.type === 'Negation') {
+    //        return true;
+    //    }
+    //}
 }
 
 function doTransform(selection) {
     if (canTransform(selection)) {
-        const node = selection.first;
-        const next = node.next;
-        const parent = node.parent;
+        const last = selection.last;
+        const operator = last.prev;
+        const parent = last.parent;
 
-        if (next.type === 'Literal' && next.value < 0) {
-            parent.replace(next, new Literal(-next.value));
-        } else if (next.type === 'Negation') {
-            parent.replace(next, next.value);
+        if (last.type === 'Literal' && last.value < 0) {
+            parent.replace(last, new Literal(-last.value));
+        } else if (last.type === 'Negation') {
+            parent.replace(last, last.value);
         }
 
-        parent.replace(node, new Operator('-'));
+        parent.replace(operator, new Operator('-'));
     }
 }
 
