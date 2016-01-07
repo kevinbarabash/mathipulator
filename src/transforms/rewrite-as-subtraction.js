@@ -9,7 +9,6 @@ function canTransform(selection) {
         selection.first.type === 'Literal' && selection.last.type == 'Literal' &&
         selection.first.next.type === 'Operator') {
 
-        const node = selection.first.next;
         const last = selection.last;
 
         if (last.type === 'Literal' && last.value < 0) {
@@ -19,22 +18,13 @@ function canTransform(selection) {
         }
     }
     return false;
-    //
-    //if (selection.type === 'range') {
-    //    return false;
-    //}
-    //const node = selection.first;
-    //if (node.type === 'Operator' && node.operator === '+') {
-    //    if (node.next && node.next.type === 'Literal' && node.next.value < 0) {
-    //        return true;
-    //    } else if (node.next && node.next.type === 'Negation') {
-    //        return true;
-    //    }
-    //}
 }
 
 function doTransform(selection) {
     if (canTransform(selection)) {
+        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+            selection = selection.first;
+        }
         const last = selection.last;
         const operator = last.prev;
         const parent = last.parent;

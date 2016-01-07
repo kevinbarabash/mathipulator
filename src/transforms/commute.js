@@ -19,12 +19,16 @@ function canTransform(selection) {
 
 function doTransform(selection) {
     if (canTransform(selection)) {
-        const operator = selection.first.next;
+        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+            selection = selection.first;
+        }
+        const { first, last } = selection;
+        const operator = first.next;
         const parent = operator.parent;
-        parent.remove(selection.first);
-        parent.remove(selection.last);
-        parent.insertAfter(selection.first, operator);
-        parent.insertBefore(selection.last, operator);
+        parent.remove(first);
+        parent.remove(last);
+        parent.insertAfter(first, operator);
+        parent.insertBefore(last, operator);
     }
 }
 

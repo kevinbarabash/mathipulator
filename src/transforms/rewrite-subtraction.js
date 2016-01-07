@@ -17,6 +17,9 @@ function canTransform(selection) {
 
 function doTransform(selection) {
     if (canTransform(selection)) {
+        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+            selection = selection.first;
+        }
         const operator = selection.first.next;
         const parent = operator.parent;
         const next = selection.last;
