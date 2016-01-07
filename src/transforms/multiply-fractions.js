@@ -1,21 +1,25 @@
 const { mul, div } = require('../operations.js');
 
 function canTransform(selection) {
-    if (selection.type === 'range') {
-        return false;
+    if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+        selection = selection.first;
     }
-    const node = selection.first;
-    if (node.type === 'Operator' && node.operator === '*') {
-        const { prev, next } = node;
-        return prev.type === 'Fraction' && next.type === 'Fraction';
+    if (selection.length === 3) {
+        const [first, operator, last] = selection;
+        if (first.type === 'Fraction' && last.type === 'Fraction' && operator.type === 'Operator') {
+            return selection.first.next.operator === '*';
+        }
     }
     return false;
 }
 
 function doTransform(selection) {
     if (canTransform(selection)) {
-        const node = selection.first;
-        const { parent, prev, next } = node;
+        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+            selection = selection.first;
+        }
+        const [prev, node, next] = selection;
+        const parent = node.parent;
 
         const replacement = div(
             mul(prev.numerator.clone(), next.numerator.clone()),

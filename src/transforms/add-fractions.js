@@ -9,11 +9,10 @@ function canTransform(selection) {
         selection.first.type === 'Fraction' && selection.last.type == 'Fraction' &&
         selection.first.next.type === 'Operator') {
 
+        // TODO: handle the case where there's a subtraction operator before the first operand
         if (['+', '-'].includes(selection.first.next.operator)) {
             return deepEqual(selection.first.denominator, selection.last.denominator);
         }
-
-        return selection.first.next.operator === '-';
     }
     return false;
 }
