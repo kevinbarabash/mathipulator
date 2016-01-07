@@ -1,32 +1,46 @@
-const { add, div } = require('../operations.js');
+const { add, sub, div } = require('../operations.js');
 const { deepEqual } = require('../util/node_utils.js');
 
 function canTransform(selection) {
-    if (selection.type === 'range') {
-        return false;
+    if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+        selection = selection.first;
     }
-    const node = selection.first;
-    if (node.type === 'Operator' && node.operator === '+') {
-        const { prev, next } = node;
-        return prev.type === 'Fraction' && next.type === 'Fraction' &&
-            deepEqual(prev.denominator, next.denominator);
+    if (selection.length === 3 &&
+        selection.first.type === 'Fraction' && selection.last.type == 'Fraction' &&
+        selection.first.next.type === 'Operator') {
+
+        if (['+', '-'].includes(selection.first.next.operator)) {
+            return deepEqual(selection.first.denominator, selection.last.denominator);
+        }
+
+        return selection.first.next.operator === '-';
     }
     return false;
 }
 
 function doTransform(selection) {
     if (canTransform(selection)) {
-        const node = selection.first;
-        const { parent, prev, next } = node;
+        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+            selection = selection.first;
+        }
+        const first = selection.first;
+        const last = selection.last;
+        const operator = selection.first.next;
+
+        const parent = operator.parent;
+        const op = {
+            '+': add,
+            '-': sub
+        }[operator.operator];
 
         const replacement = div(
-            add(prev.numerator.clone(), next.numerator.clone()),
-            prev.denominator.clone()
+            op(first.numerator.clone(), last.numerator.clone()),
+            first.denominator.clone()
         );
 
-        parent.remove(prev);
-        parent.remove(next);
-        parent.replace(node, replacement);
+        parent.remove(first);
+        parent.remove(last);
+        parent.replace(operator, replacement);
 
         // collapse if there is only one node in the expression
         if (replacement.prev == null && replacement.next == null) {
