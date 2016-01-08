@@ -6,11 +6,9 @@ function canTransform(selection) {
     if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
         selection = selection.first;
     }
-    if (selection.length === 3 &&
-        selection.first.type === 'Literal' && selection.last.type == 'Literal' &&
-        selection.first.next.type === 'Operator') {
-
-        return selection.first.next.operator === '-';
+    if (selection.length === 3) {
+        const [ , operator, ] = selection;
+        return operator.operator === '-';
     }
     return false;
 }
@@ -20,14 +18,20 @@ function doTransform(selection) {
         if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
             selection = selection.first;
         }
-        const operator = selection.first.next;
+        const [ , operator, last] = selection;
         const parent = operator.parent;
-        const next = selection.last;
 
-        if (next.type === 'Literal' && next.value > 0) {
-            parent.replace(next, new Literal(-next.value));
+        if (last.type === 'Literal' && last.value > 0) {
+            parent.replace(last, new Literal(-last.value));
+        } else if (last.type === 'Product') {
+            const firstFactor = last.first;
+            if (firstFactor.type === 'Literal' && firstFactor.value > 0) {
+                last.replace(firstFactor, new Literal(-firstFactor.value));
+            } else {
+                last.replace(firstFactor, new Negation(firstFactor));
+            }
         } else {
-            parent.replace(next, new Negation(next));
+            parent.replace(last, new Negation(last));
         }
 
         parent.replace(operator, new Operator('+'));
