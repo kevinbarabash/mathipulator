@@ -11,10 +11,7 @@ function canTransform(selection) {
     if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
         selection = selection.first;
     }
-    if (selection.length === 3 &&
-        selection.first.type === 'Literal' && selection.last.type == 'Literal' &&
-        selection.first.next.type === 'Operator') {
-
+    if (selection.length >= 3 && selection.first.type === 'Literal' && selection.last.type == 'Literal' && ['Expression', 'Product'].includes(selection.first.parent.type)) {
         if (selection.first.prev && selection.first.prev.operator === '-') {
             return false;
         }
@@ -25,20 +22,18 @@ function canTransform(selection) {
 
 function doTransform(selection, newMath) {
     if (canTransform(selection)) {
-        if (selection.length === 1) {
+        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
             selection = selection.first;
         }
-        const node = selection.first.next;
-        const { prev, next } = node;
-        const parent = node.parent;
+        const [first, ...rest] = selection;
+        const parent = first.parent;
+        rest.forEach(node => parent.remove(node));
 
-        const replacement = newMath || new Literal(
-                operations[node.operator](prev.value, next.value)
-            );
+        const replacement = newMath;
+        // TODO: re-enable automatic evaluation of single operations
+        //const replacement = new Literal(operations[node.operator](prev.value, next.value);
 
-        parent.remove(prev);
-        parent.remove(next);
-        parent.replace(node, replacement);
+        parent.replace(first, replacement);
 
         // collapse if there is only one node in the expression
         if (replacement.prev == null && replacement.next == null) {
