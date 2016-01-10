@@ -6,8 +6,8 @@ function canTransform(selection) {
     }
     if (selection.length === 3) {
         const [first, operator, last] = selection;
-        if (first.type === 'Fraction' && last.type === 'Fraction' && operator.type === 'Operator') {
-            return selection.first.next.operator === '*';
+        if ((first.type === 'Fraction' || last.type === 'Fraction') && operator.type === 'Operator') {
+            return operator.operator === '*';
         }
     }
     return false;
@@ -21,10 +21,25 @@ function doTransform(selection) {
         const [prev, node, next] = selection;
         const parent = node.parent;
 
-        const replacement = div(
-            mul(prev.numerator.clone(), next.numerator.clone()),
-            mul(prev.denominator.clone(), next.denominator.clone())
-        );
+        let denominator = null;
+        if (prev.type !== 'Fraction') {
+            denominator = next.denominator.clone();
+        } else if (next.type !== 'Fraction') {
+            denominator = prev.denominator.clone();
+        } else {
+            denominator = mul(prev.denominator.clone(), next.denominator.clone());
+        }
+
+        let numerator = null;
+        if (prev.type !== 'Fraction') {
+            numerator = mul(prev.clone(), next.numerator.clone());
+        } else if (next.type !== 'Fraction') {
+            numerator = mul(prev.numerator.clone(), next.clone());
+        } else {
+            numerator = mul(prev.numerator.clone(), next.numerator.clone());
+        }
+
+        const replacement = div(numerator, denominator);
 
         parent.remove(prev);
         parent.remove(next);

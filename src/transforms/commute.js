@@ -2,14 +2,13 @@ function canTransform(selection) {
     if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
         selection = selection.first;
     }
-    if (selection.length === 3 &&
-        selection.first.type === 'Literal' && selection.last.type == 'Literal' &&
-        selection.first.next.type === 'Operator') {
+    if (selection.length === 3) {
+        const [first, operator, ] = selection;
 
-        if (selection.first.prev && selection.first.prev.operator === '-') {
+        if (operator.operator === '+' && first.prev && first.prev.operator === '-') {
             return false;
         }
-        if (selection.first.next.operator === '-') {
+        if (operator.operator === '+' && operator.operator === '-') {
             return false;
         }
         return true;
