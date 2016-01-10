@@ -1,16 +1,39 @@
 const { Literal } = require('../ast.js');
 const { deepEqual } = require('../util/node_utils.js');
 
-function canTransform(selection) {
-    if (selection.type === 'range') {
-        return false;
+const isNegative = function(node) {
+    if (node.type === 'Literal' && node.value < 0) {
+        return true;
+    } else if (node.type === 'Negation') {
+        return true;
+    } else if (node.type === 'Product') {
+        return isNegative(node.first);
     }
-    const node = selection.first;
-    if (node.type === 'Operator' && node.operator === '+') {
-        if (node.prev.type === 'Negation') {
-            return deepEqual(node.prev.value, node.next);
-        } else if (node.next.type === 'Negation') {
-            return deepEqual(node.prev, node.next.value);
+};
+
+const abs = function(node) {
+    if (node.type === 'Literal' && node.value < 0) {
+        return -node.value;
+    } else if (node.type === 'Negation') {
+        return node.value;
+    }
+};
+
+function canTransform(selection) {
+    if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+        selection = selection.first;
+    }
+    if (selection.length === 3) {
+        const [first, operator, last] = selection;
+
+        if (operator.operator === '+') {
+            if (first.prev && first.prev.operator === '-') {
+                return false;
+            } else if (isNegative(first) && !isNegative(last)) {
+                return deepEqual(abs(first), last);
+            } else if (!isNegative(first) && isNegative(last)) {
+                return deepEqual(first, abs(last));
+            }
         }
     }
     return false;
@@ -18,11 +41,15 @@ function canTransform(selection) {
 
 function doTransform(selection) {
     if (canTransform(selection)) {
-        const node = selection.first;
-        const { parent, prev, next } = node;
-        parent.remove(prev);
-        parent.remove(next);
-        parent.replace(node, new Literal(0));
+        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+            selection = selection.first;
+        }
+        const [first, operator, last] = selection;
+        const parent = operator.parent;
+
+        parent.remove(first);
+        parent.remove(last);
+        parent.replace(operator, new Literal(0));
     }
 }
 
