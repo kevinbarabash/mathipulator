@@ -1,27 +1,37 @@
 const { Literal } = require('../ast.js');
 
 function canTransform(selection) {
-    if (selection.type === 'range') {
-        return false;
+    if (selection.length === 1 && ['Product'].includes(selection.first.type)) {
+        selection = selection.first;
     }
-    const node = selection.first;
-    if (node.type === 'Literal' && node.value === 0) {
-        if (node.next && node.prev) {
-            return node.next.operator === '*' && node.prev.operator === '*';
-        } else if (node.next) {
-            return node.next.operator === '*';
-        } else if (node.prev) {
-            return node.prev.operator === '*';
-        } else {
-            return false;
+    if (selection.length >= 3) {
+        for (const node of selection) {
+            if (node.type === 'Literal' && node.value === 0) {
+                return true;
+            }
         }
     }
+    return false;
 }
 
 function doTransform(selection) {
     if (canTransform(selection)) {
-        const node = selection.first;
-        node.parent.parent.replace(node.parent, new Literal(0));
+        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+            selection = selection.first;
+        }
+        const [first, ...rest] = selection;
+        const parent = first.parent;
+        rest.forEach(node => parent.remove(node));
+
+        const replacement = new Literal(0);
+        parent.replace(first, replacement);
+
+        // collapse if there is only one node in the expression
+        if (replacement.prev == null && replacement.next == null) {
+            if (parent.parent) {
+                parent.parent.replace(parent, replacement);
+            }
+        }
     }
 }
 
