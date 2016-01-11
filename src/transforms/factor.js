@@ -11,7 +11,7 @@ function canTransform(node) {
 
 function canTransformNodes(selections) {
     if (selections.length > 1) {
-        const ancestor = findCommonAncestor(...f(selections).map(sel => sel.first));
+        const ancestor = findCommonAncestor(...selections.map(sel => sel.first));
 
         if (ancestor.type === "Expression") {
             if (selections.every(sel => sel.first.parent === ancestor || sel.first.parent.type === 'Product' && sel.first.parent.parent === ancestor)) {
@@ -28,7 +28,7 @@ function canTransformNodes(selections) {
 
 function transformNodes(selections) {
     if (canTransformNodes(selections)) {
-        const ancestor = findCommonAncestor(...f(selections).map(sel => sel.first));
+        const ancestor = findCommonAncestor(...selections.map(sel => sel.first));
 
         selections.forEach(selection => {
             if (selection.first.parent.type === 'Product' && selection.first.parent.parent === ancestor) {

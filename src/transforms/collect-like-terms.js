@@ -1,78 +1,86 @@
-const { Literal } = require('../ast.js');
+const f = require('functify');
+
+const { Literal, Operator, Product } = require('../ast.js');
 const { mul } = require('../operations.js');
 const { compare } = require('../util/node_utils.js');
 
-function canTransform(selection) {
-    if (selection.type === 'range') {
-        return false;
+const nodeIs = type => node => node.type === type;
+const nodeIsNot = type => node => node.type !== type;
+
+const getFactors = function(node) {
+    if (node.type === 'Product') {
+        const factors = f(node).filter(nodeIsNot('Operator'));
+        if (factors.every(nodeIsNot('Literal'))) {
+            return [new Literal(1), ...factors];
+        } else {
+            return [...factors];
+        }
+    } else if (node.type === 'Identifier') {
+        return [new Literal(1), node];
+    } else {
+        return [node];
     }
-    const node = selection.first;
-    if (node.type === 'Operator' && ['+','-'].includes(node.operator) &&
-            node.prev && (node.prev.type === 'Product' || node.prev.type === 'Identifier') &&
-            node.next && (node.next.type === 'Product' || node.prev.type === 'Identifier')) {
+};
 
-        const prev = node.prev.clone();
-        const next = node.next.clone();
+function canTransform(selection) {
+    if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+        selection = selection.first;
+    }
+    if (selection.length === 3) {
+        const [a, , b] = selection;
 
-        if (prev.type === 'Product' && prev.first.type === 'Literal') {
-            prev.remove(prev.first);
-            prev.remove(prev.first);
+        const aFactors = getFactors(a);
+        const bFactors = getFactors(b);
+
+        // make sure that we have a numeric coefficient
+        if ([aFactors[0], bFactors[0]].every(nodeIs('Literal'))) {
+            // create products from all non-numeric factors
+            // we clone the factors when creating these new products because we
+            // don't want to affect the AST at this point
+            const aProduct = aFactors
+                .filter(nodeIsNot('Literal'))
+                .reduce((product, factor) => mul(product, factor.clone()), new Literal(1));
+            const bProduct = bFactors
+                .filter(nodeIsNot('Literal'))
+                .reduce((product, factor) => mul(product, factor.clone()), new Literal(1));
+
+            // verify that they match
+            // we don't use deepEqual here because we want to allow x*y and y*x
+            // to be considered the same
+            return compare(aProduct, bProduct);
         }
-
-        if (next.type === 'Product' && next.first.type === 'Literal') {
-            next.remove(next.first);
-            next.remove(next.first);
-        }
-
-        return compare(prev, next);
     }
     return false;
 }
 
 function doTransform(selection) {
     if (canTransform(selection)) {
-        const node = selection.first;
-        const parent = node.parent;
-        const prev = node.prev.clone(true);
-        const next = node.next.clone();
+        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+            selection = selection.first;
+        }
+        const [a, operator, b] = selection;
+        const parent = operator.parent;
 
-        let coeff = 0;
+        const aFactors = getFactors(a);
+        const bFactors = getFactors(b);
 
-        if (prev.type === 'Identifier') {
-            coeff += 1;
-        } else if (prev.type === 'Product') {
-            if (prev.first.type === 'Literal') {
-                coeff += prev.first.value;
-            } else {
-                coeff += 1;
+        const coeff = new Literal(0);
+
+        aFactors.filter(nodeIs('Literal')).forEach(factor => coeff.value += factor.value);
+        bFactors.filter(nodeIs('Literal')).forEach(factor => coeff.value += factor.value);
+
+        const replacement = aFactors.filter(nodeIsNot('Literal')).reduce((product, factor) => mul(product, factor), coeff);
+
+        parent.remove(a);
+        parent.remove(b);
+        parent.replace(operator, replacement);
+
+        // collapse if there is only one node in the expression
+        if (replacement.prev == null && replacement.next == null) {
+            if (parent.parent) {
+                parent.parent.replace(parent, replacement);
             }
-        } else {
-            // should never happen
         }
-
-        const sign = node.operator === '+' ? 1 : -1;
-        if (next.type === 'Identifier') {
-            coeff += sign;
-        } else if (next.type === 'Product') {
-            if (next.first.type === 'Literal') {
-                coeff += sign * next.first.value;
-            } else {
-                coeff += sign;
-            }
-        } else {
-            // should never happen
-        }
-
-        if (prev.type === 'Product' && prev.first.type === 'Literal') {
-            prev.remove(prev.first);
-            prev.remove(prev.first);
-        }
-
-        const replacement = mul(new Literal(coeff), prev);
-
-        parent.remove(node.prev);
-        parent.remove(node.next);
-        parent.replace(node, replacement);
     }
 }
 
