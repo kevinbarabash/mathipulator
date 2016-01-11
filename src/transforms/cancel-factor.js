@@ -67,7 +67,7 @@ function transformNodes(selections) {
             if (frac.numerator === a) {
                 replace(frac, 'numerator', new Literal(1));
             } else {
-                frac.parent.replace(frac, frac.numerator);
+                replace(frac, 'denominator', new Literal(1));
             }
         } else {
             if (a.next && !a.prev) {
@@ -87,7 +87,7 @@ function transformNodes(selections) {
             if (frac.numerator === b) {
                 replace(frac, 'numerator', new Literal(1));
             } else {
-                frac.parent.replace(frac, frac.numerator);
+                replace(frac, 'denominator', new Literal(1));
             }
         } else {
             if (b.next && !b.prev) {
@@ -118,8 +118,24 @@ function transformNodes(selections) {
         if (frac.denominator.type === 'Product' && frac.denominator.length === 1) {
             replace(frac, 'denominator', frac.denominator.first);
         }
+
+        if (frac.denominator.type === 'Literal' && frac.denominator.value === 1) {
+            frac.parent.replace(frac, frac.numerator);
+        }
     }
 }
+
+// test cases
+// 2/2
+// 2x/2x
+// 2x/x
+// x/2x
+// 2xy/2xy
+// 2xy/xy
+// xy/2xy
+// 2(x+1)/2(x+1)
+// 2(x+1)/(x+1)
+// (x+1)/2(x+1)
 
 module.exports = {
     label: 'cancel',
