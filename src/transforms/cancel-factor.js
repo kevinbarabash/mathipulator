@@ -67,7 +67,7 @@ function transformNodes(selections) {
             if (frac.numerator === a) {
                 replace(frac, 'numerator', new Literal(1));
             } else {
-                replace(frac, 'denominator', new Literal(1));
+                frac.parent.replace(frac, frac.numerator);
             }
         } else {
             if (a.next && !a.prev) {
@@ -87,7 +87,7 @@ function transformNodes(selections) {
             if (frac.numerator === b) {
                 replace(frac, 'numerator', new Literal(1));
             } else {
-                replace(frac, 'denominator', new Literal(1));
+                frac.parent.replace(frac, frac.numerator);
             }
         } else {
             if (b.next && !b.prev) {

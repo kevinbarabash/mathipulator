@@ -47,6 +47,7 @@ function canTransform(selection) {
             // verify that they match
             // we don't use deepEqual here because we want to allow x*y and y*x
             // to be considered the same
+            // TODO: make this configurable with an option to usee deepEqual instead
             return compare(aProduct, bProduct);
         }
     }
