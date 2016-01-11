@@ -32,9 +32,17 @@ function doTransform(selection) {
 
         let numerator = null;
         if (prev.type !== 'Fraction') {
-            numerator = mul(prev.clone(), next.numerator.clone());
+            if (next.numerator.type === 'Literal' && next.numerator.value === 1) {
+                numerator = prev.clone();
+            } else {
+                numerator = mul(prev.clone(), next.numerator.clone());
+            }
         } else if (next.type !== 'Fraction') {
-            numerator = mul(prev.numerator.clone(), next.clone());
+            if (prev.numerator.type === 'Literal' && prev.numerator.value === 1) {
+                numerator = next.clone();
+            } else {
+                numerator = mul(prev.numerator.clone(), next.clone());
+            }
         } else {
             numerator = mul(prev.numerator.clone(), next.numerator.clone());
         }
@@ -55,7 +63,7 @@ function doTransform(selection) {
 }
 
 module.exports = {
-    label: 'multiply fractions',
+    label: 'multiply',
     canTransform,
     doTransform
 };
