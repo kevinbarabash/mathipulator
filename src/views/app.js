@@ -218,13 +218,17 @@ class App extends Component {
         // TODO: handle -x+x
         if (selections.length === 1 && selections[0].type === "single") {
             const selectedNode = selections[0].first;
+            const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
+
             if (['+', '-'].includes(text[0]) && compare(expr, new Literal(0))) {
-                const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
                 node.parent.replace(node, op(node.clone(), expr));
                 history.addStep(math);
                 this.setState({history});
             } else if (['*', '/'].includes(text[0]) && compare(expr, new Literal(1))) {
-                const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
+                node.parent.replace(node, op(node.clone(), expr));
+                history.addStep(math);
+                this.setState({math, history});
+            } else if (['*', '/'].includes(text[0]) && node.type === 'Literal' && node.value === 0) {
                 node.parent.replace(node, op(node.clone(), expr));
                 history.addStep(math);
                 this.setState({math, history});

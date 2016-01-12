@@ -23,7 +23,7 @@ const getFactors = function(node) {
 };
 
 function canTransform(selection) {
-    if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+    if (selection.length === 1 && ['Expression'].includes(selection.first.type)) {
         selection = selection.first;
     }
     if (selection.length === 3) {
@@ -44,6 +44,13 @@ function canTransform(selection) {
                 .filter(nodeIsNot('Literal'))
                 .reduce((product, factor) => mul(product, factor.clone()), new Literal(1));
 
+            // if the product is a simply a Literal it means that there were no
+            // non literal factors to multiply one by which means there's
+            // nothing for us to factor
+            if (aProduct.type === 'Literal' || bProduct.type === 'Literal') {
+                return false;
+            }
+
             // verify that they match
             // we don't use deepEqual here because we want to allow x*y and y*x
             // to be considered the same
@@ -56,7 +63,7 @@ function canTransform(selection) {
 
 function doTransform(selection) {
     if (canTransform(selection)) {
-        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+        if (selection.length === 1 && ['Expression'].includes(selection.first.type)) {
             selection = selection.first;
         }
         const [a, operator, b] = selection;
@@ -85,7 +92,7 @@ function doTransform(selection) {
     }
 }
 
-// test cases
+// passing test cases
 // x + x
 // 2x + x
 // x + 2x
@@ -95,6 +102,8 @@ function doTransform(selection) {
 // xy + 2xy
 // 2xy + 2xy
 // also test subtraction
+// rejecting test cases
+// 0 + 0*1
 
 module.exports = {
     label: 'collect like terms',

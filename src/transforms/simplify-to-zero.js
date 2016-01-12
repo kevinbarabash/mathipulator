@@ -1,10 +1,10 @@
 const { Literal } = require('../ast.js');
 
 function canTransform(selection) {
-    if (selection.length === 1 && ['Product'].includes(selection.first.type)) {
+    if (selection.length === 1 && selection.first.type === 'Product') {
         selection = selection.first;
     }
-    if (selection.length >= 3) {
+    if (selection.length >= 3 && selection.first.parent.type === 'Product') {
         for (const node of selection) {
             if (node.type === 'Literal' && node.value === 0) {
                 return true;
@@ -16,7 +16,7 @@ function canTransform(selection) {
 
 function doTransform(selection) {
     if (canTransform(selection)) {
-        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+        if (selection.length === 1 && selection.first.type === 'Product') {
             selection = selection.first;
         }
         const [first, ...rest] = selection;
@@ -34,6 +34,14 @@ function doTransform(selection) {
         }
     }
 }
+
+// passing test cases
+// 0*2
+// 0*(-2)
+// 0*(x+1)
+// rejecting test cases
+// 0+0
+// 0+0*2
 
 module.exports = {
     label: 'simplify to zero',
