@@ -181,6 +181,9 @@ class MathRenderer extends Component {
     }
 
     getMenu(layout, newSelections, hitNode) {
+        // TODO: reverse the order of map and filter
+        // that way canTransform can return the name of the action and filter
+        // can filter out everything that returns an empty string
         const items = Object.values(transforms)
             .filter(transform => {
                 if (newSelections.length === 1) {
@@ -190,8 +193,12 @@ class MathRenderer extends Component {
                 }
             })
             .map(transform => {
+                let label = transform.label;
+                if (transform.hasOwnProperty('getLabel')) {
+                    label = transform.getLabel(newSelections[0]);
+                }
                 return {
-                    label: transform.label,
+                    label,
                     action: () => {
                         this.setState({ menu: null });
                         this.performTransform(newSelections, transform);

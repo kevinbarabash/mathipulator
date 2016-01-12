@@ -2,30 +2,44 @@ const { add, sub, div } = require('../operations.js');
 const { deepEqual } = require('../util/node_utils.js');
 
 function canTransform(selection) {
-    if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+    if (selection.length === 1 && selection.first.type === 'Expression') {
         selection = selection.first;
     }
-    if (selection.length === 3 &&
-        selection.first.type === 'Fraction' && selection.last.type == 'Fraction' &&
-        selection.first.next.type === 'Operator') {
+    if (selection.length === 3) {
+        const [first, operator, last] = selection;
+        const parent = operator.parent;
 
-        // TODO: handle the case where there's a subtraction operator before the first operand
-        if (['+', '-'].includes(selection.first.next.operator)) {
-            return deepEqual(selection.first.denominator, selection.last.denominator);
+        if (first.type === 'Fraction' && last.type === 'Fraction' && parent.type === 'Expression') {
+            if (selection.first.prev && selection.first.prev.operator === '-') {
+                return false;
+            }
+
+            if (['+', '-'].includes(operator.operator)) {
+                return deepEqual(first.denominator, last.denominator);
+            }
         }
     }
     return false;
 }
 
+function getLabel(selection) {
+    if (selection.length === 1 && selection.first.type === 'Expression') {
+        selection = selection.first;
+    }
+    const [ , operator, ] = selection;
+    if (operator.operator === '+') {
+        return 'add fractions';
+    } else if (operator.operator === '-') {
+        return 'subtract fractions';
+    }
+}
+
 function doTransform(selection) {
     if (canTransform(selection)) {
-        if (selection.length === 1 && ['Expression', 'Product'].includes(selection.first.type)) {
+        if (selection.length === 1 && selection.first.type === 'Expression') {
             selection = selection.first;
         }
-        const first = selection.first;
-        const last = selection.last;
-        const operator = selection.first.next;
-
+        const [first, operator, last] = selection;
         const parent = operator.parent;
         const op = {
             '+': add,
@@ -53,5 +67,6 @@ function doTransform(selection) {
 module.exports = {
     label: 'add fractions',
     canTransform,
-    doTransform
+    doTransform,
+    getLabel
 };
