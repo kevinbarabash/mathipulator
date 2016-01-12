@@ -5,10 +5,10 @@ function canTransform(selection) {
     if (selection.length === 3) {
         const [first, operator, ] = selection;
 
-        if (operator.operator === '+' && first.prev && first.prev.operator === '-') {
+        if (operator.operator === '-') {
             return false;
         }
-        if (operator.operator === '+' && operator.operator === '-') {
+        if (operator.operator === '+' && first.prev && first.prev.operator === '-') {
             return false;
         }
         return true;
