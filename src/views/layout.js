@@ -520,7 +520,9 @@ function createLayout(node, fontSize) {
     } else if (node.type === 'Math') {
         return createLayout(node.root, fontSize);
     } else if (node.type === 'Placeholder') {
-        return new Box(0, 0 - 0.85 * fontSize, fontSize, fontSize, true);
+        const box = new Box(0, 0 - 0.85 * fontSize, fontSize, fontSize, true);
+        box.id = node.id;
+        return box;
     } else {
         throw Error(`unrecogized node '${node.type}`);
     }
