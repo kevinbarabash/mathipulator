@@ -117,7 +117,12 @@ class Box {
         return result;
     }
 
-    hitTest(x, y) { }
+    hitTest(x, y) {
+        const { left, right, top, bottom } = this.getBounds();
+        if (x >= left && x <= right && y >= top && y <= bottom) {
+            return this;
+        }
+    }
 }
 
 class Layout {
