@@ -84,14 +84,18 @@ class Glyph {
 }
 
 class Box {
-    constructor(x, y, width, height) {
-        Object.assign(this, {x, y, width, height});
+    constructor(x, y, width, height, stroke = false) {
+        Object.assign(this, {x, y, width, height, stroke});
         this.type = 'box';
         this.selectable = true;
     }
 
     render(ctx) {
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        if (this.stroke) {
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
+        } else {
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
     }
 
     getBounds() {
@@ -100,6 +104,10 @@ class Box {
         const top = this.y;
         const bottom = top + this.height;
         return { left, right, top, bottom };
+    }
+
+    get advance() {
+        return this.width;
     }
 
     clone() {
@@ -511,6 +519,10 @@ function createLayout(node, fontSize) {
         return layout;
     } else if (node.type === 'Math') {
         return createLayout(node.root, fontSize);
+    } else if (node.type === 'Placeholder') {
+        return new Box(0, 0 - 0.85 * fontSize, fontSize, fontSize, true);
+    } else {
+        throw Error(`unrecogized node '${node.type}`);
     }
 }
 

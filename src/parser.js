@@ -9,6 +9,7 @@ const {
     Negation,
     Fraction,
     Math,
+    Placeholder,
 } = require('./ast.js');
 
 function isAlpha(token) {
@@ -19,7 +20,7 @@ function isNumber(token) {
     return /\d*\.\d+|\d+\.\d*|\d+/.test(token);
 }
 
-var tokenRegex = /([a-z])|([\(\)\+\-\/\*\^\=])|(\d*\.\d+|\d+\.\d*|\d+)/g;
+var tokenRegex = /([a-z])|([\(\)\+\-\/\*\^\=\?])|(\d*\.\d+|\d+\.\d*|\d+)/g;
 
 class Parser {
 
@@ -28,7 +29,9 @@ class Parser {
         this.i = 0;
         this.tokens = input.match(tokenRegex);
 
-        return new Math(this.equation());
+        const math = new Math(this.equation());
+        console.log(math.root);
+        return math;
     }
 
     equation() {
@@ -145,6 +148,12 @@ class Parser {
             token = tokens[this.i++];
             if (token !== ')') {
                 throw 'expected )';
+            }
+        } else if (token === '?') {
+            if (sign === '-') {
+                base = new Negation(new Placeholder());
+            } else {
+                base = new Placeholder();
             }
         }
 

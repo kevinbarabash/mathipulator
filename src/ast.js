@@ -7,6 +7,7 @@ const Literal = require('./ast/literal');
 const Equation = require('./ast/equation');
 const Negation = require('./ast/negation');
 const Math = require('./ast/math');
+const Placeholder = require('./ast/placeholder');
 
 module.exports = {
     Expression,
@@ -18,4 +19,5 @@ module.exports = {
     Equation,
     Negation,
     Math,
+    Placeholder
 };
