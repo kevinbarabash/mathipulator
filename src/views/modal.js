@@ -9,17 +9,21 @@ const StaticMath = require('./static-math.js');
 const parser = new Parser();
 
 class Modal extends Component {
+    static defaultProps = {
+        validateInput: (math, input) => compare(math, input)
+    };
+
     handleAccept() {
-        const newMath = parser.parse(this.refs.input.value);
+        const input = parser.parse(this.refs.input.value);
         if (this.props.math) {
-            if (compare(this.props.math, newMath)) {
-                this.props.callback(newMath.root);
+            if (this.props.validateInput(this.props.math, input)) {
+                this.props.callback(input.root);
             } else {
                 // TODO: provide in modal feedback
                 console.log('invalid');
             }
         } else {
-            this.props.callback(newMath.root);
+            this.props.callback(input.root);
         }
     }
 
