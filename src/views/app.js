@@ -1,7 +1,6 @@
 const React = require('react');
 
 const { Component } = React;
-const { Literal } = require('../ast.js');
 const History = require('./history.js');
 const MathRenderer = require('./math-renderer.js');
 const HistoryRenderer = require('./history-renderer.js');
@@ -9,15 +8,7 @@ const Parser = require('../parser.js');
 const Selection = require('./selection.js');
 const Modal = require('./modal.js');
 const StaticMath = require('./static-math.js');
-const { add, sub, mul, div } = require('../operations.js');
-const { findNode, compare } = require('../util/node_utils.js');
-
-const opDict = {
-    '+': add,
-    '-': sub,
-    '*': mul,
-    '/': div
-};
+const { findNode } = require('../util/node_utils.js');
 
 class App extends Component {
     constructor() {
@@ -54,8 +45,6 @@ class App extends Component {
         };
 
         this.handleClick = this.handleClick.bind(this);
-        this.handleReplace = this.handleReplace.bind(this);
-        this.handlePerform = this.handlePerform.bind(this);
         this.handleUndo = this.handleUndo.bind(this);
         this.handleRedo = this.handleRedo.bind(this);
         this.handleHistory = this.handleHistory.bind(this);
@@ -157,112 +146,12 @@ class App extends Component {
         }
     }
 
-    handleReplace() {
-        const text = this.refs.replaceText.value;
-        let math = this.parser.parse(text);
-        const history = new History();
-        history.addStep(math);
-        this.setState({ history });
-    }
-
-    handlePerform() {
-        const text = this.refs.performText.value;
-        const { history } = this.state;
-        const root = history.getCurrentStep().root;
-        const { renderer } = this.refs;
-        const { selections } = renderer.state;
-
-        if (selections.length === 0 && root.type === 'Equation') {
-            this.performEquationAction(text);
-        } else {
-            this.performExpressionAction(text);
-        }
-    }
-
     handleHistory() {
         this.setState({ view: 'history' });
     }
 
     handleEdit() {
         this.setState({ view: 'edit' });
-    }
-
-    performEquationAction(text) {
-        const history = this.state.history.clone();
-        const math = history.getCurrentStep().clone();
-
-        if (['+', '-', '*', '/'].includes(text[0])) {
-            const expr1 = this.parser.parse(text.substring(1)).root;
-            const expr2 = this.parser.parse(text.substring(1)).root;
-            const root = math.root;
-
-            const op = opDict[text[0]];
-
-            root.left = op(root.left, expr1);
-            root.right = op(root.right, expr2);
-
-            root.left.parent = root;
-            root.right.parent = root;
-
-            math.root = root;
-
-            history.addStep(math);
-            this.setState({ math, history });
-        } else if  (['+', '-', '*', '/'].includes(text[text.length - 1])) {
-            const expr1 = this.parser.parse(text.substring(0, text.length - 1)).root;
-            const expr2 = this.parser.parse(text.substring(0, text.length - 1)).root;
-            const root = math.root;
-
-            const op = opDict[text[text.length - 1]];
-
-            root.left = op(expr1, root.left);
-            root.right = op(expr2, root.right);
-
-            root.left.parent = root;
-            root.right.parent = root;
-
-            math.root = root;
-
-            history.addStep(math);
-            this.setState({ math, history });
-        }
-    }
-
-    performExpressionAction(text) {
-        const history = this.state.history.clone();
-        const { renderer } = this.refs;
-        const { selections } = renderer.state;
-
-        const op = opDict[text[0]];
-
-        const expr = this.parser.parse(text.substring(1)).root;
-        const math = history.getCurrentStep().clone();
-
-        // TODO: handle -x+x
-        if (selections.length === 1 && selections[0].type === "single") {
-            const selectedNode = selections[0].first;
-            const node = selectedNode ? findNode(math, selectedNode.id) : math.root;
-
-            if (['+', '-'].includes(text[0]) && compare(expr, new Literal(0))) {
-                node.parent.replace(node, op(node.clone(), expr));
-                history.addStep(math);
-                this.setState({history});
-            } else if (['*', '/'].includes(text[0]) && compare(expr, new Literal(1))) {
-                node.parent.replace(node, op(node.clone(), expr));
-                history.addStep(math);
-                this.setState({math, history});
-            } else if (['*', '/'].includes(text[0]) && node.type === 'Literal' && node.value === 0) {
-                node.parent.replace(node, op(node.clone(), expr));
-                history.addStep(math);
-                this.setState({math, history});
-            }
-        }
-
-        renderer.setState({menu: null, selections: []});
-    }
-
-    showModal(modal) {
-        this.setState({ modal });
     }
 
     render() {
@@ -367,15 +256,6 @@ class App extends Component {
                     />
                 </div>
             }
-            <div style={bottomContainer}>
-                <span style={{textAlign: 'center', flexGrow:1}} />
-                <span>
-                    <input type="text" style={{fontSize:20}} ref="performText"/>
-                    <button onClick={this.handlePerform} style={buttonStyle}>
-                        Perform
-                    </button>
-                </span>
-            </div>
             {modal}
         </div>;
     }
