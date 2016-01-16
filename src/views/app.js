@@ -367,15 +367,7 @@ class App extends Component {
                 </div>
             }
             <div style={bottomContainer}>
-                <span>
-                    <input type="text" style={{fontSize:20}} ref="replaceText"/>
-                    <button onClick={this.handleReplace} style={buttonStyle}>
-                        Replace
-                    </button>
-                </span>
-                <span style={{textAlign: 'center', flexGrow:1}}>
-
-                </span>
+                <span style={{textAlign: 'center', flexGrow:1}} />
                 <span>
                     <input type="text" style={{fontSize:20}} ref="performText"/>
                     <button onClick={this.handlePerform} style={buttonStyle}>

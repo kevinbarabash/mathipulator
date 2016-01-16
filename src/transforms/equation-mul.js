@@ -31,7 +31,7 @@ function transformNodes(selections, exprToAdd) {
 }
 
 module.exports = {
-    label: 'mul...',
+    label: 'multiply both sides',
     canTransform,
     canTransformNodes,
     transformNodes,

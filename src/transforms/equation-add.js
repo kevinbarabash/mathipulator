@@ -31,7 +31,7 @@ function transformNodes(selections, exprToAdd) {
 }
 
 module.exports = {
-    label: 'add...',
+    label: 'add to both sides',
     canTransform,
     canTransformNodes,
     transformNodes,
