@@ -440,7 +440,7 @@ function createLayout(node, fontSize) {
         const gap = 3;
         // y is the top of the fraction bar
         num.y = y + num.y - num.descent - gap;
-        den.y = -dashMetrics.bearingY + den.y - den.ascent;
+        den.y = -dashMetrics.bearingY + den.y - den.ascent + gap;
 
         // TODO: calc width so that we can use width where it makes sense
         if (den.advance > num.advance) {
@@ -526,6 +526,8 @@ function createLayout(node, fontSize) {
         return createLayout(node.root, fontSize);
     } else if (node.type === 'Placeholder') {
         const box = new Box(0, 0 - 0.85 * fontSize, fontSize, fontSize, true);
+        box.ascent = -0.85 * fontSize;
+        box.descent = 0.15 * fontSize;
         box.id = node.id;
         return box;
     } else {
