@@ -13,9 +13,11 @@ const isNegative = function(node) {
 
 const abs = function(node) {
     if (node.type === 'Literal' && node.value < 0) {
-        return -node.value;
+        return new Literal(-node.value);
     } else if (node.type === 'Negation') {
         return node.value;
+    } else {
+        return node;
     }
 };
 

@@ -9,6 +9,7 @@ const nodeIsNot = type => node => node.type !== type;
 
 const getFactors = function(node) {
     if (node.type === 'Product') {
+        // TODO: need to take operators into account so that we can handle x - 3x
         const factors = f(node).filter(nodeIsNot('Operator'));
         if (factors.every(nodeIsNot('Literal'))) {
             return [new Literal(1), ...factors];
@@ -22,6 +23,7 @@ const getFactors = function(node) {
     }
 };
 
+// TODO: handle x + (-x)
 function canTransform(selection) {
     if (selection.length === 1 && ['Expression'].includes(selection.first.type)) {
         selection = selection.first;
@@ -77,7 +79,7 @@ function doTransform(selection) {
         aFactors.filter(nodeIs('Literal')).forEach(factor => coeff.value += factor.value);
         bFactors.filter(nodeIs('Literal')).forEach(factor => coeff.value += factor.value);
 
-        const replacement = aFactors.filter(nodeIsNot('Literal')).reduce((product, factor) => mul(product, factor), coeff);
+        const replacement = aFactors.filter(nodeIsNot('Literal')).reduce((product, factor) => mul(product, factor.clone()), coeff);
 
         parent.remove(a);
         parent.remove(b);
@@ -101,6 +103,13 @@ function doTransform(selection) {
 // 2xy + xy
 // xy + 2xy
 // 2xy + 2xy
+// x - x => 0x ?
+// 2x - x
+// x - 2x
+// x + (-2)x
+// x - (-2)x
+// etc.
+// it might be easier to fuzz this
 // also test subtraction
 // rejecting test cases
 // 0 + 0*1
