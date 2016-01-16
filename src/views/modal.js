@@ -11,11 +11,15 @@ const parser = new Parser();
 class Modal extends Component {
     handleAccept() {
         const newMath = parser.parse(this.refs.input.value);
-        if (compare(this.props.math, newMath)) {
-            this.props.callback(newMath.root);
+        if (this.props.math) {
+            if (compare(this.props.math, newMath)) {
+                this.props.callback(newMath.root);
+            } else {
+                // TODO: provide in modal feedback
+                console.log('invalid');
+            }
         } else {
-            // TODO: provide in modal feedback
-            console.log('invalid');
+            this.props.callback(newMath.root);
         }
     }
 
@@ -26,7 +30,8 @@ class Modal extends Component {
     render() {
         return <div style={backgroundStyle}>
             <div style={modalStyle}>
-                <StaticMath math={this.props.math} width={200} height={200} />
+                {this.props.math &&
+                <StaticMath math={this.props.math} width={200} height={200} />}
                 <div style={inputContainer}>
                     = &nbsp;
                     <input

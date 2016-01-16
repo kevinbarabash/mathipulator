@@ -26,6 +26,12 @@ module.exports = {
     addParentheses: require('./transforms/add-parens.js'),
     removeParentheses: require('./transforms/remove-parens.js'),
 
+    // equation transforms
+    equationAdd: require('./transforms/equation-add.js'),
+    equationSub: require('./transforms/equation-sub.js'),
+    equationMul: require('./transforms/equation-mul.js'),
+    equationDiv: require('./transforms/equation-div.js'),
+
     // multi-node transforms
     cancelFactor: require('./transforms/cancel-factor.js'),
     factor: require('./transforms/factor.js'),
