@@ -31,6 +31,8 @@ module.exports = {
     rewriteAsDivision: require('./transforms/rewrite-as-division.js'),
     multiplyFractions: require('./transforms/multiply-fractions.js'),
     addFractions: require('./transforms/add-fractions.js'),
+    splitFractionAddition: require('./transforms/split-fraction-addition.js'),
+    splitFractionMultiplication: require('./transforms/split-fraction-multiplication.js'),
 
     // parentheses
     addParentheses: require('./transforms/add-parens.js'),
