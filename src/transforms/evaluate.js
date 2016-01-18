@@ -1,4 +1,6 @@
+const React = require('react');
 const Literal = require("../ast/literal.js");
+const Modal = require('../views/modal.js');
 
 const operations = {
     '+': (a, b) => a + b,
@@ -44,9 +46,19 @@ function doTransform(selection, newMath) {
     }
 }
 
+function getModal(selections, callback) {
+    const mathToReplace = selections[0].toExpression();
+
+    return <Modal
+        math={mathToReplace}
+        callback={callback}
+    />;
+}
+
 module.exports = {
     label: 'evaluate',
     canTransform,
     doTransform,
     needsUserInput: true,
+    getModal
 };

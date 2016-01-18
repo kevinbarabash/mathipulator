@@ -1,5 +1,7 @@
+const React = require('react');
 const f = require('functify');
 
+const Modal = require('../views/modal.js');
 const { sub } = require('../operations.js');
 
 function canTransform(node) {
@@ -30,10 +32,20 @@ function transformNodes(selections, exprToAdd) {
     }
 }
 
+function getModal(selections, callback) {
+    const mathToReplace = selections[0].toExpression();
+
+    return <Modal
+        math={mathToReplace}
+        callback={callback}
+    />;
+}
+
 module.exports = {
     label: 'subtract from both sides',
     canTransform,
     canTransformNodes,
     transformNodes,
     needsUserInput: true,
+    getModal
 };

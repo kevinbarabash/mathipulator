@@ -1,3 +1,6 @@
+const React = require('react');
+const Modal = require('../views/modal.js');
+
 const { Literal } = require('../ast.js');
 const { add } = require('../operations.js');
 const { compare } = require('../util/node_utils.js');
@@ -23,10 +26,21 @@ function validateInput(math, input) {
     return false;
 }
 
+function getModal(selections, callback) {
+    const mathToReplace = selections[0].toExpression();
+
+    return <Modal
+        math={mathToReplace}
+        callback={callback}
+        validateInput={validateInput}
+    />;
+}
+
+
 module.exports = {
     label: 'add zero...',
     canTransform,
     doTransform,
     needsUserInput: true,
-    validateInput
+    getModal
 };

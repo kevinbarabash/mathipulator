@@ -82,11 +82,7 @@ class App extends Component {
                         completionCallback();
                     };
 
-                    const modal = <Modal
-                        math={mathToReplace}
-                        callback={callback}
-                        validateInput={transform.validateInput}
-                    />;
+                    const modal = transform.getModal(newSelections, callback);
 
                     this.setState({ modal });
 
