@@ -71,9 +71,11 @@ class App extends Component {
 
                     const mathToReplace = newSelections[0].toExpression();
 
-                    const callback = (newMath) => {
-                        if (newMath) {
-                            transform.doTransform(newSelections[0], newMath);
+                    // TODO: have an explicit success/failure callback
+                    // some modals might not have any options
+                    const callback = (options) => {
+                        if (options) {
+                            transform.doTransform(newSelections[0], options);
                             history.addStep(nextMath);
                             this.setState({ history, modal: null });
                         } else {

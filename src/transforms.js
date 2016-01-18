@@ -46,10 +46,7 @@ module.exports = {
     equationDiv: require('./transforms/equation-div.js'),
 
     // expressions
-    expressionAddZero: require('./transforms/expression-add-zero.js'),
-    expressionSubZero: require('./transforms/expression-sub-zero.js'),
-    expressionMulZero: require('./transforms/expression-mul-one.js'),
-    expressionDivZero: require('./transforms/expression-div-one.js'),
+    expressionPerformOp: require('./transforms/expression-perform-op.js'),
 
     // multi-node transforms
     cancelFactor: require('./transforms/cancel-factor.js')
