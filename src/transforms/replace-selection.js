@@ -1,3 +1,6 @@
+const React = require('react');
+const Modal = require('../views/modal.js');
+
 function canTransform(selection) {
     if (selection.type === 'single') {
         if (selection.first.type === 'Literal') {
@@ -41,9 +44,19 @@ function doTransform(selection, newMath) {
     }
 }
 
+function getModal(selections, callback) {
+    const mathToReplace = selections[0].toExpression();
+
+    return <Modal
+        math={mathToReplace}
+        callback={callback}
+    />;
+}
+
 module.exports = {
-    label: 'replace...',
+    label: 'replace',
     canTransform,
     doTransform,
     needsUserInput: true,
+    getModal
 };

@@ -29,9 +29,7 @@ class Parser {
         this.i = 0;
         this.tokens = input.match(tokenRegex);
 
-        const math = new Math(this.equation());
-        console.log(math.root);
-        return math;
+        return new Math(this.equation());
     }
 
     equation() {

@@ -40,10 +40,7 @@ module.exports = {
 
     // equations
     swapSides: require('./transforms/swap-sides.js'),
-    equationAdd: require('./transforms/equation-add.js'),
-    equationSub: require('./transforms/equation-sub.js'),
-    equationMul: require('./transforms/equation-mul.js'),
-    equationDiv: require('./transforms/equation-div.js'),
+    equationPerformOp: require('./transforms/equation-perform-op.js'),
 
     // expressions
     expressionPerformOp: require('./transforms/expression-perform-op.js'),

@@ -84,9 +84,7 @@ class App extends Component {
                         completionCallback();
                     };
 
-                    const modal = transform.getModal(newSelections, callback);
-
-                    this.setState({ modal });
+                    this.setState({ modal: transform.getModal(newSelections, callback) });
 
                 } else {
                     // the transform updates nextMath
@@ -99,11 +97,11 @@ class App extends Component {
         } else if (transform.hasOwnProperty('canTransformNodes') && transform.canTransformNodes(newSelections)) {
             if (transform.needsUserInput) {
 
-                const callback = (newMath) => {
+                const callback = (options) => {
                     // newMath is the math that the user input
                     // nextMath is the next step
-                    if (newMath) {
-                        transform.transformNodes(newSelections, newMath);
+                    if (options) {
+                        transform.transformNodes(newSelections, options);
                         history.addStep(nextMath);
                         this.setState({ history, modal: null });
                     } else {
@@ -112,11 +110,7 @@ class App extends Component {
                     completionCallback();
                 };
 
-                const modal = <Modal
-                    callback={callback}
-                />;
-
-                this.setState({ modal });
+                this.setState({ modal: transform.getModal(newSelections, callback) });
             } else {
                 transform.transformNodes(newSelections);
                 history.addStep(nextMath);

@@ -1,6 +1,7 @@
 const React = require('react');
-const Literal = require("../ast/literal.js");
 const Modal = require('../views/modal.js');
+
+const Literal = require("../ast/literal.js");
 
 const operations = {
     '+': (a, b) => a + b,
