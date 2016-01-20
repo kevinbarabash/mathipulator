@@ -2,6 +2,7 @@ const React = require('react');
 const Modal = require('../views/modal.js');
 
 const Literal = require("../ast/literal.js");
+const { compare } = require('../util/node_utils.js');
 
 const operations = {
     '+': (a, b) => a + b,
@@ -53,6 +54,7 @@ function getModal(selections, callback) {
     return <Modal
         math={mathToReplace}
         callback={callback}
+        validateInput={compare}
     />;
 }
 

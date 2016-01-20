@@ -7,10 +7,6 @@ const Parser = require('../parser.js');
 const parser = new Parser();
 
 class OperationModal extends Component {
-    static defaultProps = {
-        validateInput(options) { return true; }
-    };
-
     handleAccept() {
         const options = {
             operation: this.refs.operation.value,

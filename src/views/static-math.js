@@ -18,11 +18,6 @@ class StaticMath extends Component {
         };
     }
 
-    static defaultProps = {
-        color: 'black',
-        fontSize: 60,
-    };
-
     componentDidMount() {
         const container = this.refs.container;
 

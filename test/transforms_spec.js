@@ -5,7 +5,7 @@ const Parser = require('../src/parser.js');
 const Selection = require('../src/views/selection.js');
 const { deepEqual } = require('../src/util/node_utils.js');
 
-describe.only('commute', () => {
+describe('commute', () => {
     let parser;
 
     const parse = text => parser.parse(text).root;

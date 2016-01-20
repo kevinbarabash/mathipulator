@@ -2,17 +2,12 @@ const React = require('react');
 
 const { Component } = React;
 
-const { compare } = require('../util/node_utils.js');
 const Parser = require('../parser.js');
 const StaticMath = require('./static-math.js');
 
 const parser = new Parser();
 
 class Modal extends Component {
-    static defaultProps = {
-        validateInput: (math, input) => compare(math, input)
-    };
-
     handleAccept() {
         const input = parser.parse(this.refs.input.value);
         if (this.props.math) {
