@@ -20,10 +20,7 @@ module.exports = {
         loaders: [{
             test: /\.js$/,
             loader: 'babel',
-            include: path.join(__dirname, 'src'),
-            query: {
-                optional: ['es7.classProperties']
-            }
+            include: path.join(__dirname, 'src')
         }, {
             test: /\.js$/,
             loader: 'react-hot',

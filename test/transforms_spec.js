@@ -1,3 +1,4 @@
+require('babel-polyfill');
 const assert = require('assert');
 
 const { commute } = require('../src/transforms.js');

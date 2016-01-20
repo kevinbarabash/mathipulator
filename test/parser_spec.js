@@ -1,3 +1,4 @@
+require('babel-polyfill');
 const assert = require('assert');
 
 const { assertExpression, assertProduct, assertFraction } = require('./test_util.js');

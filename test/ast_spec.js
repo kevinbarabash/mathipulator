@@ -1,3 +1,4 @@
+require('babel-polyfill');
 const assert = require('assert');
 
 const { Literal } = require ('../src/ast.js');
